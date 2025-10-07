@@ -5,5 +5,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
+	<ItemGroup>
+		<PackageReference Include="MediatR" Version="12.3.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.3.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.17" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="DTOs\ResponseModels\" />
+	  <Folder Include="DTOs\RequestModels\" />
+	  <Folder Include="Models\" />
+	  <Folder Include="Enums\" />
+	</ItemGroup>
 </Project>
