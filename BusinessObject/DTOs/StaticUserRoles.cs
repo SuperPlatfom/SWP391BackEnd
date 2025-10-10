@@ -2,7 +2,7 @@
 
 public class StaticUserRoles
 {
-    public const string CITIZEN = "citizen";
-    public const string OFFICER = "officer";
+    public const string COOWNER = "coowner";
+    public const string STAFF = "staff";
     public const string ADMIN = "admin";
 }

@@ -104,26 +104,7 @@ public class AuthController : Controller
         }
     }
 
-    [HttpPost("biometric-login")]
-    public async Task<IActionResult> BiometricLogin([FromBody] UserBiometricLoginRequestModel request)
-    {
-        try
-        {
-            var authResponse = await _authService.BiometricLoginAsync(request.Email, request.Password, request.DeviceId);
 
-            var responseObject = new
-            {
-                accessToken = authResponse.AccessToken,
-                refreshToken = authResponse.RefreshToken
-            };
-
-            return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK, "Login successful", responseObject);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = ex.Message });
-        }
-    }
 
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestModel request)

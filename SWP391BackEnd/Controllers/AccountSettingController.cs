@@ -80,37 +80,6 @@ public class AccountSettingController : Controller
         }
     }
 
-    [Authorize]
-    [HttpPut("profile/biometric")]
-    public async Task<IActionResult> UpdateUserUsingBiometricOption([FromForm] UpdateUserRequestUsingBiometricOptionModel model)
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null)
-            return CustomErrorHandler.SimpleError("User ID claim not found.", 401);
-
-        var userId = Guid.Parse(userIdClaim.Value);
-
-        try
-        {
-            bool updated = await _userService.UpdateUserUsingBiometricOptionAsync(userId, model);
-            if (!updated) return NotFound("User not found.");
-
-            return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
-                "Successfully updated account information.", null);
-        }
-        catch (CustomValidationError ex)
-        {
-            return CustomErrorHandler.ValidationError(ex.Errors);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return CustomErrorHandler.SimpleError(ex.Message, 404);
-        }
-        catch (Exception ex)
-        {
-            return CustomErrorHandler.SimpleError(ex.Message, 500);
-        }
-    }
 
     [Authorize]
     [HttpPost("request-profile-update-otp")]

@@ -152,14 +152,22 @@ app.UseExceptionHandler(_ => { });
 
 app.UseRouting();
 
-if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "EVCostSharingPlatform API v1");
+    c.RoutePrefix = ""; 
+});
+
+app.MapGet("/", () => Results.Ok(new
+{
+    status = "running",
+    message = "🚗 EV Co-ownership API is live!"
+}));
+
 
 app.UseCors("AllowAll");
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
