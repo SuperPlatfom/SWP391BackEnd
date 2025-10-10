@@ -1,7 +1,19 @@
 ﻿using Microsoft.OpenApi.Models;
+using Repository;
+using Repository.Interfaces;
+using Service.Interfaces;
+using Service.Service.Implementations;
 using System.Text.Json.Serialization;
-
+using DataAccessLayer.DataContext;
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
+
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -59,6 +71,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+//  Tự tạo DB nếu chưa có
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseAuthentication();
