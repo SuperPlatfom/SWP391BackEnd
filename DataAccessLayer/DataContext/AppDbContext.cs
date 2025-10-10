@@ -6,12 +6,11 @@ namespace DataAccessLayer.DataContext
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext()
-        {
-        }
+   
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
+            Console.WriteLine(" AppDbContext constructed successfully.");
         }
 
    
@@ -23,17 +22,31 @@ namespace DataAccessLayer.DataContext
     
 
 
-        private static string? GetConnectionString()
-        {
-            IConfiguration configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true, true).Build();
-            return configuration["ConnectionStrings:DefaultConnection"];
-        }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql(GetConnectionString());
-
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                var envConn = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+                if (!string.IsNullOrEmpty(envConn))
+                {
+                    Console.WriteLine(" Using environment connection string");
+                    optionsBuilder.UseNpgsql(envConn);
+                }
+                else
+                {
+                    Console.WriteLine("📁 Using local appsettings.json connection string");
+                    var configuration = new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .Build();
+                    var localConn = configuration.GetConnectionString("DefaultConnection");
+                    if (!string.IsNullOrEmpty(localConn))
+                        optionsBuilder.UseNpgsql(localConn);
+                    else
+                        Console.WriteLine(" No connection string found at all!");
+                }
+            }
+        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
