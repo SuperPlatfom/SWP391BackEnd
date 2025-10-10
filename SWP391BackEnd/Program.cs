@@ -98,7 +98,20 @@ builder.Services.AddControllers()
     });
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var key = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
+var secretKey = jwtSettings["SecretKey"];
+
+if (string.IsNullOrEmpty(secretKey))
+{
+    Console.WriteLine("⚠️ Jwt SecretKey not found! Check environment variable: JwtSettings__SecretKey");
+    secretKey = "TemporaryFallbackSecretKey123!"; 
+}
+else
+{
+    Console.WriteLine($"✅ Jwt SecretKey loaded ({secretKey.Length} chars)");
+}
+
+var key = Encoding.UTF8.GetBytes(secretKey);
+
 
 builder.Services.AddAuthentication(options =>
 {
