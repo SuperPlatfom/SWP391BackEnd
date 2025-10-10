@@ -17,6 +17,7 @@ using Microsoft.Extensions.FileProviders;
 using SWP391BackEnd.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -159,11 +160,14 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = ""; 
 });
 
-app.MapGet("/", () => Results.Ok(new
+app.MapGet("/debug/db", (IConfiguration cfg) =>
 {
-    status = "running",
-    message = "🚗 EV Co-ownership API is live!"
-}));
+    var cs = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+             ?? cfg.GetConnectionString("DefaultConnection");
+    return string.IsNullOrWhiteSpace(cs)
+        ? Results.Problem("❌ Connection string not found.")
+        : Results.Ok(new { message = "✅ Connection string loaded!", length = cs.Length });
+});
 
 
 app.UseCors("AllowAll");
