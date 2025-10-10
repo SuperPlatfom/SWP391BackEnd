@@ -17,19 +17,32 @@ using Microsoft.Extensions.FileProviders;
 using SWP391BackEnd.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddEnvironmentVariables();
 
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddEnvironmentVariables();
+
+
+
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection") ??
+    builder.Configuration["ConnectionStrings__DefaultConnection"] ??
+    Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    Console.WriteLine("⚠️ Connection string not found — check Render env variables!");
+}
+else
+{
+    Console.WriteLine($"✅ Connection string loaded: {connectionString.Substring(0, Math.Min(40, connectionString.Length))}...");
+}
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-        ?? builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseNpgsql(connectionString));
 
-    if (string.IsNullOrWhiteSpace(connectionString))
-        throw new InvalidOperationException("❌ Database connection string not found!");
-
-    options.UseNpgsql(connectionString);
-});
 
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -168,14 +181,7 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = ""; 
 });
 
-app.MapGet("/debug/db", (IConfiguration cfg) =>
-{
-    var cs = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-             ?? cfg.GetConnectionString("DefaultConnection");
-    return string.IsNullOrWhiteSpace(cs)
-        ? Results.Problem("❌ Connection string not found.")
-        : Results.Ok(new { message = "✅ Connection string loaded!", length = cs.Length });
-});
+
 
 
 app.UseCors("AllowAll");
