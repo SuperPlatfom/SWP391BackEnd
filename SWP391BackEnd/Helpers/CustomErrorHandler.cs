@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace SafeCityBackEnd.Helpers;
+namespace SWP391BackEnd.Helpers;
 public class CustomErrorHandler
 {
     public static IActionResult ValidationError(Dictionary<string, string> errors)

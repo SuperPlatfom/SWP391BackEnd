@@ -22,8 +22,5 @@
   <ItemGroup>
     <ProjectReference Include="..\BusinessObject\BusinessObject.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Mappers\" />
-  </ItemGroup>
 
 </Project>
