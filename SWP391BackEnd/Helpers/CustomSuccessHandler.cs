@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SafeCityBackEnd.Helpers;
+namespace SWP391BackEnd.Helpers;
 
 public static class CustomSuccessHandler
 {

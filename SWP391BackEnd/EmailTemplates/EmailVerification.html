@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            width: 80px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        .code {
+            font-size: 24px;
+            font-weight: bold;
+            background: #ffeeba;
+            padding: 10px;
+            display: inline-block;
+            border-radius: 5px;
+        }
+        .message {
+            font-size: 16px;
+            color: #555;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <img src="cid:logo" alt="Riot Games Logo" class="logo">
+    <h1>Login <span style="color: #d4af37;">Code</span></h1>
+    <p class="message">Here is your login approval <span style="font-weight: bold;">code</span>:</p>
+    <p class="code">{{CODE}}</p>
+    <p class="message">
+        If this request did not come from you, change your password immediately.
+    </p>
+    <div class="footer">
+        <p>© 2025 Riot Games, Inc. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>
