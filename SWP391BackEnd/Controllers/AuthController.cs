@@ -83,6 +83,29 @@ public class AuthController : Controller
             return Unauthorized(new { message = ex.Message });
         }
     }
+    [HttpPost("resend-otp")]
+    public async Task<IActionResult> ResendOtp([FromBody] ResendOtpRequestModel request)
+    {
+        try
+        {
+            await _authService.ResendOtpAsync(request.Email);
+
+            return CustomSuccessHandler.ResponseBuilder(
+                HttpStatusCode.OK,
+                "OTP Resent Successfully",
+                "A new verification code has been sent to your email."
+            );
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return CustomErrorHandler.SimpleError(ex.Message, 400);
+        }
+    }
+
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserLoginRequestModel request)
