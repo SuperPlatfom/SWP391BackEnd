@@ -89,6 +89,7 @@ public class AuthService : IAuthService
             DateOfBirth = userDto.dateOfBirth.ToUniversalTime(),
             Phone = userDto.phone,
             Gender = userDto.gender,
+            CodeExpiry = DateTime.UtcNow.AddMinutes(10),
             Status = "inactive",
             RoleId = customerRole.Id,
             ImageUrl = "",
@@ -172,6 +173,9 @@ public class AuthService : IAuthService
             throw new KeyNotFoundException("Account not found.");
         }
 
+        if (user.CodeExpiry.HasValue && user.CodeExpiry.Value < DateTime.UtcNow)
+            throw new UnauthorizedAccessException("OTP has expired. Please request a new one.");
+
         if (user.ActivationCode != otp)
         {
             throw new UnauthorizedAccessException("Incorrect OTP. Please try again.");
@@ -179,8 +183,33 @@ public class AuthService : IAuthService
 
         user.Status = "active";
         user.ActivationCode = null;
+        user.CodeExpiry = null;
         await _userRepository.UpdateAsync(user);
     }
+    public async Task ResendOtpAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new Exception("Email cannot be empty.");
+
+        var user = await _userRepository.GetByEmailAsync(email);
+        if (user == null)
+            throw new KeyNotFoundException("Account not found.");
+
+        if (user.Status.ToLower() == "active")
+            throw new Exception("Your account is already verified.");
+
+        string newOtp = GenerateActivationCode();
+        user.ActivationCode = newOtp;
+        user.CodeExpiry = DateTime.UtcNow.AddMinutes(10);
+        await _userRepository.UpdateAsync(user);
+
+        string subject = "Your New Verification Code";
+        string message = $"<p>Your new verification code is: <b>{newOtp}</b></p>";
+
+        await _mailService.SendEmailVerificationCode(email, subject, message);
+    }
+
+
 
     public async Task<UserAuthenticationResponse> LoginAsync(string email, string password)
     {
@@ -214,40 +243,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<UserAuthenticationResponse> BiometricLoginAsync(string email, string password, string deviceId)
-    {
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-            throw new Exception("Email and password cannot be empty.");
 
-        var user = await _userRepository.GetByEmailAsync(email);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-        {
-            throw new UnauthorizedAccessException("Incorrect email/password please try again.");
-        }
-
-        var hashedDeviceId = HashHelper.ComputeSha256Hash(deviceId);
-
-
-        if (user.Status.ToLower() == "inactive" && !string.IsNullOrEmpty(user.ActivationCode))
-        {
-            throw new UnauthorizedAccessException("Your account is not verified.");
-        }
-
-        var accessToken = _jwtService.GenerateAccessToken(user);
-        var refreshToken = _jwtService.GenerateRefreshToken();
-        var refreshTokenExpiry = DateTime.UtcNow.AddDays(1);
-
-        user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiry = refreshTokenExpiry;
-        user.IsLoggedIn = true;
-        await _userRepository.UpdateAsync(user);
-
-        return new UserAuthenticationResponse
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken
-        };
-    }
 
     public async Task<UserAuthenticationResponse> RefreshTokenAsync(string refreshToken)
     {
