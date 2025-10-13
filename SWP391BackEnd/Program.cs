@@ -187,15 +187,7 @@ builder.Services.AddSwaggerGen(c =>
     c.OperationFilter<AddAuthHeaderOperationFilter>();
 });
 
-
-
-
-//  Tự tạo DB nếu chưa có
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
-}
+var app = builder.Build();
 
 app.UseExceptionHandler(_ => { });
 
