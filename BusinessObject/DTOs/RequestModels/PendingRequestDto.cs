@@ -10,7 +10,7 @@ namespace BusinessObject.DTOs.RequestModels
     {
         public int Id { get; set; }
         public Guid AccountId { get; set; }
-        public required string AccountName { get; set; }
+        public string AccountName { get; set; }
         public DateTime RequestedAt { get; set; }
     }
 

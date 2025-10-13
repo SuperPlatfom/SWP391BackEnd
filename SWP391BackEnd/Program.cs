@@ -6,20 +6,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Repository;
 using Repository.Interfaces;
 using Repository.Repositories;
-using Service;
+using Repository;
 using Service.Interfaces;
-using Services;
-using SWP391BackEnd.Helpers;
+using Service;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.FileProviders;
+using SWP391BackEnd.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -190,7 +187,15 @@ builder.Services.AddSwaggerGen(c =>
     c.OperationFilter<AddAuthHeaderOperationFilter>();
 });
 
-var app = builder.Build();
+
+
+
+//  Tự tạo DB nếu chưa có
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.UseExceptionHandler(_ => { });
 
@@ -206,18 +211,6 @@ app.UseSwaggerUI(c =>
 
 
 
-//  Tự tạo DB nếu chưa có
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
-}
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 app.UseCors("AllowAll");
 //app.UseHttpsRedirection();
 app.UseStaticFiles();
