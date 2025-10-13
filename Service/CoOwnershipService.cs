@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Service.Interfaces;
 using BusinessObject.DTOs.ResponseModels;
-namespace Services
+namespace Service
 {
     public class CoOwnershipService : ICoOwnershipService
     {
