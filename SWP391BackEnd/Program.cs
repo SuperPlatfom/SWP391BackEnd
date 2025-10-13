@@ -56,6 +56,12 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IScanningCardService, ScanningCardService>();
 builder.Services.AddScoped<IFirebaseStorageService, FirebaseStorageService>();
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<ICoOwnershipGroupRepository, CoOwnershipGroupRepository>();
+builder.Services.AddScoped<ICoOwnershipService, CoOwnershipService>();
+builder.Services.AddScoped<IGroupMemberRepository, GroupMemberRepository>();
+builder.Services.AddScoped<iGroupMemberService, GroupMemberService>();
 
 
 

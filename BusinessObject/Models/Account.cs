@@ -57,6 +57,7 @@ namespace BusinessObject.Models
 
         public Role Role { get; set; }
         public CitizenIdentityCard? CitizenIdentityCard { get; set; }
-        
+        public ICollection<CoOwnershipGroup> CreatedGroups { get; set; } = new List<CoOwnershipGroup>();
+        public ICollection<GroupMember> GroupMemberships { get; set; } = new List<GroupMember>();
     }
 }
