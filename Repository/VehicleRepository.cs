@@ -2,11 +2,6 @@
 using DataAccessLayer.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repository
 {
@@ -18,6 +13,7 @@ namespace Repository
         {
             _context = context;
         }
+
         public async Task<Vehicle> AddAsync(Vehicle vehicle)
         {
             vehicle.CreatedAt = DateTime.UtcNow;
@@ -41,12 +37,16 @@ namespace Repository
 
         public async Task<IEnumerable<Vehicle>> GetAllAsync()
         {
-            return await _context.Vehicles.ToListAsync();
+            return await _context.Vehicles
+                .Include(v => v.Group)
+                .ToListAsync();
         }
 
         public async Task<Vehicle?> GetByIdAsync(Guid id)
         {
-            return await _context.Vehicles.FindAsync(id);
+            return await _context.Vehicles
+                .Include(v => v.Group)
+                .FirstOrDefaultAsync(v => v.Id == id);
         }
 
         public async Task<Vehicle> UpdateAsync(Vehicle vehicle)

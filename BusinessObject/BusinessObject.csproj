@@ -11,8 +11,6 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.17" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="DTOs\ResponseModels\" />
-	  <Folder Include="DTOs\RequestModels\" />
 	  <Folder Include="Enums\" />
 	</ItemGroup>
 </Project>

@@ -22,6 +22,263 @@ namespace DataAccessLayer.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("BusinessObject.Models.Account", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ActivationCode")
+                        .HasColumnType("text")
+                        .HasColumnName("activation_code");
+
+                    b.Property<DateTime?>("CodeExpiry")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("code_expiry");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_of_birth");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("full_name");
+
+                    b.Property<bool>("Gender")
+                        .HasColumnType("boolean")
+                        .HasColumnName("gender");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("image_url");
+
+                    b.Property<bool>("IsLoggedIn")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_logged_in");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text")
+                        .HasColumnName("refresh_token");
+
+                    b.Property<DateTime?>("RefreshTokenExpiry")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("refresh_token_expiry");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("role_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("account_status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("account");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.CitizenIdentityCard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("address");
+
+                    b.Property<string>("BackImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("back_image_url");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expiry_date");
+
+                    b.Property<string>("FrontImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("front_image_url");
+
+                    b.Property<string>("IdNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("id_number");
+
+                    b.Property<DateTime>("IssueDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issue_date");
+
+                    b.Property<string>("PlaceOfBirth")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("place_of_birth");
+
+                    b.Property<string>("PlaceOfIssue")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("place_of_issue");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("citizen_identity_card");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.CoOwnershipGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("GovernancePolicy")
+                        .HasColumnType("text")
+                        .HasColumnName("governance_policy");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.ToTable("co_ownership_group");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.GroupMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<string>("InviteStatus")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("invite_status");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<DateTime>("JoinDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("join_date");
+
+                    b.Property<string>("RoleInGroup")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("role_in_group");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("group_member");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("role");
+                });
+
             modelBuilder.Entity("BusinessObject.Models.Vehicle", b =>
                 {
                     b.Property<Guid>("Id")
@@ -34,7 +291,6 @@ namespace DataAccessLayer.Migrations
                         .HasColumnName("battery_capacity_kwh");
 
                     b.Property<string>("Color")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("color");
 
@@ -42,13 +298,15 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
                     b.Property<string>("Make")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("make");
 
                     b.Property<string>("Model")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("model");
 
@@ -79,7 +337,92 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GroupId");
+
                     b.ToTable("vehicle");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.Account", b =>
+                {
+                    b.HasOne("BusinessObject.Models.Role", "Role")
+                        .WithMany("Accounts")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.CitizenIdentityCard", b =>
+                {
+                    b.HasOne("BusinessObject.Models.Account", "Account")
+                        .WithOne("CitizenIdentityCard")
+                        .HasForeignKey("BusinessObject.Models.CitizenIdentityCard", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.CoOwnershipGroup", b =>
+                {
+                    b.HasOne("BusinessObject.Models.Account", "CreatedByAccount")
+                        .WithMany("CreatedGroups")
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByAccount");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.GroupMember", b =>
+                {
+                    b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.Account", "UserAccount")
+                        .WithMany("GroupMemberships")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("UserAccount");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.Vehicle", b =>
+                {
+                    b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
+                        .WithMany("Vehicles")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.Account", b =>
+                {
+                    b.Navigation("CitizenIdentityCard");
+
+                    b.Navigation("CreatedGroups");
+
+                    b.Navigation("GroupMemberships");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.CoOwnershipGroup", b =>
+                {
+                    b.Navigation("Members");
+
+                    b.Navigation("Vehicles");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.Role", b =>
+                {
+                    b.Navigation("Accounts");
                 });
 #pragma warning restore 612, 618
         }

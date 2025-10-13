@@ -19,16 +19,16 @@ namespace BusinessObject.Models
         public string? PlateNumber { get; set; }  // Biển số (nếu có)
 
         [Column("make")]
-        public string Make { get; set; }          // Hãng xe
+        public string? Make { get; set; }          // Hãng xe
 
         [Column("model")]
-        public string Model { get; set; }         // Dòng xe
+        public string? Model { get; set; }         // Dòng xe
 
         [Column("model_year")]
         public int ModelYear { get; set; }        // Năm sản xuất
 
         [Column("color")]
-        public string Color { get; set; }         // Màu sắc
+        public string? Color { get; set; }         // Màu sắc
 
         [Column("battery_capacity_kwh")]
         public decimal BatteryCapacityKwh { get; set; } // Dung lượng pin danh định
@@ -47,5 +47,13 @@ namespace BusinessObject.Models
 
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; }
+
+        [Column("group_id")]
+        [ForeignKey(nameof(Group))]
+        public Guid? GroupId { get; set; }
+
+        public CoOwnershipGroup? Group { get; set; }
+
+   
     }
 }
