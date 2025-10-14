@@ -14,5 +14,7 @@ namespace BusinessObject.DTOs.ResponseModels
         public decimal BatteryCapacityKwh { get; set; }
         public string? TelematicsDeviceId { get; set; }
         public int RangeKm { get; set; }
+
+        public Guid? GroupId { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using BusinessObject.Models;
+﻿using BusinessObject.DTOs.ResponseModels;
+using BusinessObject.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace Service.Interfaces
 {
     public interface IVehicleService
     {
-        Task<IEnumerable<Vehicle>> GetAllVehiclesAsync();
-        Task<Vehicle?> GetVehicleByIdAsync(Guid id);
-        Task<Vehicle> CreateVehicleAsync(Vehicle vehicle);
-        Task<Vehicle> UpdateVehicleAsync(Vehicle vehicle);
-        Task<Vehicle> DeleteVehicleAsync(Guid id);
+        Task<IEnumerable<VehicleResponseModel>> GetAllVehiclesAsync();
+        Task<VehicleResponseModel?> GetVehicleByIdAsync(Guid id);
+        Task<VehicleResponseModel> CreateVehicleAsync(Vehicle vehicle);
+        Task<VehicleResponseModel> UpdateVehicleAsync(Vehicle vehicle);
+        Task<VehicleResponseModel> DeleteVehicleAsync(Guid id);
     }
 }

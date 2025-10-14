@@ -51,9 +51,10 @@ namespace Repository
         public async Task<List<CoOwnershipGroup>> GetAllGroupsAsync()
         {
             return await _context.CoOwnershipGroups
-       .Include(g => g.Vehicles)
-       .Include(g => g.Members)
-       .ToListAsync();
+    .Include(g => g.Vehicles)
+    .Include(g => g.Members)
+        .ThenInclude(m => m.UserAccount)
+    .ToListAsync();
         }
 
         public async Task UpdateGroupAsync(CoOwnershipGroup group)
@@ -73,7 +74,20 @@ namespace Repository
             await _context.SaveChangesAsync();
         }
 
-        
+
+        public async Task<CoOwnershipGroup?> GetByIdAsync(Guid id)
+        {
+            return await _context.CoOwnershipGroups
+                .Include(g => g.Members)
+                 .ThenInclude(m => m.UserAccount)
+                .Include(g => g.Vehicles)
+                .FirstOrDefaultAsync(g => g.Id == id);
+        }
+
+        public async Task<Account?> GetAccountByIdAsync(Guid accountId)
+        {
+            return await _context.Accounts.FindAsync(accountId);
+        }
 
         // --- Transaction support ---
         public async Task<IDbContextTransaction> BeginTransactionAsync()
@@ -81,12 +95,6 @@ namespace Repository
             return await _context.Database.BeginTransactionAsync();
         }
 
-        public async Task<CoOwnershipGroup?> GetByIdAsync(Guid id)
-        {
-            return await _context.CoOwnershipGroups
-                .Include(g => g.Members)
-                .Include(g => g.Vehicles)
-                .FirstOrDefaultAsync(g => g.Id == id);
-        }
+        
     }
 }

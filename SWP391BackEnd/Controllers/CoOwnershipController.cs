@@ -1,5 +1,4 @@
 ﻿using BusinessObject.DTOs.RequestModels;
-using BusinessObject.DTOs.RequestModels;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 

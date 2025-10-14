@@ -13,10 +13,10 @@ namespace Service.Interfaces
     {
         Task<GroupResponseModel> CreateGroupAsync(CreateGroupRequest request);
         Task<GroupMember> InviteMemberAsync(InviteRequest request);
-        Task<List<CoOwnershipGroup>> GetGroupsByUserAsync(Guid userId);
+        Task<List<GroupBasicReponseModel>> GetGroupsByUserAsync(Guid userId);
 
-        Task<CoOwnershipGroup?> GetGroupByIdAsync(Guid groupId);
-        Task<CoOwnershipGroup> UpdateGroupAsync(Guid groupId, string newName, string? newGovernancePolicy);
+        Task<GroupResponseModel> GetGroupByIdAsync(Guid groupId);
+        Task<GroupResponseModel> UpdateGroupAsync(Guid groupId, string newName, string? newGovernancePolicy);
         Task<List<GroupResponseModel>> GetAllGroupsAsync();
        
     }

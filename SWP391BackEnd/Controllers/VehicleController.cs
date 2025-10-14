@@ -62,7 +62,7 @@ namespace SWP391BackEnd.Controllers
         }
 
         [HttpPut("update-vehicle-by-id")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] VehicleRequestModel request)
+        public async Task<IActionResult> Update(Guid id, [FromQuery] VehicleRequestModel request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -71,19 +71,24 @@ namespace SWP391BackEnd.Controllers
             if (existing == null)
                 return NotFound(new { message = "Vehicle not found" });
 
-            existing.PlateNumber = request.PlateNumber;
-            existing.Make = request.Make;
-            existing.Model = request.Model;
-            existing.ModelYear = request.ModelYear;
-            existing.Color = request.Color;
-            existing.BatteryCapacityKwh = request.BatteryCapacityKwh;
-            existing.RangeKm = request.RangeKm;
-            existing.TelematicsDeviceId = request.TelematicsDeviceId;
-            existing.Status = request.Status;
-            existing.GroupId = request.GroupId; // ✅ thêm dòng này
-            existing.UpdatedAt = DateTime.UtcNow;
+            // ✅ Tạo entity Vehicle mới để update
+            var vehicleToUpdate = new Vehicle
+            {
+                Id = id,
+                PlateNumber = request.PlateNumber,
+                Make = request.Make,
+                Model = request.Model,
+                ModelYear = request.ModelYear,
+                Color = request.Color,
+                BatteryCapacityKwh = request.BatteryCapacityKwh,
+                RangeKm = request.RangeKm,
+                TelematicsDeviceId = request.TelematicsDeviceId,
+                Status = request.Status,
+                GroupId = request.GroupId,
+                UpdatedAt = DateTime.UtcNow
+            };
 
-            var updated = await _vehicleService.UpdateVehicleAsync(existing);
+            var updated = await _vehicleService.UpdateVehicleAsync(vehicleToUpdate);
             return Ok(updated);
         }
 
