@@ -19,8 +19,11 @@ namespace DataAccessLayer.DataContext
         public DbSet<CitizenIdentityCard> CitizenIdentityCards { get; set; }
 
         public DbSet<Role> Roles { get; set; }
-    
 
+        public DbSet<Vehicle> Vehicles { get; set; }
+
+        public DbSet<CoOwnershipGroup> CoOwnershipGroups { get; set; }
+        public DbSet<GroupMember> GroupMembers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -63,7 +66,34 @@ namespace DataAccessLayer.DataContext
                 .HasForeignKey<CitizenIdentityCard>(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-          
+
+            // Account 1–N CoOwnershipGroup (CreatedBy)
+            modelBuilder.Entity<CoOwnershipGroup>()
+                .HasOne(g => g.CreatedByAccount)
+                .WithMany(a => a.CreatedGroups)
+                .HasForeignKey(g => g.CreatedBy)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Account 1–N GroupMember
+            modelBuilder.Entity<GroupMember>()
+                .HasOne(gm => gm.UserAccount)
+                .WithMany(a => a.GroupMemberships)
+                .HasForeignKey(gm => gm.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CoOwnershipGroup 1–N GroupMember
+            modelBuilder.Entity<GroupMember>()
+                .HasOne(gm => gm.Group)
+                .WithMany(g => g.Members)
+                .HasForeignKey(gm => gm.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CoOwnershipGroup 1–N Vehicle
+            modelBuilder.Entity<Vehicle>()
+                .HasOne(v => v.Group)
+                .WithMany(g => g.Vehicles)
+                .HasForeignKey(v => v.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
