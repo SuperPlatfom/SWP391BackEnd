@@ -25,6 +25,12 @@ namespace DataAccessLayer.DataContext
         public DbSet<CoOwnershipGroup> CoOwnershipGroups { get; set; }
         public DbSet<GroupMember> GroupMembers { get; set; }
 
+        public DbSet<ContractTemplate> ContractTemplates { get; set; }
+        public DbSet<ContractClause> ContractClauses { get; set; }
+        public DbSet<ContractVariable> ContractVariables { get; set; }
+
+
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -94,6 +100,19 @@ namespace DataAccessLayer.DataContext
                 .WithMany(g => g.Vehicles)
                 .HasForeignKey(v => v.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ContractClause>()
+                .HasOne(c => c.Template)
+                .WithMany(t => t.Clauses)
+                .HasForeignKey(c => c.TemplateId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ContractVariable>()
+                .HasOne(v => v.Template)
+                .WithMany(t => t.Variables)
+                .HasForeignKey(v => v.TemplateId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }
