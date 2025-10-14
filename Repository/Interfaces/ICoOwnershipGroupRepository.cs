@@ -8,6 +8,7 @@ namespace Repository.Interfaces
     {
         // --- Account ---
         Task<bool> AccountExistsAsync(Guid accountId);
+        Task<Account?> GetAccountByIdAsync(Guid accountId);
 
         // --- CoOwnershipGroup ---
         Task AddGroupAsync(CoOwnershipGroup group);
@@ -16,6 +17,7 @@ namespace Repository.Interfaces
         Task<List<CoOwnershipGroup>> GetGroupsByUserAsync(Guid userId);
         Task<List<CoOwnershipGroup>> GetAllGroupsAsync();
         Task UpdateGroupAsync(CoOwnershipGroup group);
+
 
         // --- Vehicle ---
         Task<Vehicle?> GetVehicleByIdAsync(Guid vehicleId);

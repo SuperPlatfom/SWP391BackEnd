@@ -1,10 +1,11 @@
 ﻿using BusinessObject.DTOs.RequestModels;
 using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Models;
-using Microsoft.EntityFrameworkCore;
+
 using Repository.Interfaces;
 using Service.Interfaces;
-using BusinessObject.DTOs.ResponseModels;
+using System.Security.Principal;
+
 namespace Service
 {
     public class CoOwnershipService : ICoOwnershipService
@@ -18,31 +19,52 @@ namespace Service
 
         }
 
-        public async Task<CoOwnershipGroup?> GetGroupByIdAsync(Guid groupId)
+        public async Task<GroupResponseModel> GetGroupByIdAsync(Guid groupId)
         {
-            var group = await _repository.GetGroupByIdAsync(groupId);
+            var group = await _repository.GetByIdAsync(groupId);
             if (group == null)
                 throw new KeyNotFoundException($"Không tìm thấy nhóm với ID {groupId}.");
 
-            return group;
+            return new GroupResponseModel
+            {
+                Id = group.Id,
+                Name = group.Name,
+                GovernancePolicy = group.GovernancePolicy,
+                IsActive = group.IsActive,
+                Members = group.Members?.Select(m => new GroupMemberResponseModel
+                {
+                    Id = m.Id,
+                    GroupId = m.GroupId,
+                    UserId = m.UserId,
+                    RoleInGroup = m.RoleInGroup,
+                    InviteStatus = m.InviteStatus,
+                    FullName = m.UserAccount?.FullName ?? "",
+                    GroupName = m.Group?.Name ?? ""
+                }).ToList()
+            };
         }
-        public async Task<CoOwnershipGroup> UpdateGroupAsync(Guid groupId, string newName, string? newGovernancePolicy)
+        public async Task<GroupResponseModel> UpdateGroupAsync(Guid groupId, string newName, string? newGovernancePolicy)
         {
             var group = await _repository.GetByIdAsync(groupId);
             if (group == null)
                 throw new KeyNotFoundException("Không tìm thấy nhóm để cập nhật.");
 
-            // Cập nhật thông tin nhóm
+            // Chỉ cập nhật các trường trong CoOwnershipGroup
             group.Name = newName;
             if (!string.IsNullOrWhiteSpace(newGovernancePolicy))
                 group.GovernancePolicy = newGovernancePolicy;
 
             group.UpdatedAt = DateTime.UtcNow;
-
-            // Lưu thay đổi
             await _repository.UpdateGroupAsync(group);
 
-            return group;
+            // Trả về DTO chỉ chứa CoOwnershipGroup
+            return new GroupResponseModel
+            {
+                Id = group.Id,
+                Name = group.Name,
+                GovernancePolicy = group.GovernancePolicy,
+                IsActive = group.IsActive
+            };
         }
 
         public async Task<GroupResponseModel> CreateGroupAsync(CreateGroupRequest request)
@@ -59,6 +81,7 @@ namespace Service
                 Name = request.Name,
                 CreatedBy = request.CreatedBy,
                 GovernancePolicy = request.GovernancePolicy,
+                IsActive= true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -101,19 +124,23 @@ namespace Service
                 await transaction.CommitAsync();
 
                 // --- Build ResponseModel ---
+                var account = await _repository.GetAccountByIdAsync(request.CreatedBy);
                 var response = new GroupResponseModel
                 {
                     Id = group.Id,
                     Name = group.Name,
                     CreatedBy = group.CreatedBy,
                     GovernancePolicy = group.GovernancePolicy,
+                   
                     Members = new List<GroupMemberResponseModel>
             {
                 new GroupMemberResponseModel
                 {
+                    Id = ownerMember.Id,
+                    GroupId = ownerMember.GroupId,
                     UserId = request.CreatedBy,
                     RoleInGroup = "OWNER",
-                    FullName = "" // nếu muốn, có thể query Account để lấy tên
+                    FullName = account?.FullName ?? ""
                 }
             },
                     Vehicles = request.VehicleId != null
@@ -169,9 +196,19 @@ namespace Service
 
         
 
-        public async Task<List<CoOwnershipGroup>> GetGroupsByUserAsync(Guid userId)
+        public async Task<List<GroupBasicReponseModel>> GetGroupsByUserAsync(Guid userId)
         {
-            return await _repository.GetGroupsByUserAsync(userId);
+            var groups = await _repository.GetGroupsByUserAsync(userId);
+
+            return groups.Select(g => new GroupBasicReponseModel
+            {
+                Id = g.Id,
+                Name = g.Name,
+                CreatedBy = g.CreatedBy,
+                GovernancePolicy = g.GovernancePolicy,
+                IsActive = g.IsActive
+              
+            }).ToList();
         }
 
        
@@ -183,14 +220,29 @@ namespace Service
             return groups.Select(g => new GroupResponseModel
             {
                 Id = g.Id,
-               Name = g.Name,
-               IsActive = g.IsActive,
-                Vehicles = g.Vehicles.Select(v => new VehicleResponseModel
+                Name = g.Name,
+                CreatedBy = g.CreatedBy,
+                IsActive = g.IsActive,
+                Members = g.Members.Select(m => new GroupMemberResponseModel
+                {
+                    Id = m.Id,
+                    GroupId = m.GroupId,
+                    UserId = m.UserId,
+                    RoleInGroup = m.RoleInGroup,
+                    InviteStatus = m.InviteStatus,
+                    FullName = m.UserAccount?.FullName ?? ""
+                }).ToList(),
+                Vehicles = g.Vehicles.Select(v => new VehicleResponseModel 
                 {
                     Id = v.Id,
+                    PlateNumber = v.PlateNumber,
                     Make = v.Make,
                     Model = v.Model,
-                    PlateNumber = v.PlateNumber
+                    ModelYear = v.ModelYear,
+                    BatteryCapacityKwh = v.BatteryCapacityKwh,
+                    RangeKm = v.RangeKm,
+                    TelematicsDeviceId = v.TelematicsDeviceId,
+                    Status = v.Status
                 }).ToList()
             }).ToList();
         }
