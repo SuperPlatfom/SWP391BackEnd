@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
 using SWP391BackEnd.Helpers;
+using Service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +63,8 @@ builder.Services.AddScoped<ICoOwnershipGroupRepository, CoOwnershipGroupReposito
 builder.Services.AddScoped<ICoOwnershipService, CoOwnershipService>();
 builder.Services.AddScoped<IGroupMemberRepository, GroupMemberRepository>();
 builder.Services.AddScoped<iGroupMemberService, GroupMemberService>();
+builder.Services.AddScoped<IContractTemplateRepository, ContractTemplateRepository>();
+builder.Services.AddScoped<IContractTemplateService, ContractTemplateService>();
 
 
 
