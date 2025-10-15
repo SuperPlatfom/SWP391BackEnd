@@ -31,10 +31,35 @@ namespace BusinessObject.DTOs.RequestModels
         public string InputType { get; set; }
         public bool IsRequired { get; set; }
         public string? DefaultValue { get; set; }
+
     }
 
     public class UpdateContentDto
     {
         public string Content { get; set; }
+    }
+    public class UpdateTemplateDto
+    {
+        public string Name { get; set; } = default!;
+        public string? Description { get; set; }
+        public string? Version { get; set; }
+        public int MinCoOwners { get; set; } = 2;
+        public int MaxCoOwners { get; set; } = 5;
+        public bool IsActive { get; set; } = true;
+    }
+    public class UpdateClauseDto
+    {
+        public string Title { get; set; } = default!;
+        public string Body { get; set; } = default!;
+        public int OrderIndex { get; set; }
+        public bool IsMandatory { get; set; }
+    }
+
+    public class UpdateVariableDto
+    {
+        public string DisplayLabel { get; set; } = default!;
+        public string InputType { get; set; } = "text";
+        public bool IsRequired { get; set; }
+        public string? DefaultValue { get; set; }
     }
 }

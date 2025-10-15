@@ -21,7 +21,7 @@ namespace BusinessObject.Models
         public string Version { get; set; }
 
         [Column("content")]
-        public string Content { get; set; } // HTML Template (chứa {{placeholder}})
+        public string Content { get; set; } 
 
         [Column("min_coowners")]
         public int MinCoOwners { get; set; } = 2;
