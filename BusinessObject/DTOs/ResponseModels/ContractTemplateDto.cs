@@ -26,15 +26,18 @@ namespace BusinessObject.DTOs.ResponseModels
             MinCoOwners = t.MinCoOwners;
             MaxCoOwners = t.MaxCoOwners;
 
-            Clauses = t.Clauses.Select(c => new ContractClauseDto
-            {
-                Id = c.Id,
-                Title = c.Title,
-                Body = c.Body,
-                OrderIndex = c.OrderIndex,
-                IsMandatory = c.IsMandatory,
-                CreatedAt = c.CreatedAt
-            }).ToList();
+            Clauses = t.Clauses
+                .OrderBy(c => c.OrderIndex)
+                .Select(c => new ContractClauseDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Body = c.Body,
+                    OrderIndex = c.OrderIndex,
+                    IsMandatory = c.IsMandatory,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt
+                }).ToList();
 
             Variables = t.Variables.Select(v => new ContractVariableDto
             {
@@ -43,7 +46,9 @@ namespace BusinessObject.DTOs.ResponseModels
                 DisplayLabel = v.DisplayLabel,
                 InputType = v.InputType,
                 IsRequired = v.IsRequired,
-                DefaultValue = v.DefaultValue
+                DefaultValue = v.DefaultValue,
+                CreatedAt = v.CreatedAt,
+                UpdatedAt = v.UpdatedAt
             }).ToList();
         }
     }
@@ -56,6 +61,7 @@ namespace BusinessObject.DTOs.ResponseModels
         public int OrderIndex { get; set; }
         public bool IsMandatory { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
 
         [JsonIgnore] 
         public ContractTemplateDto? Template { get; set; }
@@ -69,8 +75,26 @@ namespace BusinessObject.DTOs.ResponseModels
         public string InputType { get; set; }
         public bool IsRequired { get; set; }
         public string? DefaultValue { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
 
         [JsonIgnore] 
         public ContractTemplateDto? Template { get; set; }
     }
+
+    public class ContractTemplateSummaryDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = default!;
+        public string? Description { get; set; }
+        public string Version { get; set; } = "1.0";
+        public bool IsActive { get; set; }
+        public int MinCoOwners { get; set; }
+        public int MaxCoOwners { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+    }
+
+
+
 }

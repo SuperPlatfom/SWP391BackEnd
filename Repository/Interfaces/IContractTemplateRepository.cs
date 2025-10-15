@@ -12,5 +12,15 @@ namespace Repository.Interfaces
 
         Task AddClauseAsync(ContractClause clause);
         Task AddVariableAsync(ContractVariable variable);
+
+        Task<List<ContractClause>> GetClausesByTemplateIdAsync(Guid templateId);
+        Task<ContractClause?> GetClauseByIdAsync(Guid clauseId);
+        void UpdateClause(ContractClause clause);
+        void DeleteClause(ContractClause clause);
+        Task<List<ContractVariable>> GetVariablesByTemplateIdAsync(Guid templateId);
+        Task<ContractVariable?> GetVariableByIdAsync(Guid variableId);
+        void UpdateVariable(ContractVariable variable);
+        void DeleteVariable(ContractVariable variable);
+        Task<int> SaveChangesAsync();
     }
 }

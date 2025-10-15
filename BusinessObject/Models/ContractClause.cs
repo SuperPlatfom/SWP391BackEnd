@@ -17,7 +17,7 @@ namespace BusinessObject.Models
         public string Title { get; set; }
 
         [Column("body")]
-        public string Body { get; set; } // có thể chứa {{placeholder}}
+        public string Body { get; set; } 
 
         [Column("order_index")]
         public int OrderIndex { get; set; }
@@ -27,6 +27,9 @@ namespace BusinessObject.Models
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Column("updated_at")]
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public ContractTemplate Template { get; set; }
     }

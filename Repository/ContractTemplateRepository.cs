@@ -16,8 +16,8 @@ namespace Repository.Repositories
         public async Task<IEnumerable<ContractTemplate>> GetAllAsync()
         {
             return await _context.ContractTemplates
-                .Include(t => t.Clauses)
-                .Include(t => t.Variables)
+                .AsNoTracking()
+                .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
         }
 
@@ -63,5 +63,58 @@ namespace Repository.Repositories
             _context.ContractVariables.Add(variable);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<ContractClause>> GetClausesByTemplateIdAsync(Guid templateId)
+        {
+            return await _context.ContractClauses
+                .Where(c => c.TemplateId == templateId)
+                .OrderBy(c => c.OrderIndex)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<ContractClause?> GetClauseByIdAsync(Guid clauseId)
+        {
+            return await _context.ContractClauses.FindAsync(clauseId);
+        }
+
+        public void UpdateClause(ContractClause clause)
+        {
+            _context.ContractClauses.Update(clause);
+        }
+
+        public void DeleteClause(ContractClause clause)
+        {
+            _context.ContractClauses.Remove(clause);
+        }
+
+        public async Task<List<ContractVariable>> GetVariablesByTemplateIdAsync(Guid templateId)
+        {
+            return await _context.ContractVariables
+                .Where(v => v.TemplateId == templateId)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<ContractVariable?> GetVariableByIdAsync(Guid variableId)
+        {
+            return await _context.ContractVariables.FindAsync(variableId);
+        }
+
+        public void UpdateVariable(ContractVariable variable)
+        {
+            _context.ContractVariables.Update(variable);
+        }
+
+        public void DeleteVariable(ContractVariable variable)
+        {
+            _context.ContractVariables.Remove(variable);
+        }
+
+        public async Task<int> SaveChangesAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
+
     }
 }
