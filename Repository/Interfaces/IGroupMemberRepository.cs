@@ -17,6 +17,7 @@ namespace Repository.Interfaces
 
         Task<List<GroupMember>> GetAcceptedMembersInGroupAsync(Guid groupId);
 
+        Task<GroupMember?> GetByUserAndGroupAsync(Guid userId, Guid groupId);
         Task<bool> DeleteMemberAsync(Guid groupId, Guid memberId);
         Task<bool> IsGroupEmptyAsync(Guid groupId);
         Task<bool> DeleteGroupAsync(Guid groupId);

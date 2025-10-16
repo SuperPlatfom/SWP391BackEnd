@@ -4,6 +4,7 @@ using BusinessObject.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,13 +12,15 @@ namespace Service.Interfaces
 {
     public interface ICoOwnershipService
     {
-        Task<GroupResponseModel> CreateGroupAsync(CreateGroupRequest request);
+        Task<GroupResponseModel> CreateGroupAsync(CreateGroupRequest request, Guid userId);
         Task<GroupMember> InviteMemberAsync(InviteRequest request);
-        Task<List<GroupBasicReponseModel>> GetGroupsByUserAsync(Guid userId);
+        Task<List<BasicGroupReponseModel>> GetGroupsByCurrentUserAsync(ClaimsPrincipal user);
 
         Task<GroupResponseModel> GetGroupByIdAsync(Guid groupId);
-        Task<GroupResponseModel> UpdateGroupAsync(Guid groupId, string newName, string? newGovernancePolicy);
+        Task<GroupResponseModel> UpdateGroupAsync(Guid groupId, string newName);
         Task<List<GroupResponseModel>> GetAllGroupsAsync();
-       
+        Task AttachVehicleToGroupAsync(Guid userId, Guid groupId, Guid vehicleId);
+        Task DetachVehicleFromGroupAsync(Guid userId, Guid groupId, Guid vehicleId);
+        Task<List<VehicleResponseModel>> GetVehiclesByGroupIdAsync(Guid groupId);
     }
 }

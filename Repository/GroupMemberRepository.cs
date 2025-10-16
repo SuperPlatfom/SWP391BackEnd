@@ -91,5 +91,11 @@ namespace Repository
             return true;
         }
 
+
+        public async Task<GroupMember?> GetByUserAndGroupAsync(Guid userId, Guid groupId)
+        {
+            return await _context.GroupMembers
+                .FirstOrDefaultAsync(gm => gm.UserId == userId && gm.GroupId == groupId && gm.IsActive);
+        }
     }
 }
