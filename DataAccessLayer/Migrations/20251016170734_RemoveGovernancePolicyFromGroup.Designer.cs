@@ -3,6 +3,7 @@ using System;
 using DataAccessLayer.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016170734_RemoveGovernancePolicyFromGroup")]
+    partial class RemoveGovernancePolicyFromGroup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -345,37 +348,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("contract_variable");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.GroupInvite", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expires_at");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("group_id");
-
-                    b.Property<string>("InviteCode")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("invite_code");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
-
-                    b.ToTable("group_invite");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.GroupMember", b =>
                 {
                     b.Property<Guid>("Id")
@@ -574,17 +546,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Template");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.GroupInvite", b =>
-                {
-                    b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
-                        .WithMany("Invites")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Group");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.GroupMember", b =>
                 {
                     b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
@@ -635,8 +596,6 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.CoOwnershipGroup", b =>
                 {
-                    b.Navigation("Invites");
-
                     b.Navigation("Members");
 
                     b.Navigation("Vehicles");

@@ -1,5 +1,4 @@
 ﻿using BusinessObject.DTOs.RequestModels;
-using BusinessObject.DTOs.RequestModels;
 using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +16,8 @@ namespace Service
         {
             _repository = repository;
         }
+
+
         public async Task<GroupMember> InviteMemberAsync(InviteRequest request)
         {
             var exists = await _repository.GroupMemberExistsAsync(request.GroupId, request.UserId);
@@ -74,10 +75,10 @@ namespace Service
             // ✅ Map sang ResponseModel để tránh vòng lặp và trả thông tin rõ ràng
             return members.Select(m => new GroupMemberResponseModel
             {
-                UserId = m.UserAccount.Id,
+
                 FullName = m.UserAccount.FullName ?? "Unknown",  // tuỳ vào field trong Account (ví dụ: FullName, Username,…)
-                GroupId = m.GroupId,
-                GroupName = m.Group?.Name ?? "Unknown Group",
+
+
                 RoleInGroup = m.RoleInGroup,
                 InviteStatus = m.InviteStatus,
             }).ToList();

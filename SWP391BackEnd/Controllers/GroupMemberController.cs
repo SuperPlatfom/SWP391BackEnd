@@ -16,7 +16,7 @@ namespace SWP391BackEnd.Controllers
             _service = service;
         }
 
-        [HttpPost("invite")]
+      /*  [HttpPost("invite")]
         public async Task<IActionResult> InviteMember([FromQuery] InviteRequest request)
         {
             var member = await _service.InviteMemberAsync(request);
@@ -30,14 +30,14 @@ namespace SWP391BackEnd.Controllers
             return Ok(new { message = "Tham gia nhóm thành công", result });
         }
 
-        [HttpGet("pending-invites/{userId}")]
-        public async Task<IActionResult> GetPendingInvites(Guid userId)
-        {
-            var invites = await _service.GetPendingInvitesAsync(userId);
-            return Ok(invites);
-        }
-
-        [HttpGet("get-all-members-in-group/{groupId}")]
+       [HttpGet("pending-invites/{userId}")]
+       public async Task<IActionResult> GetPendingInvites(Guid userId)
+       {
+           var invites = await _service.GetPendingInvitesAsync(userId);
+          return Ok(invites);
+     }
+    */
+            [HttpGet("get-all-members-in-group/{groupId}")]
         public async Task<IActionResult> GetAllMembersInGroup(Guid groupId)
         {
             var members = await _service.GetAllMembersInGroupAsync(groupId);

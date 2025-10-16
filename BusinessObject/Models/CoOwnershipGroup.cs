@@ -23,8 +23,6 @@ namespace BusinessObject.Models
 
         public Account CreatedByAccount { get; set; } = null!;
 
-        [Column("governance_policy")]
-        public string? GovernancePolicy { get; set; } // JSON: quy tắc biểu quyết, quorum, chia phí,...
 
         [Column("is_active")]
         public bool IsActive { get; set; } = true;
@@ -40,6 +38,8 @@ namespace BusinessObject.Models
 
         // Quan hệ 1-N với Vehicle
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
-        
+
+        // Quan hệ 1-N với group_invite
+        public ICollection<GroupInvite> Invites { get; set; } = new List<GroupInvite>();
     }
 }

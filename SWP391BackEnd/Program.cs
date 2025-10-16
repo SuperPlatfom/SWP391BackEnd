@@ -65,8 +65,8 @@ builder.Services.AddScoped<IGroupMemberRepository, GroupMemberRepository>();
 builder.Services.AddScoped<iGroupMemberService, GroupMemberService>();
 builder.Services.AddScoped<IContractTemplateRepository, ContractTemplateRepository>();
 builder.Services.AddScoped<IContractTemplateService, ContractTemplateService>();
-
-
+builder.Services.AddScoped<IGroupInviteRepository, GroupInviteRepository>();
+builder.Services.AddScoped<IGroupInviteService, GroupInviteService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

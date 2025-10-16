@@ -24,7 +24,7 @@ namespace DataAccessLayer.DataContext
 
         public DbSet<CoOwnershipGroup> CoOwnershipGroups { get; set; }
         public DbSet<GroupMember> GroupMembers { get; set; }
-
+        public DbSet<GroupInvite> GroupInvites { get; set; } = null!;
         public DbSet<ContractTemplate> ContractTemplates { get; set; }
         public DbSet<ContractClause> ContractClauses { get; set; }
         public DbSet<ContractVariable> ContractVariables { get; set; }

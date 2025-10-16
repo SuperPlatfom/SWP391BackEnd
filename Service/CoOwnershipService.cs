@@ -1,9 +1,10 @@
 ﻿using BusinessObject.DTOs.RequestModels;
 using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Models;
-
+using Microsoft.AspNetCore.Http;
 using Repository.Interfaces;
 using Service.Interfaces;
+using System.Security.Claims;
 using System.Security.Principal;
 
 namespace Service
@@ -12,10 +13,12 @@ namespace Service
     {
         private readonly ICoOwnershipGroupRepository _repository;
         private readonly IGroupMemberRepository _memberRepository;
-        public CoOwnershipService(ICoOwnershipGroupRepository repository, IGroupMemberRepository memberRepository)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public CoOwnershipService(ICoOwnershipGroupRepository repository, IGroupMemberRepository memberRepository, IHttpContextAccessor httpContextAccessor)
         {
             _repository = repository;
             _memberRepository = memberRepository;
+            _httpContextAccessor = httpContextAccessor;
 
         }
 
@@ -29,59 +32,98 @@ namespace Service
             {
                 Id = group.Id,
                 Name = group.Name,
-                GovernancePolicy = group.GovernancePolicy,
+                CreatedByName = group.CreatedByAccount?.FullName ?? "",
                 IsActive = group.IsActive,
+
+                // Danh sách thành viên rút gọn
                 Members = group.Members?.Select(m => new GroupMemberResponseModel
                 {
-                    Id = m.Id,
-                    GroupId = m.GroupId,
-                    UserId = m.UserId,
-                    RoleInGroup = m.RoleInGroup,
-                    InviteStatus = m.InviteStatus,
                     FullName = m.UserAccount?.FullName ?? "",
-                    GroupName = m.Group?.Name ?? ""
-                }).ToList()
+                    RoleInGroup = m.RoleInGroup
+                }).ToList() ?? new List<GroupMemberResponseModel>(),
+
+                // Danh sách vehicle
+                Vehicles = group.Vehicles?.Select(v => new VehicleResponseModel
+                {
+                    Id = v.Id,
+                    PlateNumber = v.PlateNumber,
+                    Make = v.Make,
+                    Model = v.Model,
+                    ModelYear = v.ModelYear,
+                    Color = v.Color,
+                    Status = v.Status,
+                    BatteryCapacityKwh = v.BatteryCapacityKwh,
+                    TelematicsDeviceId = v.TelematicsDeviceId,
+                    RangeKm = v.RangeKm,
+                    GroupId = v.GroupId
+                }).ToList() ?? new List<VehicleResponseModel>()
             };
         }
-        public async Task<GroupResponseModel> UpdateGroupAsync(Guid groupId, string newName, string? newGovernancePolicy)
+        public async Task<GroupResponseModel> UpdateGroupAsync(Guid groupId, string newName)
         {
+            // 1️ Tìm group theo ID
             var group = await _repository.GetByIdAsync(groupId);
             if (group == null)
                 throw new KeyNotFoundException("Không tìm thấy nhóm để cập nhật.");
 
-            // Chỉ cập nhật các trường trong CoOwnershipGroup
-            group.Name = newName;
-            if (!string.IsNullOrWhiteSpace(newGovernancePolicy))
-                group.GovernancePolicy = newGovernancePolicy;
+            // 2️ Kiểm tra tên hợp lệ
+            if (string.IsNullOrWhiteSpace(newName))
+                throw new ArgumentException("Tên nhóm không được để trống.");
 
+
+
+            // 3️ Cập nhật duy nhất trường Name
+            group.Name = newName.Trim();
             group.UpdatedAt = DateTime.UtcNow;
+
+            // 4️ Lưu thay đổi
             await _repository.UpdateGroupAsync(group);
 
-            // Trả về DTO chỉ chứa CoOwnershipGroup
+            // 5️⃣ Trả về model phản hồi chỉ chứa thông tin cơ bản
             return new GroupResponseModel
             {
                 Id = group.Id,
                 Name = group.Name,
-                GovernancePolicy = group.GovernancePolicy,
                 IsActive = group.IsActive
             };
         }
+        public async Task<List<VehicleResponseModel>> GetVehiclesByGroupIdAsync(Guid groupId)
+        {
+            var group = await _repository.GetByIdAsync(groupId);
+            if (group == null)
+                throw new KeyNotFoundException($"Không tìm thấy nhóm với ID {groupId}.");
 
-        public async Task<GroupResponseModel> CreateGroupAsync(CreateGroupRequest request)
+            return group.Vehicles?
+                .Select(v => new VehicleResponseModel
+                {
+                    Id = v.Id,
+                    PlateNumber = v.PlateNumber,
+                    Make = v.Make,
+                    Model = v.Model,
+                    ModelYear = v.ModelYear,
+                    Color = v.Color,
+                    Status = v.Status,
+                    BatteryCapacityKwh = v.BatteryCapacityKwh,
+                    TelematicsDeviceId = v.TelematicsDeviceId,
+                    RangeKm = v.RangeKm,
+                    GroupId = v.GroupId
+                }).ToList() ?? new List<VehicleResponseModel>();
+        }
+
+        public async Task<GroupResponseModel> CreateGroupAsync(CreateGroupRequest request, Guid userId)
         {
             // ✅ Kiểm tra account tồn tại
-            var accountExists = await _repository.AccountExistsAsync(request.CreatedBy);
+            var accountExists = await _repository.AccountExistsAsync(userId);
             if (!accountExists)
-                throw new KeyNotFoundException($"Account ID {request.CreatedBy} không tồn tại.");
+                throw new KeyNotFoundException($"Account ID {userId} không tồn tại.");
 
-            // Tạo nhóm mới
+            // ✅ Tạo group mới
             var group = new CoOwnershipGroup
             {
                 Id = Guid.NewGuid(),
                 Name = request.Name,
-                CreatedBy = request.CreatedBy,
-                GovernancePolicy = request.GovernancePolicy,
-                IsActive= true,
+                CreatedBy = userId,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -90,28 +132,14 @@ namespace Service
 
             try
             {
-                // Thêm group vào DB
                 await _repository.AddGroupAsync(group);
 
-
-                Vehicle? vehicle = null;
-                // Nếu có VehicleId, gán về nhóm
-                if (request.VehicleId != null)
-                {
-                     vehicle = await _repository.GetVehicleByIdAsync(request.VehicleId.Value);
-                    if (vehicle != null)
-                    {
-                        vehicle.GroupId = group.Id;
-                        await _repository.UpdateVehicleAsync(vehicle);
-                    }
-                }
-
-                // Thêm OWNER vào group
+                // ✅ Thêm OWNER vào group
                 var ownerMember = new GroupMember
                 {
                     Id = Guid.NewGuid(),
                     GroupId = group.Id,
-                    UserId = request.CreatedBy,
+                    UserId = userId,
                     RoleInGroup = "OWNER",
                     InviteStatus = "ACCEPTED",
                     JoinDate = DateTime.UtcNow,
@@ -123,44 +151,25 @@ namespace Service
 
                 await transaction.CommitAsync();
 
-                // --- Build ResponseModel ---
-                var account = await _repository.GetAccountByIdAsync(request.CreatedBy);
+                var account = await _repository.GetAccountByIdAsync(userId);
+
+                // ✅ Trả về dữ liệu nhóm
                 var response = new GroupResponseModel
                 {
                     Id = group.Id,
                     Name = group.Name,
-                    CreatedBy = group.CreatedBy,
-                    GovernancePolicy = group.GovernancePolicy,
-                   
+                    IsActive = group.IsActive,
                     Members = new List<GroupMemberResponseModel>
             {
                 new GroupMemberResponseModel
                 {
-                    Id = ownerMember.Id,
-                    GroupId = ownerMember.GroupId,
-                    UserId = request.CreatedBy,
+
+
                     RoleInGroup = "OWNER",
                     FullName = account?.FullName ?? ""
                 }
             },
-                    Vehicles = request.VehicleId != null
-                        ? new List<VehicleResponseModel>
-                        {
-                    new VehicleResponseModel
-                    {
-                        Id = request.VehicleId.Value,
-                        PlateNumber = vehicle?.PlateNumber,
-                        Make = vehicle?.Make,
-                        Model = vehicle?.Model,
-                        ModelYear = vehicle?.ModelYear ?? 0,
-                        Color = vehicle?.Color,
-                        BatteryCapacityKwh = vehicle?.BatteryCapacityKwh ?? 0,
-                        RangeKm = vehicle?.RangeKm ?? 0,
-                        TelematicsDeviceId = vehicle?.TelematicsDeviceId,
-                        Status = vehicle?.Status
-                    }
-                        }
-                        : new List<VehicleResponseModel>()
+                    Vehicles = new List<VehicleResponseModel>() // mặc định rỗng
                 };
 
                 return response;
@@ -170,6 +179,59 @@ namespace Service
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+
+        public async Task AttachVehicleToGroupAsync(Guid userId, Guid groupId, Guid vehicleId)
+        {
+            // 🔹 Kiểm tra group có tồn tại
+            var group = await _repository.GetGroupByIdAsync(groupId);
+            if (group == null)
+                throw new KeyNotFoundException("Nhóm không tồn tại.");
+
+            // 🔹 Kiểm tra user có phải OWNER trong group không
+            var member = await _memberRepository.GetGroupMemberAsync(groupId, userId);
+            if (member == null || member.RoleInGroup != "OWNER")
+                throw new UnauthorizedAccessException("Chỉ chủ nhóm (OWNER) mới được phép gắn xe vào nhóm.");
+
+            // 🔹 Kiểm tra vehicle tồn tại
+            var vehicle = await _repository.GetVehicleByIdAsync(vehicleId);
+            if (vehicle == null)
+                throw new KeyNotFoundException("Xe không tồn tại.");
+
+            // 🔹 Kiểm tra xe đã thuộc nhóm khác chưa
+            if (vehicle.GroupId != null && vehicle.GroupId != groupId)
+                throw new InvalidOperationException("Xe này đã thuộc một nhóm khác.");
+
+            // 🔹 Gán xe vào nhóm
+            vehicle.GroupId = groupId;
+            await _repository.UpdateVehicleAsync(vehicle);
+        }
+
+        public async Task DetachVehicleFromGroupAsync(Guid userId, Guid groupId, Guid vehicleId)
+        {
+            // 🔹 Kiểm tra group có tồn tại
+            var group = await _repository.GetGroupByIdAsync(groupId);
+            if (group == null)
+                throw new KeyNotFoundException("Nhóm không tồn tại.");
+
+            // 🔹 Kiểm tra user có phải OWNER trong group không
+            var member = await _memberRepository.GetGroupMemberAsync(groupId, userId);
+            if (member == null || member.RoleInGroup != "OWNER")
+                throw new UnauthorizedAccessException("Chỉ chủ nhóm (OWNER) mới được phép gỡ xe khỏi nhóm.");
+
+            // 🔹 Kiểm tra vehicle
+            var vehicle = await _repository.GetVehicleByIdAsync(vehicleId);
+            if (vehicle == null)
+                throw new KeyNotFoundException("Xe không tồn tại.");
+
+            // 🔹 Kiểm tra xe có thuộc nhóm hiện tại không
+            if (vehicle.GroupId != groupId)
+                throw new InvalidOperationException("Xe này không thuộc nhóm này.");
+
+            // 🔹 Gỡ liên kết
+            vehicle.GroupId = null;
+            await _repository.UpdateVehicleAsync(vehicle);
         }
 
         public async Task<GroupMember> InviteMemberAsync(InviteRequest request)
@@ -194,24 +256,39 @@ namespace Service
             return member;
         }
 
-        
 
-        public async Task<List<GroupBasicReponseModel>> GetGroupsByUserAsync(Guid userId)
+
+        public async Task<List<BasicGroupReponseModel>> GetGroupsByCurrentUserAsync(ClaimsPrincipal user)
+{
+    if (user == null || !user.Identity?.IsAuthenticated == true)
+        throw new UnauthorizedAccessException("Bạn cần đăng nhập.");
+
+    var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userIdStr))
+        throw new UnauthorizedAccessException("Không tìm thấy UserId.");
+
+    var userId = Guid.Parse(userIdStr);
+
+    var groups = await _repository.GetGroupsByUserAsync(userId);
+
+    var result = new List<BasicGroupReponseModel>();
+    foreach (var g in groups)
+    {
+        var owner = await _repository.GetAccountByIdAsync(g.CreatedBy);
+        result.Add(new BasicGroupReponseModel
         {
-            var groups = await _repository.GetGroupsByUserAsync(userId);
+            Id = g.Id,
+            Name = g.Name,
+           
+            CreatedByName = owner?.FullName ?? "Unknown",
+            IsActive = g.IsActive
+        });
+    }
 
-            return groups.Select(g => new GroupBasicReponseModel
-            {
-                Id = g.Id,
-                Name = g.Name,
-                CreatedBy = g.CreatedBy,
-                GovernancePolicy = g.GovernancePolicy,
-                IsActive = g.IsActive
-              
-            }).ToList();
-        }
+    return result;
+}
 
-       
+
 
         public async Task<List<GroupResponseModel>> GetAllGroupsAsync()
         {
@@ -221,13 +298,11 @@ namespace Service
             {
                 Id = g.Id,
                 Name = g.Name,
-                CreatedBy = g.CreatedBy,
+                CreatedByName = g.CreatedByAccount?.FullName ?? "",
                 IsActive = g.IsActive,
                 Members = g.Members.Select(m => new GroupMemberResponseModel
                 {
-                    Id = m.Id,
-                    GroupId = m.GroupId,
-                    UserId = m.UserId,
+   
                     RoleInGroup = m.RoleInGroup,
                     InviteStatus = m.InviteStatus,
                     FullName = m.UserAccount?.FullName ?? ""
