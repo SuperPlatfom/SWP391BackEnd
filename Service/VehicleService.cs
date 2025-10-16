@@ -135,6 +135,7 @@ namespace Service
                 ModelYear = v.ModelYear,
                 Color = v.Color,
                 PlateNumber = v.PlateNumber,
+                Status = v.Status,
                 BatteryCapacityKwh = v.BatteryCapacityKwh,
                 RangeKm = v.RangeKm,
                 TelematicsDeviceId = v.TelematicsDeviceId,
