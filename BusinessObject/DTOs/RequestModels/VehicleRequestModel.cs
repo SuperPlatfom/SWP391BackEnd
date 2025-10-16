@@ -4,6 +4,7 @@ namespace BusinessObject.RequestModels
 {
     public class VehicleRequestModel
     {
+
         [Required(ErrorMessage = "Make is required")]
         public string Make { get; set; } = string.Empty;
 
@@ -25,9 +26,6 @@ namespace BusinessObject.RequestModels
         public string? PlateNumber { get; set; }
         public string? TelematicsDeviceId { get; set; }
 
-        [Required(ErrorMessage = "Status is required")]
-        public string Status { get; set; } = "ACTIVE";
-
-        public Guid? GroupId { get; set; }
     }
+    
 }

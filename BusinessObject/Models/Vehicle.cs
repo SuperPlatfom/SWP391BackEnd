@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -48,6 +48,11 @@ namespace BusinessObject.Models
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; }
 
+        [Column("created_by")]
+        [ForeignKey(nameof(Creator))]
+        public Guid CreatedBy { get; set; }
+
+        public Account Creator { get; set; } = null!;
         [Column("group_id")]
         [ForeignKey(nameof(Group))]
         public Guid? GroupId { get; set; }

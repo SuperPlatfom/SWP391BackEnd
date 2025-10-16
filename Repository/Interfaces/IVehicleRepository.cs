@@ -14,5 +14,6 @@ namespace Repository.Interfaces
         Task<Vehicle> AddAsync(Vehicle vehicle);
         Task<Vehicle> UpdateAsync(Vehicle vehicle);
         Task<Vehicle> DeleteAsync(Guid id);
+        Task<List<Vehicle>> GetVehiclesByCreatorAsync(Guid creatorId);
     }
 }

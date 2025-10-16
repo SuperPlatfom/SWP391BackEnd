@@ -57,5 +57,12 @@ namespace Repository
             await _context.SaveChangesAsync();
             return vehicle;
         }
+
+        public async Task<List<Vehicle>> GetVehiclesByCreatorAsync(Guid creatorId)
+        {
+            return await _context.Vehicles
+                .Where(v => v.CreatedBy == creatorId)
+                .ToListAsync();
+        }
     }
 }
