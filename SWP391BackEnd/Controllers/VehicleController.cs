@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using BusinessObject.RequestModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 
@@ -34,62 +35,33 @@ namespace SWP391BackEnd.Controllers
             return Ok(vehicle);
         }
 
-        [HttpPost("create-vehicle")]
-        public async Task<IActionResult> Create([FromQuery] VehicleRequestModel request)
+        [Authorize] // ✅ yêu cầu đăng nhập (có token)
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateVehicle([FromBody] VehicleRequestModel request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var vehicle = new Vehicle
-            {
-                Id = Guid.NewGuid(),
-                PlateNumber = request.PlateNumber,
-                Make = request.Make,
-                Model = request.Model,
-                ModelYear = request.ModelYear,
-                Color = request.Color,
-                BatteryCapacityKwh = request.BatteryCapacityKwh,
-                RangeKm = request.RangeKm,
-                TelematicsDeviceId = request.TelematicsDeviceId,
-                Status = request.Status,
-                GroupId = request.GroupId, // ✅ thêm dòng này
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var user = HttpContext.User;
+            var result = await _vehicleService.CreateVehicleAsync(request, user);
 
-            var created = await _vehicleService.CreateVehicleAsync(vehicle);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            return Ok(new
+            {
+                message = "Tạo vehicle thành công",
+                data = result
+            });
         }
 
-        [HttpPut("update-vehicle-by-id")]
-        public async Task<IActionResult> Update(Guid id, [FromQuery] VehicleRequestModel request)
+        [Authorize]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] VehicleRequestModel request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var existing = await _vehicleService.GetVehicleByIdAsync(id);
-            if (existing == null)
-                return NotFound(new { message = "Vehicle not found" });
-
-            // ✅ Tạo entity Vehicle mới để update
-            var vehicleToUpdate = new Vehicle
-            {
-                Id = id,
-                PlateNumber = request.PlateNumber,
-                Make = request.Make,
-                Model = request.Model,
-                ModelYear = request.ModelYear,
-                Color = request.Color,
-                BatteryCapacityKwh = request.BatteryCapacityKwh,
-                RangeKm = request.RangeKm,
-                TelematicsDeviceId = request.TelematicsDeviceId,
-                Status = request.Status,
-                GroupId = request.GroupId,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            var updated = await _vehicleService.UpdateVehicleAsync(vehicleToUpdate);
-            return Ok(updated);
+            var user = HttpContext.User;
+            var result = await _vehicleService.UpdateVehicleAsync(id, request, user);
+            return Ok(new { message = "Cập nhật vehicle thành công", data = result });
         }
 
         [HttpDelete("delete-vehicle-by-id")]
@@ -101,6 +73,15 @@ namespace SWP391BackEnd.Controllers
 
             var deleted = await _vehicleService.DeleteVehicleAsync(id);
             return Ok(deleted);
+        }
+
+        [Authorize]
+        [HttpGet("my-vehicles")]
+        public async Task<IActionResult> GetMyVehicles()
+        {
+            var user = HttpContext.User;
+            var result = await _vehicleService.GetVehiclesByCreatorAsync(user);
+            return Ok(result);
         }
     }
 }
