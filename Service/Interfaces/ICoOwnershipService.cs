@@ -22,5 +22,7 @@ namespace Service.Interfaces
         Task AttachVehicleToGroupAsync(Guid userId, Guid groupId, Guid vehicleId);
         Task DetachVehicleFromGroupAsync(Guid userId, Guid groupId, Guid vehicleId);
         Task<List<VehicleResponseModel>> GetVehiclesByGroupIdAsync(Guid groupId);
+        Task<bool> DeactivateVehicleAsync(Guid vehicleId, Guid userId);
+        Task<bool> ActivateVehicleAsync(Guid vehicleId, Guid userId);
     }
 }
