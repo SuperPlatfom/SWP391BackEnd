@@ -122,5 +122,75 @@ namespace SWP391BackEnd.Controllers
 
 
         }
+
+
+        [HttpPut("vehicle/{vehicleId}/activate")]
+        public async Task<IActionResult> ActivateVehicle(Guid vehicleId)
+        {
+            try
+            {
+                var user = HttpContext.User;
+                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized("Không tìm thấy claim UserId trong token.");
+
+                if (!Guid.TryParse(userIdStr, out var userId))
+                    return BadRequest("UserId trong token không hợp lệ.");
+
+                await _service.ActivateVehicleAsync(vehicleId, userId);
+                return Ok(new { message = "Xe đã được kích hoạt thành công." });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
+            }
         }
+
+        
+        [HttpPut("vehicle/{vehicleId}/deactivate")]
+        public async Task<IActionResult> DeactivateVehicle(Guid vehicleId)
+        {
+            try
+            {
+                var user = HttpContext.User;
+                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr))
+                    return Unauthorized("Không tìm thấy claim UserId trong token.");
+
+                if (!Guid.TryParse(userIdStr, out var userId))
+                    return BadRequest("UserId trong token không hợp lệ.");
+
+                await _service.DeactivateVehicleAsync(vehicleId, userId);
+                return Ok(new { message = "Xe đã được hủy kích hoạt thành công." });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
+            }
+        }
+    }
     }

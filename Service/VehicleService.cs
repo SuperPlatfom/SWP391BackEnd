@@ -26,13 +26,46 @@ namespace Service
         public async Task<IEnumerable<VehicleResponseModel>> GetAllVehiclesAsync()
         {
             var vehicles = await _vehicleRepository.GetAllAsync();
-            return vehicles.Select(MapToResponseModel);
+
+            // ✅ Ánh xạ trực tiếp trong lệnh select
+            var result = vehicles.Select(v => new VehicleResponseModel
+            {
+                Id = v.Id,
+                PlateNumber = v.PlateNumber,
+                Make = v.Make,
+                Model = v.Model,
+                ModelYear = v.ModelYear,
+                Color = v.Color,
+                Status = v.Status,
+                BatteryCapacityKwh = v.BatteryCapacityKwh,
+                TelematicsDeviceId = v.TelematicsDeviceId,
+                RangeKm = v.RangeKm,
+                GroupId = v.GroupId
+            });
+
+            return result;
         }
 
         public async Task<VehicleResponseModel?> GetVehicleByIdAsync(Guid id)
         {
-            var vehicle = await _vehicleRepository.GetByIdAsync(id);
-            return vehicle == null ? null : MapToResponseModel(vehicle);
+            var v = await _vehicleRepository.GetByIdAsync(id);
+            if (v == null)
+                return null;
+
+            return new VehicleResponseModel
+            {
+                Id = v.Id,
+                PlateNumber = v.PlateNumber,
+                Make = v.Make,
+                Model = v.Model,
+                ModelYear = v.ModelYear,
+                Color = v.Color,
+                Status = v.Status,
+                BatteryCapacityKwh = v.BatteryCapacityKwh,
+                TelematicsDeviceId = v.TelematicsDeviceId,
+                RangeKm = v.RangeKm,
+                GroupId = v.GroupId
+            };
         }
 
         public async Task<VehicleResponseModel> CreateVehicleAsync(VehicleRequestModel request, ClaimsPrincipal user)
@@ -118,7 +151,7 @@ namespace Service
         }
 
 
-        public async Task<List<VehicleResponseModel>> GetVehiclesByCreatorAsync(ClaimsPrincipal user)
+        public async Task<List<VehicleOfUserResponseModel>> GetVehiclesByCreatorAsync(ClaimsPrincipal user)
         {
             var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdStr))
@@ -127,7 +160,7 @@ namespace Service
             var userId = Guid.Parse(userIdStr);
 
             var vehicles = await _vehicleRepository.GetVehiclesByCreatorAsync(userId);
-            return vehicles.Select(v => new VehicleResponseModel
+            return vehicles.Select(v => new VehicleOfUserResponseModel
             {
                 Id = v.Id,
                 Make = v.Make,
@@ -139,7 +172,7 @@ namespace Service
                 BatteryCapacityKwh = v.BatteryCapacityKwh,
                 RangeKm = v.RangeKm,
                 TelematicsDeviceId = v.TelematicsDeviceId,
-               
+               HasGroup = v.GroupId !=null,
             }).ToList();
         }
 
