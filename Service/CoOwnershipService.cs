@@ -13,12 +13,12 @@ namespace Service
     {
         private readonly ICoOwnershipGroupRepository _repository;
         private readonly IGroupMemberRepository _memberRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        public CoOwnershipService(ICoOwnershipGroupRepository repository, IGroupMemberRepository memberRepository, IHttpContextAccessor httpContextAccessor)
+        private readonly IVehicleRepository _vehicleRepository;
+        public CoOwnershipService(ICoOwnershipGroupRepository repository, IGroupMemberRepository memberRepository, IVehicleRepository vehicleRepository )
         {
             _repository = repository;
             _memberRepository = memberRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _vehicleRepository = vehicleRepository;
 
         }
 
@@ -322,6 +322,44 @@ namespace Service
             }).ToList();
         }
 
-        
+        public async Task<bool> ActivateVehicleAsync(Guid vehicleId, Guid userId)
+        {
+            var vehicle = await _repository.GetVehicleByIdAsync(vehicleId)
+                          ?? throw new KeyNotFoundException("Không tìm thấy xe.");
+
+            if (vehicle.GroupId == null)
+                throw new InvalidOperationException("Xe này chưa thuộc nhóm nào.");
+
+            // Kiểm tra user có trong nhóm và là OWNER không
+            var member = await _memberRepository.GetByUserAndGroupAsync(userId, vehicle.GroupId.Value);
+            if (member == null || member.RoleInGroup != "OWNER")
+                throw new UnauthorizedAccessException("Chỉ chủ nhóm mới có quyền kích hoạt xe.");
+
+            vehicle.Status = "ACTIVE";
+            vehicle.UpdatedAt = DateTime.UtcNow;
+            await _repository.UpdateVehicleAsync(vehicle);
+
+            return true;
+        }
+
+        public async Task<bool> DeactivateVehicleAsync(Guid vehicleId, Guid userId)
+        {
+            var vehicle = await _repository.GetVehicleByIdAsync(vehicleId)
+                          ?? throw new KeyNotFoundException("Không tìm thấy xe.");
+
+            if (vehicle.GroupId == null)
+                throw new InvalidOperationException("Xe này chưa thuộc nhóm nào.");
+
+            // Kiểm tra user có trong nhóm và là OWNER không
+            var member = await _memberRepository.GetByUserAndGroupAsync(userId, vehicle.GroupId.Value);
+            if (member == null || member.RoleInGroup != "OWNER")
+                throw new UnauthorizedAccessException("Chỉ chủ nhóm mới có quyền hủy kích hoạt xe.");
+
+            vehicle.Status = "INACTIVE";
+            vehicle.UpdatedAt = DateTime.UtcNow;
+            await _repository.UpdateVehicleAsync(vehicle);
+
+            return true;
+        }
     }
 }
