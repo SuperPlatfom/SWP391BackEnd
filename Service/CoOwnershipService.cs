@@ -303,7 +303,7 @@ namespace Service
                 IsActive = g.IsActive,
                 Members = g.Members.Select(m => new GroupMemberResponseModel
                 {
-   
+                    UserId = m.UserId,
                     RoleInGroup = m.RoleInGroup,
                     InviteStatus = m.InviteStatus,
                     FullName = m.UserAccount?.FullName ?? ""
