@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y \
     libgdiplus \
     fontconfig \
     wkhtmltopdf 
-COPY Service/Libs /app/Service/Libs
 COPY --from=build /app/publish .
+COPY Service/Libs /app/Service/Libs
+COPY Service/Libs/libwkhtmltox.so /app/libwkhtmltox.so
 ENTRYPOINT ["dotnet", "SWP391BackEnd.dll"]
