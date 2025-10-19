@@ -28,12 +28,12 @@ namespace SWP391BackEnd.Controllers
         [ProducesResponseType(typeof(ContractTemplateDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetDetail(Guid id) => Ok(await _service.GetDetailAsync(id));
 
-        [Authorize]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateTemplateDto dto)
             => CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK, "Template created", await _service.CreateAsync(dto));
 
-        [Authorize]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPut("{id}/content")]
         public async Task<IActionResult> UpdateContent(Guid id, [FromBody] UpdateContentDto dto)
         {
@@ -41,7 +41,7 @@ namespace SWP391BackEnd.Controllers
             return Ok("Updated content successfully");
         }
 
-        [Authorize]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTemplate(Guid id, [FromBody] UpdateTemplateDto dto)
         {
@@ -49,7 +49,7 @@ namespace SWP391BackEnd.Controllers
             return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK, "Template updated successfully", result);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -60,7 +60,7 @@ namespace SWP391BackEnd.Controllers
         [HttpGet("{id}/clauses")]
         public async Task<IActionResult> GetClauses(Guid id) => Ok(await _service.GetClausesAsync(id));
 
-        [Authorize]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPost("{id}/clauses")]
         public async Task<IActionResult> AddClause(Guid id, [FromBody] CreateClauseDto dto)
         {
@@ -68,7 +68,7 @@ namespace SWP391BackEnd.Controllers
             return Ok("Clause added");
         }
 
-        [Authorize]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPut("clauses/{clauseId}")]
         public async Task<IActionResult> UpdateClause(Guid clauseId, [FromBody] UpdateClauseDto dto)
         {
@@ -76,7 +76,7 @@ namespace SWP391BackEnd.Controllers
             return Ok("Clause updated");
         }
 
-        [Authorize]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpDelete("clauses/{clauseId}")]
         public async Task<IActionResult> DeleteClause(Guid clauseId)
         {
@@ -87,7 +87,7 @@ namespace SWP391BackEnd.Controllers
         [HttpGet("{id}/variables")]
         public async Task<IActionResult> GetVariables(Guid id) => Ok(await _service.GetVariablesAsync(id));
 
-        [Authorize]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPost("{id}/variables")]
         public async Task<IActionResult> AddVariable(Guid id, [FromBody] CreateVariableDto dto)
         {
@@ -95,7 +95,7 @@ namespace SWP391BackEnd.Controllers
             return Ok("Variable added");
         }
 
-        [Authorize]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpPut("variables/{variableId}")]
         public async Task<IActionResult> UpdateVariable(Guid variableId, [FromBody] UpdateVariableDto dto)
         {
@@ -103,7 +103,7 @@ namespace SWP391BackEnd.Controllers
             return Ok("Variable updated");
         }
 
-        [Authorize]
+        [Authorize(Roles = "Staff,Admin")]
         [HttpDelete("variables/{variableId}")]
         public async Task<IActionResult> DeleteVariable(Guid variableId)
         {
