@@ -45,7 +45,43 @@ namespace Service.Helpers
                 Console.WriteLine($"[PdfHelper] ⚠️ Please make sure 'Service/Libs/{libFile}' is copied to output folder or Docker image.");
             }
 
-
+            string style = @"
+<style>
+  body {
+    font-family: 'DejaVu Sans', Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  h2, h3, h4 {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid #000;
+    padding: 6px;
+    vertical-align: top;
+    word-wrap: break-word;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tfoot {
+    display: table-row-group;
+  }
+  em {
+    font-style: italic;
+  }
+  small {
+    font-size: 11px;
+  }
+</style>";
+            string fullHtml = $"<!DOCTYPE html><html><head>{style}</head><body>{html}</body></html>";
 
             var globalSettings = new GlobalSettings
             {
@@ -59,11 +95,11 @@ namespace Service.Helpers
 
             var objectSettings = new ObjectSettings
             {
-                HtmlContent = html,
+                HtmlContent = fullHtml,
                 WebSettings = new WebSettings
                 {
                     DefaultEncoding = "utf-8",
-                    EnableIntelligentShrinking = true,
+                    EnableIntelligentShrinking = false, 
                     PrintMediaType = true,
                     LoadImages = true,
                     MinimumFontSize = 10
@@ -86,7 +122,7 @@ namespace Service.Helpers
                 }
             };
 
-            var pdf = new HtmlToPdfDocument()
+            var pdf = new HtmlToPdfDocument
             {
                 GlobalSettings = globalSettings,
                 Objects = { objectSettings }
