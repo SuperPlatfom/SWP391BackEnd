@@ -33,6 +33,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     libgdiplus \
     fontconfig \
-    wkhtmltopdf
+    wkhtmltopdf 
+COPY Service/Libs /app/Service/Libs
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "SWP391BackEnd.dll"]

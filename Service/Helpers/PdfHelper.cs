@@ -19,25 +19,34 @@ namespace Service.Helpers
             else
                 libFile = "libwkhtmltox.dylib";
 
-
             var libPath = Path.Combine(AppContext.BaseDirectory, "Libs", libFile);
 
+            Console.WriteLine($"[PdfHelper] OS: {(OperatingSystem.IsWindows() ? "Windows" : OperatingSystem.IsLinux() ? "Linux" : "macOS")}");
             Console.WriteLine($"[PdfHelper] BaseDirectory: {AppContext.BaseDirectory}");
             Console.WriteLine($"[PdfHelper] Looking for native lib: {libPath}");
 
             if (File.Exists(libPath))
             {
-                Console.WriteLine($"[PdfHelper] Loading native library from: {libPath}");
-                var context = new CustomAssemblyLoadContext();
-                context.LoadUnmanagedLibrary(libPath);
+                try
+                {
+                    Console.WriteLine($"[PdfHelper] ✅ Loading native library from: {libPath}");
+                    var context = new CustomAssemblyLoadContext();
+                    context.LoadUnmanagedLibrary(libPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[PdfHelper] ❌ Error loading libwkhtmltox: {ex.Message}");
+                    throw;
+                }
             }
             else
             {
                 Console.WriteLine($"[PdfHelper] ❌ Native lib not found: {libPath}");
-                Console.WriteLine($"[PdfHelper] Please make sure Libs/libwkhtmltox.dll is copied to output folder.");
+                Console.WriteLine($"[PdfHelper] ⚠️ Please make sure 'Service/Libs/{libFile}' is copied to output folder or Docker image.");
             }
 
-            // --- giữ nguyên phần dưới ---
+
+
             var globalSettings = new GlobalSettings
             {
                 ColorMode = ColorMode.Color,
