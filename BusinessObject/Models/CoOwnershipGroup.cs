@@ -41,5 +41,6 @@ namespace BusinessObject.Models
 
         // Quan hệ 1-N với group_invite
         public ICollection<GroupInvite> Invites { get; set; } = new List<GroupInvite>();
+        public ICollection<EContract> Contracts { get; set; } = new List<EContract>();
     }
 }

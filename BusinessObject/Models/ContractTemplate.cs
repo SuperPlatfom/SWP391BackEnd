@@ -40,5 +40,7 @@ namespace BusinessObject.Models
 
         public ICollection<ContractClause> Clauses { get; set; } = new List<ContractClause>();
         public ICollection<ContractVariable> Variables { get; set; } = new List<ContractVariable>();
+        public ICollection<EContract> Contracts { get; set; } = new List<EContract>();
+
     }
 }

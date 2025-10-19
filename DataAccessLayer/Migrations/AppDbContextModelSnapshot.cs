@@ -345,6 +345,186 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("contract_variable");
                 });
 
+            modelBuilder.Entity("BusinessObject.Models.EContract", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("EffectiveFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("effective_from");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("FileUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("file_url");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<string>("ReviewNote")
+                        .HasColumnType("text")
+                        .HasColumnName("review_note");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at");
+
+                    b.Property<Guid?>("ReviewedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewed_by");
+
+                    b.Property<DateTime?>("SignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("signed_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TemplateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("template_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("TemplateId");
+
+                    b.HasIndex("VehicleId");
+
+                    b.ToTable("e_contract");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.EContractMemberShare", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ContractId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("contract_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<decimal?>("OwnershipRate")
+                        .HasColumnType("decimal(5,2)")
+                        .HasColumnName("ownership_rate");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContractId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("econtract_member_share");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.EContractSigner", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CodeExpiry")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("code_expiry");
+
+                    b.Property<Guid>("ContractId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("contract_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsSigned")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_signed");
+
+                    b.Property<string>("OtpCode")
+                        .HasColumnType("text")
+                        .HasColumnName("otp_code");
+
+                    b.Property<DateTime?>("OtpSentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("otp_sent_at");
+
+                    b.Property<DateTime?>("OtpVerifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("otp_verified_at");
+
+                    b.Property<DateTime?>("SignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("signed_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContractId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("e_contract_signer");
+                });
+
             modelBuilder.Entity("BusinessObject.Models.GroupInvite", b =>
                 {
                     b.Property<Guid>("Id")
@@ -574,6 +754,79 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Template");
                 });
 
+            modelBuilder.Entity("BusinessObject.Models.EContract", b =>
+                {
+                    b.HasOne("BusinessObject.Models.Account", "CreatedByAccount")
+                        .WithMany("CreatedContracts")
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
+                        .WithMany("Contracts")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.ContractTemplate", "Template")
+                        .WithMany("Contracts")
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.Vehicle", "Vehicle")
+                        .WithMany("Contracts")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByAccount");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Template");
+
+                    b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.EContractMemberShare", b =>
+                {
+                    b.HasOne("BusinessObject.Models.EContract", "Contract")
+                        .WithMany("MemberShares")
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.Account", "User")
+                        .WithMany("OwnershipShares")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Contract");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.EContractSigner", b =>
+                {
+                    b.HasOne("BusinessObject.Models.EContract", "Contract")
+                        .WithMany("Signers")
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.Account", "User")
+                        .WithMany("SignedContracts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Contract");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BusinessObject.Models.GroupInvite", b =>
                 {
                     b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
@@ -626,15 +879,23 @@ namespace DataAccessLayer.Migrations
                 {
                     b.Navigation("CitizenIdentityCard");
 
+                    b.Navigation("CreatedContracts");
+
                     b.Navigation("CreatedGroups");
 
                     b.Navigation("GroupMemberships");
+
+                    b.Navigation("OwnershipShares");
+
+                    b.Navigation("SignedContracts");
 
                     b.Navigation("Vehicles");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.CoOwnershipGroup", b =>
                 {
+                    b.Navigation("Contracts");
+
                     b.Navigation("Invites");
 
                     b.Navigation("Members");
@@ -646,12 +907,26 @@ namespace DataAccessLayer.Migrations
                 {
                     b.Navigation("Clauses");
 
+                    b.Navigation("Contracts");
+
                     b.Navigation("Variables");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.EContract", b =>
+                {
+                    b.Navigation("MemberShares");
+
+                    b.Navigation("Signers");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Role", b =>
                 {
                     b.Navigation("Accounts");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.Vehicle", b =>
+                {
+                    b.Navigation("Contracts");
                 });
 #pragma warning restore 612, 618
         }

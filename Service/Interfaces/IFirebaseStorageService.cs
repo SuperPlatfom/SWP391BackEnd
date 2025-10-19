@@ -10,5 +10,6 @@ namespace Service.Interfaces
     public interface IFirebaseStorageService
     {
         Task<string> UploadFileAsync(IFormFile file, string folder);
+        Task<string> UploadBytesAsync(byte[] data, string fileName, string folder = "contracts");
     }
 }

@@ -30,5 +30,9 @@ RUN dotnet publish -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 # ==================== Final stage ====================
 FROM base AS final
 WORKDIR /app
+RUN apt-get update && apt-get install -y \
+    libgdiplus \
+    fontconfig \
+    wkhtmltopdf
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "SWP391BackEnd.dll"]

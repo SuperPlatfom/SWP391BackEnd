@@ -58,5 +58,10 @@ namespace BusinessObject.Models
         public ICollection<CoOwnershipGroup> CreatedGroups { get; set; } = new List<CoOwnershipGroup>();
         public ICollection<GroupMember> GroupMemberships { get; set; } = new List<GroupMember>();
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+        public ICollection<EContract> CreatedContracts { get; set; } = new List<EContract>();
+        public ICollection<EContractSigner> SignedContracts { get; set; } = new List<EContractSigner>();
+
+        public ICollection<EContractMemberShare> OwnershipShares { get; set; } = new List<EContractMemberShare>();
+
     }
 }

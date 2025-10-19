@@ -4,10 +4,12 @@ namespace BusinessObject.DTOs.ResponseModels
 {
     public class GroupMemberResponseModel
     {
-        public String InviteStatus { get; set; }
-
-    public string RoleInGroup { get; set; }
+        public Guid? Id { get; set; }        
+        public Guid UserId { get; set; }
         public string FullName { get; set; }
+        public String InviteStatus { get; set; }
+        public string RoleInGroup { get; set; }
+        
     }
 
     public class GroupDetailResponseModel
