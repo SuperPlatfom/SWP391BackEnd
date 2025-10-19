@@ -49,5 +49,27 @@ namespace Service
 
             return $"https://storage.googleapis.com/{_bucket}/{fileName}";
         }
+        public async Task<string> UploadBytesAsync(byte[] data, string fileName, string folder = "contracts")
+        {
+            var credentialPath = _configuration["Firebase:CredentialPath"];
+            var filePath = Path.Combine(_env.ContentRootPath, credentialPath);
+            var credential = GoogleCredential.FromFile(filePath);
+            var storage = StorageClient.Create(credential);
+
+            var objectName = $"{folder}/{Guid.NewGuid()}_{fileName}";
+            using var ms = new MemoryStream(data);
+
+            await storage.UploadObjectAsync(new Google.Apis.Storage.v1.Data.Object
+            {
+                Bucket = _bucket,
+                Name = objectName
+            }, ms, new UploadObjectOptions
+            {
+                PredefinedAcl = PredefinedObjectAcl.PublicRead
+            });
+
+            return $"https://storage.googleapis.com/{_bucket}/{objectName}";
+        }
+
     }
 }

@@ -35,11 +35,12 @@ namespace Service
                 CreatedByName = group.CreatedByAccount?.FullName ?? "",
                 IsActive = group.IsActive,
 
-                // Danh sách thành viên rút gọn
                 Members = group.Members?.Select(m => new GroupMemberResponseModel
-                {
+                {                             
+                    UserId = m.UserId,
                     FullName = m.UserAccount?.FullName ?? "",
-                    RoleInGroup = m.RoleInGroup
+                    RoleInGroup = m.RoleInGroup,
+                    InviteStatus = m.InviteStatus
                 }).ToList() ?? new List<GroupMemberResponseModel>(),
 
                 // Danh sách vehicle

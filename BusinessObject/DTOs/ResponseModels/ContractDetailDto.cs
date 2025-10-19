@@ -42,8 +42,6 @@ namespace BusinessObject.DTOs.ResponseModels
 
         public PermissionDto Permissions { get; set; } = new();
 
-        public List<ClauseDto> Clauses { get; set; } = new();
-        public List<VariableDto> Variables { get; set; } = new();
     }
     public class OwnershipShareDto
     {

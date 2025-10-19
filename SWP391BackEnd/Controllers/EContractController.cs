@@ -46,7 +46,48 @@ namespace SWP391BackEnd.Controllers
             }
         }
 
-   
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateContract(Guid id, [FromBody] CreateContractRequest request)
+        {
+            try
+            {
+                var currentUserId = Guid.Parse(User.FindFirst("id")?.Value ?? throw new UnauthorizedAccessException());
+                var result = await _contractService.UpdateAsync(id, request, currentUserId);
+
+                return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                    "Cập nhật hợp đồng thành công",
+                    result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 400);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 500);
+            }
+        }
+
+        [HttpGet("my")]
+        [Authorize]
+        public async Task<IActionResult> GetMyContracts()
+        {
+            var currentUserId = Guid.Parse(User.FindFirst("id")!.Value);
+            var list = await _contractService.GetMyContractsAsync(currentUserId);
+            return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                "Lấy danh sách hợp đồng mà bạn tham gia thành công", list);
+        }
+
+
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAll([FromQuery] string? status, [FromQuery] Guid? groupId)
@@ -106,6 +147,82 @@ namespace SWP391BackEnd.Controllers
             }
         }
 
+        [HttpPost("{id}/send-otp")]
+        [Authorize]
+        public async Task<IActionResult> SendContractOtp(Guid id)
+        {
+            var userId = Guid.Parse(User.FindFirst("id")!.Value);
+            await _contractService.SendOtpAsync(id, userId);
+            return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                "Đã gửi OTP ký hợp đồng thành công", null);
+        }
+
+        [HttpPost("{id}/sign")]
+        [Authorize]
+        public async Task<IActionResult> SignContract(Guid id, [FromBody] VerifyContractOtpRequest req)
+        {
+            var userId = Guid.Parse(User.FindFirst("id")!.Value);
+            await _contractService.VerifyOtpAsync(id, userId, req.Otp);
+            return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                "Ký hợp đồng thành công", null);
+        }
+
+        [HttpPost("{id}/cancel")]
+        [Authorize]
+        public async Task<IActionResult> CancelContract(Guid id)
+        {
+            try
+            {
+                var currentUserId = Guid.Parse(User.FindFirst("id")!.Value);
+                await _contractService.CancelContractAsync(id, currentUserId);
+                return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                    "Hủy hợp đồng thành công", null);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 400);
+            }
+            catch (Exception ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 500);
+            }
+        }
+
+        [HttpPost("{id}/review")]
+        [Authorize(Roles = "Staff,Admin")]
+        public async Task<IActionResult> Review(Guid id, [FromBody] ReviewContractRequest req)
+        {
+            try
+            {
+                var staffId = Guid.Parse(User.FindFirst("id")!.Value);
+                await _contractService.ReviewContractAsync(id, staffId, req.Approve, req.Note);
+                return CustomSuccessHandler.ResponseBuilder(
+                    HttpStatusCode.OK,
+                    req.Approve ? "Phê duyệt hợp đồng thành công" : "Từ chối hợp đồng thành công",
+                    null
+                );
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 404);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 400);
+            }
+            catch (Exception ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 500);
+            }
+        }
 
     }
 }

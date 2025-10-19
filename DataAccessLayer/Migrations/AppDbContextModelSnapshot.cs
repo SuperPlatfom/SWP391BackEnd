@@ -471,6 +471,10 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTime?>("CodeExpiry")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("code_expiry");
+
                     b.Property<Guid>("ContractId")
                         .HasColumnType("uuid")
                         .HasColumnName("contract_id");

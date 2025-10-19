@@ -21,6 +21,12 @@ namespace Repository
             return entity;
         }
 
+        public async Task UpdateAsync(EContract contract)
+        {
+            _db.EContracts.Update(contract);
+            await _db.SaveChangesAsync();
+        }
+
         public async Task<EContract?> GetDetailAsync(Guid id)
         {
             return await _db.EContracts

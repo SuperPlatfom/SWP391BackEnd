@@ -74,11 +74,9 @@ namespace Service
 
             // ✅ Map sang ResponseModel để tránh vòng lặp và trả thông tin rõ ràng
             return members.Select(m => new GroupMemberResponseModel
-            {
-
-                FullName = m.UserAccount.FullName ?? "Unknown",  // tuỳ vào field trong Account (ví dụ: FullName, Username,…)
-
-
+            {                             
+                UserId = m.UserId,
+                FullName = m.UserAccount.FullName ?? "Unknown",
                 RoleInGroup = m.RoleInGroup,
                 InviteStatus = m.InviteStatus,
             }).ToList();

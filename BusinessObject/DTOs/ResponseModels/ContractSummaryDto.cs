@@ -15,5 +15,7 @@ namespace BusinessObject.DTOs.ResponseModels
         public string VehicleName { get; set; } = "";
         public string Status { get; set; } = "";
         public DateTime CreatedAt { get; set; }
+        public DateTime? EffectiveFrom { get; set; }
+        public DateTime? ExpiresAt { get; set; }
     }
 }

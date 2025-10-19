@@ -1,10 +1,14 @@
 ﻿using BusinessObject.DTOs.RequestModels;
 using BusinessObject.DTOs.ResponseModels;
+using BusinessObject.Enums;
 using BusinessObject.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Repository.Interfaces;
 using Service.Helpers;
 using Service.Interfaces;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Service
 {
@@ -19,6 +23,9 @@ namespace Service
         private readonly IAccountRepository _accountRepo;
         private readonly IGroupMemberRepository _groupMemberRepo;
         private readonly IMustacheRenderer _renderer;
+        private readonly IMailService _mailService;
+        private readonly IConfiguration _config;
+        private readonly IFirebaseStorageService _firebaseStorageService;
 
         public EContractService(
             IEContractRepository contractRepo,
@@ -29,7 +36,10 @@ namespace Service
             IContractTemplateRepository templateRepo,
             IAccountRepository accountRepo,
             IGroupMemberRepository groupMemberRepo,
-            IMustacheRenderer renderer)
+            IMustacheRenderer renderer,
+            IMailService mailService,
+            IConfiguration config,
+            IFirebaseStorageService firebaseStorageService)
         {
             _contractRepo = contractRepo;
             _signerRepo = signerRepo;
@@ -40,6 +50,9 @@ namespace Service
             _accountRepo = accountRepo;
             _groupMemberRepo = groupMemberRepo;
             _renderer = renderer;
+            _mailService = mailService;
+            _config = config;
+            _firebaseStorageService = firebaseStorageService;
         }
 
         public async Task<ContractDetailDto> CreateAsync(CreateContractRequest req, Guid currentUserId)
@@ -51,6 +64,24 @@ namespace Service
                         ?? throw new KeyNotFoundException("Vehicle not found");
             var template = await _templateRepo.GetByIdAsync(req.TemplateId)
                         ?? throw new KeyNotFoundException("Template not found");
+
+            var q = await _contractRepo.QueryAsync(); 
+            var hasExisting = await q.AnyAsync(c =>
+                c.VehicleId == req.VehicleId &&
+                c.Status != ContractStatus.Canceled &&   
+                c.Status != ContractStatus.Rejected      
+            );
+
+            if (hasExisting)
+            {
+                var label = !string.IsNullOrWhiteSpace(vehicle.PlateNumber)
+                    ? vehicle.PlateNumber
+                    : $"{vehicle.Make} {vehicle.Model}";
+
+                throw new InvalidOperationException(
+                    $"Xe {label} hiện đã có hợp đồng đang tồn tại."
+                );
+            }
 
             if (req.ExpiresAt.HasValue && req.ExpiresAt <= req.EffectiveFrom)
                 throw new ArgumentException("Expiration date must be after effective date");
@@ -154,6 +185,85 @@ namespace Service
             return await BuildDetailDto(contract.Id);
         }
 
+        public async Task<ContractDetailDto> UpdateAsync(Guid id, CreateContractRequest req, Guid currentUserId)
+        {
+
+            var contract = await _contractRepo.GetDetailAsync(id)
+                            ?? throw new KeyNotFoundException("Không tìm thấy hợp đồng");
+
+
+            if (contract.CreatedBy != currentUserId)
+                throw new UnauthorizedAccessException("Bạn không có quyền sửa hợp đồng này");
+
+
+            if (contract.Status != ContractStatus.Draft.ToString())
+                throw new InvalidOperationException("Chỉ được chỉnh sửa hợp đồng ở trạng thái DRAFT");
+
+
+            if (req.ExpiresAt.HasValue && req.ExpiresAt <= req.EffectiveFrom)
+                throw new InvalidOperationException("Ngày hết hạn phải sau ngày hiệu lực");
+
+            contract.Title = string.IsNullOrWhiteSpace(req.Title) ? contract.Title : req.Title;
+            contract.EffectiveFrom = req.EffectiveFrom;
+            contract.ExpiresAt = req.ExpiresAt;
+            contract.UpdatedAt = DateTime.UtcNow;
+
+            if (req.VehicleId != contract.VehicleId)
+                contract.VehicleId = req.VehicleId;
+
+            if (req.TemplateId != contract.TemplateId)
+                contract.TemplateId = req.TemplateId;
+
+
+            if (req.OwnershipShares?.Any() == true)
+            {
+                var total = req.OwnershipShares.Sum(x => x.Rate);
+                if (total != 100)
+                    throw new InvalidOperationException("Tổng tỷ lệ sở hữu phải bằng 100%");
+
+
+                await _shareRepo.DeleteByContractIdAsync(contract.Id);
+
+
+                var newShares = req.OwnershipShares.Select(x => new EContractMemberShare
+                {
+                    Id = Guid.NewGuid(),
+                    ContractId = contract.Id,
+                    UserId = x.UserId,
+                    OwnershipRate = x.Rate,
+                    CreatedAt = DateTime.UtcNow
+                }).ToList();
+
+                await _shareRepo.AddRangeAsync(newShares);
+            }
+
+
+            var groupMembers = await _groupMemberRepo.GetByGroupIdAsync(contract.GroupId);
+            if (groupMembers != null && groupMembers.Any())
+            {
+
+                await _signerRepo.DeleteByContractIdAsync(contract.Id);
+
+
+                var signers = groupMembers.Select(gm => new EContractSigner
+                {
+                    Id = Guid.NewGuid(),
+                    ContractId = contract.Id,
+                    UserId = gm.UserId,
+                    Status = "PENDING",
+                    CreatedAt = DateTime.UtcNow
+                }).ToList();
+
+                await _signerRepo.AddRangeAsync(signers);
+            }
+
+
+            await _contractRepo.SaveChangesAsync();
+
+
+            return await BuildDetailDto(contract.Id);
+        }
+
 
 
         public async Task<IEnumerable<ContractSummaryDto>> GetAllAsync(Guid currentUserId, string? status = null, Guid? groupId = null)
@@ -231,6 +341,17 @@ namespace Service
                 .Select(c => new { c.Title, c.Body })
                 .ToList();
 
+            string reviewedByName = "";
+            string reviewedAtText = "";
+            if (contract.ReviewedBy != null && contract.ReviewedBy != Guid.Empty)
+            {
+                var reviewer = await _accountRepo.GetByIdAsync(contract.ReviewedBy!.Value);
+                reviewedByName = reviewer?.FullName ?? "";
+                if (contract.ReviewedAt.HasValue)
+                    reviewedAtText = DateTimeHelper.ToVietnamTime(contract.ReviewedAt.Value).ToString("dd/MM/yyyy HH:mm");
+            }
+
+
             var data = new
             {
                 ContractDate = DateTimeHelper.ToVietnamTime(contract.CreatedAt).ToString("dd/MM/yyyy"),
@@ -245,40 +366,91 @@ namespace Service
                 CoOwners = coOwnerRows,
                 Clauses = clauseRows,
                 CreatedByName = contract.CreatedByAccount?.FullName ?? "",
+                ReviewedByName = reviewedByName,
+                ReviewedAtText = reviewedAtText,
+                ReviewNote = contract.ReviewNote ?? ""
             };
 
             return _renderer.Render(template.Content, data);
         }
 
-        public Task SendOtpAsync(Guid contractId, Guid signerUserId)
+        public async Task SendOtpAsync(Guid contractId, Guid signerUserId)
         {
-            // 1) validate signer thuộc contract
-            // 2) generate OTP + save to signer
-            // 3) send mail
-            // ... gọi repository signer + mail service (nếu có)
-            return Task.CompletedTask;
+            var contract = await _contractRepo.GetDetailAsync(contractId)
+                          ?? throw new KeyNotFoundException("Không tìm thấy hợp đồng");
+
+            if (contract.Status != "DRAFT" && contract.Status != "SIGNING")
+                throw new InvalidOperationException("Chỉ có thể gửi OTP khi hợp đồng ở trạng thái DRAFT hoặc SIGNING.");
+
+            var signer = contract.Signers.FirstOrDefault(s => s.UserId == signerUserId)
+                         ?? throw new UnauthorizedAccessException("Bạn không thuộc danh sách người ký của hợp đồng này.");
+
+            if (signer.OtpSentAt.HasValue && (DateTime.UtcNow - signer.OtpSentAt.Value).TotalSeconds < 60)
+                throw new InvalidOperationException("Vui lòng chờ 1 phút trước khi gửi lại OTP.");
+
+            string otp = GenerateOtpCode();
+
+            signer.OtpCode = otp;
+            signer.CodeExpiry = DateTime.UtcNow.AddMinutes(10);
+            signer.OtpSentAt = DateTime.UtcNow;
+            signer.Status = "PENDING";
+            await _signerRepo.UpdateAsync(signer);
+
+            string subject = $"Mã OTP ký hợp đồng \"{contract.Title}\"";
+            string body = $@"
+        <p>Xin chào {signer.User.FullName},</p>
+        <p>Mã OTP để ký hợp đồng <b>{contract.Title}</b> là: <b style='color:#007bff;font-size:18px'>{otp}</b></p>
+        <p>OTP có hiệu lực trong <b>10 phút</b>. Vui lòng không chia sẻ cho người khác.</p>
+        <hr/>
+        <p>Thời gian gửi: {DateTimeHelper.ToVietnamTime(DateTime.UtcNow):dd/MM/yyyy HH:mm:ss}</p>";
+            await _mailService.SendEmailVerificationCode(signer.User.Email, subject, body);
+
+            if (contract.Status == "DRAFT")
+            {
+                contract.Status = "SIGNING";
+                await _contractRepo.UpdateAsync(contract);
+            }
         }
 
-        public Task VerifyOtpAsync(Guid contractId, Guid signerUserId, string otp)
+
+        public async Task VerifyOtpAsync(Guid contractId, Guid signerUserId, string otp)
         {
-            // 1) validate OTP còn hạn
-            // 2) update signer.Status = CONFIRMED + OtpVerifiedAt
-            // 3) nếu đủ chữ ký -> chuyển status PENDING_REVIEW
-            return Task.CompletedTask;
+            var contract = await _contractRepo.GetDetailAsync(contractId)
+                          ?? throw new KeyNotFoundException("Không tìm thấy hợp đồng");
+
+            var signer = contract.Signers.FirstOrDefault(s => s.UserId == signerUserId)
+                         ?? throw new UnauthorizedAccessException("Bạn không thuộc danh sách người ký của hợp đồng này.");
+
+            if (string.IsNullOrWhiteSpace(otp))
+                throw new InvalidOperationException("Vui lòng nhập mã OTP.");
+
+            if (signer.CodeExpiry == null || signer.CodeExpiry < DateTime.UtcNow)
+                throw new InvalidOperationException("Mã OTP đã hết hạn, vui lòng gửi lại OTP.");
+
+            if (signer.OtpCode != otp)
+            {
+                signer.Status = "FAILED";
+                await _signerRepo.UpdateAsync(signer);
+                throw new InvalidOperationException("Mã OTP không chính xác.");
+            }
+
+            signer.Status = "VERIFIED";
+            signer.IsSigned = true;
+            signer.OtpVerifiedAt = DateTime.UtcNow;
+            signer.SignedAt = DateTime.UtcNow;
+            await _signerRepo.UpdateAsync(signer);
+
+
+            bool allSigned = contract.Signers.All(s => s.IsSigned);
+            if (allSigned)
+            {
+                contract.SignedAt = DateTime.UtcNow;
+                contract.Status = "PENDING_REVIEW";
+                await _contractRepo.UpdateAsync(contract);
+            }
         }
 
-        public async Task ReviewAsync(Guid contractId, Guid staffId, bool approve, string? note)
-        {
-            var c = await _contractRepo.GetDetailAsync(contractId)
-                    ?? throw new KeyNotFoundException("Contract not found");
 
-            c.ReviewedAt = DateTime.UtcNow;
-            c.ReviewedBy = staffId;
-            c.ReviewNote = note;
-            c.Status = approve ? "APPROVED" : "REJECTED";
-            await _contractRepo.SaveChangesAsync();
-
-        }
 
         public async Task UpdateStatusAsync(Guid contractId, string newStatus)
         {
@@ -289,13 +461,6 @@ namespace Service
             await _contractRepo.SaveChangesAsync();
         }
 
-        public Task<byte[]> GetFinalizedPdfAsync(Guid contractId)
-        {
-            // 1) Load detail
-            // 2) Render HTML -> convert PDF (wkhtmltopdf/QuestPDF/…)
-            // 3) trả về bytes; hoặc lưu S3 & trả link
-            return Task.FromResult(Array.Empty<byte>());
-        }
 
         private async Task<ContractDetailDto> BuildDetailDto(Guid id)
         {
@@ -372,5 +537,130 @@ namespace Service
             };
         }
 
+        public async Task<IEnumerable<ContractSummaryDto>> GetMyContractsAsync(Guid currentUserId)
+        {
+
+            var query = await _contractRepo.QueryAsync();
+
+            var signerContractIds = await _signerRepo.GetContractIdsByUserAsync(currentUserId);
+
+
+            query = query.Where(c => c.CreatedBy == currentUserId || signerContractIds.Contains(c.Id));
+
+            var contracts = await query
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new ContractSummaryDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    TemplateName = c.Template.Name,
+                    GroupName = c.Group.Name,
+                    VehicleName = c.Vehicle.Make + " " + c.Vehicle.Model,
+                    Status = c.Status,
+                    CreatedAt = DateTimeHelper.ToVietnamTime(c.CreatedAt),
+                    EffectiveFrom = c.EffectiveFrom,
+                    ExpiresAt = c.ExpiresAt
+                })
+                .ToListAsync();
+
+            return contracts;
+        }
+
+        private string GenerateOtpCode()
+        {
+            var secureChars = _config["MailSettings:SecureCharacters"] ?? "0123456789";
+            var rng = RandomNumberGenerator.Create();
+            var bytes = new byte[1];
+            var codeBuilder = new StringBuilder();
+
+            for (int i = 0; i < 6; i++)
+            {
+                rng.GetBytes(bytes);
+                int index = bytes[0] % secureChars.Length;
+                codeBuilder.Append(secureChars[index]);
+            }
+            return codeBuilder.ToString();
+        }
+
+        public async Task CancelContractAsync(Guid contractId, Guid currentUserId)
+        {
+            var contract = await _contractRepo.GetDetailAsync(contractId)
+                          ?? throw new KeyNotFoundException("Không tìm thấy hợp đồng");
+
+            if (contract.CreatedBy != currentUserId)
+                throw new UnauthorizedAccessException("Bạn không có quyền hủy hợp đồng này.");
+
+            if (contract.Status != ContractStatus.Draft)
+                throw new InvalidOperationException("Chỉ có thể hủy hợp đồng ở trạng thái DRAFT.");
+
+            contract.Status = ContractStatus.Canceled;
+            contract.UpdatedAt = DateTime.UtcNow;
+
+            await _contractRepo.SaveChangesAsync();
+        }
+
+public async Task ReviewContractAsync(Guid contractId, Guid staffId, bool approve, string? note)
+    {
+
+        var contract = await _contractRepo.GetDetailAsync(contractId)
+                      ?? throw new KeyNotFoundException("Không tìm thấy hợp đồng.");
+
+        if (contract.Status != ContractStatus.PendingReview)
+            throw new InvalidOperationException("Chỉ có thể review hợp đồng ở trạng thái PENDING_REVIEW.");
+
+        if (approve && (contract.Signers == null || contract.Signers.Any(s => !s.IsSigned)))
+            throw new InvalidOperationException("Không thể phê duyệt vì vẫn còn người ký chưa hoàn tất.");
+
+
+        contract.ReviewedAt = DateTime.UtcNow;
+        contract.ReviewedBy = staffId;
+        contract.ReviewNote = note ?? string.Empty;
+        contract.UpdatedAt = DateTime.UtcNow;
+        string renderedHtml = await GetPreviewHtmlAsync(contract.Id, staffId);
+        contract.Content = renderedHtml;
+
+        await _contractRepo.SaveChangesAsync();
+
+            if (!approve)
+        {
+            contract.Status = ContractStatus.Rejected;
+            await _contractRepo.SaveChangesAsync();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(contract.Content))
+            throw new InvalidOperationException("Nội dung hợp đồng rỗng, không thể tạo PDF.");
+
+        var pdfBytes = PdfHelper.RenderHtmlToPdf(contract.Content, $"Hợp đồng: {contract.Title}");
+
+        string fileName = $"contract_{contract.Id}.pdf";
+        string fileUrl = await _firebaseStorageService.UploadBytesAsync(pdfBytes, fileName, "contracts");
+
+        contract.FileUrl = fileUrl;
+        contract.Status = ContractStatus.Approved;
+        if (contract.Vehicle != null)
+            contract.Vehicle.Status = VehicleStatus.Active;
+
+        await _contractRepo.SaveChangesAsync();
+
+        foreach (var signer in contract.Signers)
+        {
+            var user = signer.User;
+            if (user?.Email is null) continue;
+
+            var subject = $"Hợp đồng \"{contract.Title}\" đã được phê duyệt";
+            var body = $@"
+            <p>Xin chào {user.FullName},</p>
+            <p>Hợp đồng <b>{contract.Title}</b> đã được phê duyệt và hoàn tất.</p>
+            <p>Bạn có thể tải hợp đồng PDF tại liên kết sau:</p>
+            <p><a href=""{fileUrl}"" target=""_blank"">📄 Tải hợp đồng (PDF)</a></p>
+            <hr/>
+            <p>Phê duyệt lúc: {DateTimeHelper.ToVietnamTime(DateTime.UtcNow):dd/MM/yyyy HH:mm:ss}</p>";
+
+            await _mailService.SendEmailVerificationCode(user.Email, subject, body);
+        }
     }
+
+
+}
 }

@@ -12,7 +12,7 @@ namespace BusinessObject.Enums
         public const string PendingReview = "PENDING_REVIEW";
         public const string Approved = "APPROVED";
         public const string Rejected = "REJECTED";
-        public const string Active = "ACTIVE";
+        public const string Canceled = "CANCELED";
         public const string Expired = "EXPIRED";
     }
 }

@@ -17,7 +17,9 @@ namespace BusinessObject.Models
         public Guid UserId { get; set; }
 
         [Column("otp_code")]
-        public string? OtpCode { get; set; } // hash OTP
+        public string? OtpCode { get; set; }
+        [Column("code_expiry")]
+        public DateTime? CodeExpiry { get; set; }
 
         [Column("otp_sent_at")]
         public DateTime? OtpSentAt { get; set; }
