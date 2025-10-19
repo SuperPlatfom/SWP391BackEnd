@@ -25,7 +25,7 @@ namespace BusinessObject.Models
 
 
         [Column("is_active")]
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = false;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -41,5 +41,6 @@ namespace BusinessObject.Models
 
         // Quan hệ 1-N với group_invite
         public ICollection<GroupInvite> Invites { get; set; } = new List<GroupInvite>();
+        public ICollection<EContract> Contracts { get; set; } = new List<EContract>();
     }
 }

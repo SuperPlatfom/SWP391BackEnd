@@ -58,7 +58,8 @@ namespace BusinessObject.Models
         public Guid? GroupId { get; set; }
 
         public CoOwnershipGroup? Group { get; set; }
+        public ICollection<EContract> Contracts { get; set; } = new List<EContract>();
 
-   
+
     }
 }

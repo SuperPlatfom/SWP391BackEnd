@@ -97,5 +97,16 @@ namespace Repository
             return await _context.GroupMembers
                 .FirstOrDefaultAsync(gm => gm.UserId == userId && gm.GroupId == groupId && gm.IsActive);
         }
+
+        public async Task<List<GroupMember>> GetByGroupIdAsync(Guid groupId)
+        {
+            return await _context.GroupMembers
+                .AsNoTracking()
+                .Where(gm => gm.GroupId == groupId && gm.InviteStatus == "ACCEPTED")
+                .Include(gm => gm.UserAccount)
+                    .ThenInclude(u => u.CitizenIdentityCard) 
+                .ToListAsync();
+        }
+
     }
 }

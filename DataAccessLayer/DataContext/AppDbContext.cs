@@ -28,7 +28,10 @@ namespace DataAccessLayer.DataContext
         public DbSet<ContractTemplate> ContractTemplates { get; set; }
         public DbSet<ContractClause> ContractClauses { get; set; }
         public DbSet<ContractVariable> ContractVariables { get; set; }
+        public DbSet<EContract> EContracts { get; set; }
+        public DbSet<EContractSigner> EContractSigners { get; set; }
 
+        public DbSet<EContractMemberShare> EContractMemberShares { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -111,6 +114,54 @@ namespace DataAccessLayer.DataContext
                 .HasOne(v => v.Template)
                 .WithMany(t => t.Variables)
                 .HasForeignKey(v => v.TemplateId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EContractSigner>()
+                .HasOne(s => s.Contract)
+                .WithMany(c => c.Signers)
+                .HasForeignKey(s => s.ContractId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EContract>()
+                .HasOne(c => c.Group)
+                .WithMany(g => g.Contracts)
+                .HasForeignKey(c => c.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EContract>()
+                .HasOne(c => c.Template)
+                .WithMany(t => t.Contracts)
+                .HasForeignKey(c => c.TemplateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EContract>()
+                .HasOne(c => c.Vehicle)
+                .WithMany(v => v.Contracts)
+                .HasForeignKey(c => c.VehicleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EContract>()
+                .HasOne(c => c.CreatedByAccount)
+                .WithMany(a => a.CreatedContracts)
+                .HasForeignKey(c => c.CreatedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EContractSigner>()
+                .HasOne(s => s.User)
+                .WithMany(a => a.SignedContracts)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EContractMemberShare>()
+                .HasOne(ms => ms.User)
+                .WithMany(a => a.OwnershipShares)
+                .HasForeignKey(ms => ms.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EContractMemberShare>()
+                .HasOne(ms => ms.Contract)
+                .WithMany(c => c.MemberShares)
+                .HasForeignKey(ms => ms.ContractId)
                 .OnDelete(DeleteBehavior.Cascade);
 
         }

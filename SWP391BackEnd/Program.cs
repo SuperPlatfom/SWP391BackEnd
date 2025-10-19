@@ -67,6 +67,15 @@ builder.Services.AddScoped<IContractTemplateRepository, ContractTemplateReposito
 builder.Services.AddScoped<IContractTemplateService, ContractTemplateService>();
 builder.Services.AddScoped<IGroupInviteRepository, GroupInviteRepository>();
 builder.Services.AddScoped<IGroupInviteService, GroupInviteService>();
+builder.Services.AddScoped<IEContractRepository, EContractRepository>();
+builder.Services.AddScoped<IEContractSignerRepository, EContractSignerRepository>();
+builder.Services.AddSingleton<IMustacheRenderer, SimpleMustacheRenderer>();
+builder.Services.AddScoped<IContractService, EContractService>();
+builder.Services.AddScoped<IEContractMemberShareRepository, EContractMemberShareRepository>();
+
+
+
+
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

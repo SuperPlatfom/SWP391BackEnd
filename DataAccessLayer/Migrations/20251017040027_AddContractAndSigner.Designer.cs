@@ -3,6 +3,7 @@ using System;
 using DataAccessLayer.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251017040027_AddContractAndSigner")]
+    partial class AddContractAndSigner
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -432,38 +435,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("e_contract");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.EContractMemberShare", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("ContractId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("contract_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<decimal?>("OwnershipRate")
-                        .HasColumnType("decimal(5,2)")
-                        .HasColumnName("ownership_rate");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContractId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("econtract_member_share");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.EContractSigner", b =>
                 {
                     b.Property<Guid>("Id")
@@ -785,25 +756,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Vehicle");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.EContractMemberShare", b =>
-                {
-                    b.HasOne("BusinessObject.Models.EContract", "Contract")
-                        .WithMany("MemberShares")
-                        .HasForeignKey("ContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Models.Account", "User")
-                        .WithMany("OwnershipShares")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Contract");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.EContractSigner", b =>
                 {
                     b.HasOne("BusinessObject.Models.EContract", "Contract")
@@ -881,8 +833,6 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("GroupMemberships");
 
-                    b.Navigation("OwnershipShares");
-
                     b.Navigation("SignedContracts");
 
                     b.Navigation("Vehicles");
@@ -910,8 +860,6 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.EContract", b =>
                 {
-                    b.Navigation("MemberShares");
-
                     b.Navigation("Signers");
                 });
 
