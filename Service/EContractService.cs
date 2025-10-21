@@ -273,8 +273,11 @@ namespace Service
 
             var q = await _contractRepo.QueryAsync();
 
-            var isAdmin = user.Role?.Name?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
-            if (!isAdmin)
+            var roleName = user.Role?.Name?.ToLower();
+            bool isAdmin = roleName == "admin";
+            bool isStaff = roleName == "staff";
+            
+            if (!(isAdmin || isStaff))
             {
                 var relatedIds = await _signerRepo.GetContractIdsByUserAsync(currentUserId);
                 q = q.Where(c => c.CreatedBy == currentUserId || relatedIds.Contains(c.Id));
@@ -287,17 +290,19 @@ namespace Service
                 q = q.Where(c => c.GroupId == groupId.Value);
 
             return await q.OrderByDescending(c => c.CreatedAt)
-                          .Select(c => new ContractSummaryDto
-                          {
-                              Id = c.Id,
-                              Title = c.Title,
-                              TemplateName = c.Template.Name,
-                              GroupName = c.Group.Name,
-                              VehicleName = c.Vehicle.Make + " " + c.Vehicle.Model,
-                              Status = c.Status,
-                              CreatedAt = DateTimeHelper.ToVietnamTime(c.CreatedAt)
-                          })
-                          .ToListAsync();
+                             .Select(c => new ContractSummaryDto
+                             {
+                                 Id = c.Id,
+                                 Title = c.Title,
+                                 TemplateName = c.Template.Name,
+                                 GroupName = c.Group.Name,
+                                 VehicleName = c.Vehicle.Make + " " + c.Vehicle.Model,
+                                 Status = c.Status,
+                                 CreatedAt = DateTimeHelper.ToVietnamTime(c.CreatedAt),
+                                 EffectiveFrom = c.EffectiveFrom,
+                                 ExpiresAt = c.ExpiresAt
+                             })
+                             .ToListAsync();
 
         }
 

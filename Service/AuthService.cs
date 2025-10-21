@@ -37,27 +37,32 @@ public class AuthService : IAuthService
 
     public async Task<string> SeedRolesAsync()
     {
+        var defaultRoles = new List<Role>
+    {
+        new Role { Name = "Admin", Description = "Quản trị hệ thống, quản lý tài khoản, nhóm đồng sở hữu, và các đối tác dịch vụ." },
+        new Role { Name = "Staff", Description = "Nhân viên vận hành, hỗ trợ nhóm đồng sở hữu, xác minh thông tin, và quản lý yêu cầu dịch vụ." },
+        new Role { Name = "CoOwner", Description = "Thành viên đồng sở hữu xe điện, có thể tạo nhóm, xác nhận hợp đồng, đặt lịch và chia sẻ chi phí." },
+        new Role { Name = "Technician", Description = "Kỹ thuật viên được chỉ định thực hiện các yêu cầu bảo trì, sửa chữa, vệ sinh hoặc nâng cấp phương tiện." }
+    };
+
         var existingRoles = await _roleRepository.GetAllAsync();
+        var existingNames = existingRoles.Select(r => r.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        if (existingRoles.Any())
-        {
-            return "Roles are already initialized.";
-        }
+        var newRoles = defaultRoles
+            .Where(r => !existingNames.Contains(r.Name))
+            .ToList();
 
-        var roles = new List<Role>
-        {
-            new Role { Name = "Admin", Description = "Quản trị hệ thống, quản lý tài khoản, nhóm đồng sở hữu, và các đối tác dịch vụ (garage, đăng kiểm, bảo hiểm)."},
-            new Role { Name = "Staff", Description = "Nhân viên vận hành, phụ trách hỗ trợ nhóm đồng sở hữu, xác minh thông tin, và quản lý yêu cầu dịch vụ từ các nhóm." },
-            new Role { Name = "CoOwner", Description = "Thành viên đồng sở hữu xe điện, có thể tạo nhóm, xác nhận hợp đồng, đặt lịch sử dụng, tạo yêu cầu dịch vụ và chia sẻ chi phí." }
-        };
+        if (!newRoles.Any())
+            return "All roles already exist. No changes made.";
 
-        foreach (var role in roles)
+        foreach (var role in newRoles)
         {
             await _roleRepository.CreateAsync(role);
         }
 
-        return "Roles initialized successfully.";
+        return $"Added {newRoles.Count} new role(s): {string.Join(", ", newRoles.Select(r => r.Name))}.";
     }
+
 
     public async Task Register(UserRegistrationRequestModel userDto)
     {

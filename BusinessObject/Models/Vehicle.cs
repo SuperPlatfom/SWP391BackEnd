@@ -59,6 +59,7 @@ namespace BusinessObject.Models
 
         public CoOwnershipGroup? Group { get; set; }
         public ICollection<EContract> Contracts { get; set; } = new List<EContract>();
+        public ICollection<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();
 
 
     }
