@@ -60,8 +60,13 @@ namespace BusinessObject.Models
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
         public ICollection<EContract> CreatedContracts { get; set; } = new List<EContract>();
         public ICollection<EContractSigner> SignedContracts { get; set; } = new List<EContractSigner>();
-
         public ICollection<EContractMemberShare> OwnershipShares { get; set; } = new List<EContractMemberShare>();
+        public ICollection<ServiceRequest> CreatedServiceRequests { get; set; } = new List<ServiceRequest>();
+        public ICollection<ServiceRequest> AssignedServiceRequests { get; set; } = new List<ServiceRequest>();
+        public ICollection<ServiceJob> ServiceJobs { get; set; } = new List<ServiceJob>();
+        public ICollection<MemberInvoice> MemberInvoices { get; set; } = new List<MemberInvoice>();
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+        public ICollection<ServiceRequestConfirmation> ServiceRequestConfirmations { get; set; } = new List<ServiceRequestConfirmation>();
 
     }
 }

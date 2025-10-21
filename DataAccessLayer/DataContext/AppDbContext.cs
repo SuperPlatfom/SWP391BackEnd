@@ -30,8 +30,16 @@ namespace DataAccessLayer.DataContext
         public DbSet<ContractVariable> ContractVariables { get; set; }
         public DbSet<EContract> EContracts { get; set; }
         public DbSet<EContractSigner> EContractSigners { get; set; }
-
         public DbSet<EContractMemberShare> EContractMemberShares { get; set; }
+        public DbSet<ServiceRequest> ServiceRequests { get; set; }
+        public DbSet<ServiceRequestConfirmation> ServiceRequestConfirmations { get; set; }
+        public DbSet<ServiceJob> ServiceJobs { get; set; }
+        public DbSet<ExpenseCategory> ExpenseCategories { get; set; }
+        public DbSet<GroupExpense> GroupExpenses { get; set; }
+        public DbSet<MemberInvoice> MemberInvoices { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<PayOSTransaction> PayOSTransactions { get; set; }
+        public DbSet<ServiceCenter> ServiceCenters { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -75,29 +83,24 @@ namespace DataAccessLayer.DataContext
                 .HasForeignKey<CitizenIdentityCard>(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-
-            // Account 1–N CoOwnershipGroup (CreatedBy)
             modelBuilder.Entity<CoOwnershipGroup>()
                 .HasOne(g => g.CreatedByAccount)
                 .WithMany(a => a.CreatedGroups)
                 .HasForeignKey(g => g.CreatedBy)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Account 1–N GroupMember
             modelBuilder.Entity<GroupMember>()
                 .HasOne(gm => gm.UserAccount)
                 .WithMany(a => a.GroupMemberships)
                 .HasForeignKey(gm => gm.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // CoOwnershipGroup 1–N GroupMember
             modelBuilder.Entity<GroupMember>()
                 .HasOne(gm => gm.Group)
                 .WithMany(g => g.Members)
                 .HasForeignKey(gm => gm.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // CoOwnershipGroup 1–N Vehicle
             modelBuilder.Entity<Vehicle>()
                 .HasOne(v => v.Group)
                 .WithMany(g => g.Vehicles)
@@ -163,6 +166,115 @@ namespace DataAccessLayer.DataContext
                 .WithMany(c => c.MemberShares)
                 .HasForeignKey(ms => ms.ContractId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ServiceRequest>()
+                .HasOne(sr => sr.Group)
+                .WithMany(g => g.ServiceRequests)
+                .HasForeignKey(sr => sr.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ServiceRequest>()
+                .HasOne(sr => sr.Vehicle)
+                .WithMany(v => v.ServiceRequests)
+                .HasForeignKey(sr => sr.VehicleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ServiceRequest>()
+                .HasOne(sr => sr.CreatedByAccount)
+                .WithMany(a => a.CreatedServiceRequests)
+                .HasForeignKey(sr => sr.CreatedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ServiceRequest>()
+                .HasOne(sr => sr.Technician)
+                .WithMany(a => a.AssignedServiceRequests)
+                .HasForeignKey(sr => sr.TechnicianId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<ServiceRequest>()
+                .HasOne(sr => sr.ServiceCenter)
+                .WithMany(sc => sc.ServiceRequests)
+                .HasForeignKey(sr => sr.ServiceCenterId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<ServiceRequest>()
+                .HasOne(sr => sr.Expense)
+                .WithOne()
+                .HasForeignKey<ServiceRequest>(sr => sr.ExpenseId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<ServiceRequestConfirmation>()
+                .HasOne(c => c.Request)
+                .WithMany(sr => sr.Confirmations)
+                .HasForeignKey(c => c.RequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ServiceRequestConfirmation>()
+                .HasOne(c => c.User)
+                .WithMany(a => a.ServiceRequestConfirmations)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ServiceJob>()
+                .HasOne(j => j.Request)
+                .WithOne(r => r.Job)
+                .HasForeignKey<ServiceJob>(j => j.RequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ServiceJob>()
+                .HasOne(j => j.Technician)
+                .WithMany(a => a.ServiceJobs)
+                .HasForeignKey(j => j.TechnicianId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GroupExpense>()
+                .HasOne(ge => ge.Category)
+                .WithMany(ec => ec.GroupExpenses)
+                .HasForeignKey(ge => ge.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GroupExpense>()
+                .HasOne(ge => ge.Group)
+                .WithMany(g => g.GroupExpenses)
+                .HasForeignKey(ge => ge.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MemberInvoice>()
+                .HasOne(mi => mi.Expense)
+                .WithMany(ge => ge.MemberInvoices)
+                .HasForeignKey(mi => mi.ExpenseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MemberInvoice>()
+                .HasOne(mi => mi.Group)
+                .WithMany(g => g.MemberInvoices)
+                .HasForeignKey(mi => mi.GroupId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MemberInvoice>()
+                .HasOne(mi => mi.User)
+                .WithMany(a => a.MemberInvoices)
+                .HasForeignKey(mi => mi.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.User)
+                .WithMany(a => a.Payments)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Invoice)
+                .WithMany(mi => mi.Payments)
+                .HasForeignKey(p => p.InvoiceId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<PayOSTransaction>()
+                .HasOne(pt => pt.Payment)
+                .WithOne(p => p.PayOSTransaction)
+                .HasForeignKey<PayOSTransaction>(pt => pt.PaymentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
         }
     }
