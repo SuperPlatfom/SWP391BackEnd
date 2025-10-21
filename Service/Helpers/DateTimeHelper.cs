@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using TimeZoneConverter;
 
 namespace Service.Helpers
@@ -14,6 +10,11 @@ namespace Service.Helpers
         public static DateTime ToVietnamTime(DateTime utcTime)
         {
             return TimeZoneInfo.ConvertTimeFromUtc(utcTime, _vnTimeZone);
+        }
+
+        public static DateTime NowVietnamTime()
+        {
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _vnTimeZone);
         }
     }
 }

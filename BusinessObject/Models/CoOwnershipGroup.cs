@@ -33,6 +33,8 @@ namespace BusinessObject.Models
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+        [Column("weekly_quota_hours")]
+        public double WeeklyQuotaHours { get; set; } = 20;
         // Quan hệ 1-N với group_member
         public ICollection<GroupMember> Members { get; set; } = new List<GroupMember>();
 
@@ -42,5 +44,10 @@ namespace BusinessObject.Models
         // Quan hệ 1-N với group_invite
         public ICollection<GroupInvite> Invites { get; set; } = new List<GroupInvite>();
         public ICollection<EContract> Contracts { get; set; } = new List<EContract>();
+
+
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+        public ICollection<UsageSession> UsageSessions { get; set; } = new List<UsageSession>();
+        public ICollection<UsageQuota> usageQuotas { get; set; } = new List<UsageQuota>();
     }
 }
