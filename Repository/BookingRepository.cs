@@ -54,5 +54,22 @@ namespace Repository
         {
             return await _context.Bookings.AnyAsync(b => b.Id == id);
         }
+        public async Task<List<Booking>> GetBookingsByVehicleAsync(Guid vehicleId)
+        {
+            return await _context.Bookings
+                .Where(b => b.VehicleId == vehicleId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Booking>> GetBookingsByVehicleInGroupAsync(Guid groupId, Guid vehicleId)
+        {
+            return await _context.Bookings
+                .Include(b => b.Vehicle)
+                .Include(b => b.Group)
+                .Include(b => b.User)
+                .Where(b => b.GroupId == groupId && b.VehicleId == vehicleId)
+                .OrderBy(b => b.StartTime)
+                .ToListAsync();
+        }
     }
 }

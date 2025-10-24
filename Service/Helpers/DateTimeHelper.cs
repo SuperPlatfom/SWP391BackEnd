@@ -14,7 +14,10 @@ namespace Service.Helpers
 
         public static DateTime NowVietnamTime()
         {
-            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _vnTimeZone);
+
+            var utcNow = DateTime.UtcNow;
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+            return DateTime.SpecifyKind(vietnamTime, DateTimeKind.Utc); 
         }
     }
 }

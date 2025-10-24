@@ -2,6 +2,7 @@
 
 
 using BusinessObject.Enums;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -52,7 +53,7 @@ namespace BusinessObject.Models
         public CoOwnershipGroup Group { get; set; } = null!;
         public Vehicle Vehicle { get; set; } = null!;
 
-        public UsageSession? UsageSession { get; set; }
+
 
     }
 }

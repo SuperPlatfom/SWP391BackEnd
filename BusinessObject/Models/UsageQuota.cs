@@ -25,6 +25,12 @@ namespace BusinessObject.Models
         public CoOwnershipGroup Group { get; set; } = null!;
 
         [Required]
+        [Column("vehicle_id")]
+        [ForeignKey(nameof(Vehicle))]
+        public Guid VehicleId { get; set; }
+        public Vehicle Vehilce { get; set; } = null!;
+
+        [Required]
         [Column("week_start_date")]
         public DateTime WeekStartDate { get; set; }
 

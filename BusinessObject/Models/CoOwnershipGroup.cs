@@ -47,7 +47,7 @@ namespace BusinessObject.Models
 
 
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
-        public ICollection<UsageSession> UsageSessions { get; set; } = new List<UsageSession>();
+
         public ICollection<UsageQuota> usageQuotas { get; set; } = new List<UsageQuota>();
     }
 }

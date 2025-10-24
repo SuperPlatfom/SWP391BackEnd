@@ -63,7 +63,6 @@ namespace BusinessObject.Models
         public ICollection<EContractMemberShare> OwnershipShares { get; set; } = new List<EContractMemberShare>();
      
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
-        public ICollection<UsageSession> UsageSession { get; set; } = new List<UsageSession>();
         public ICollection<UsageQuota> UsageQuota { get; set; } = new List<UsageQuota>();
         public ICollection<TripEvent> TripEvent { get; set; } = new List<TripEvent>();
 

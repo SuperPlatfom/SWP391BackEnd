@@ -4,17 +4,18 @@ using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Repository;
 using Repository.Interfaces;
 using Repository.Repositories;
-using Repository;
-using Service.Interfaces;
 using Service;
+using Service.BackgroundJobs;
+using Service.Interfaces;
+using SWP391BackEnd.Helpers;
 using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.FileProviders;
-using SWP391BackEnd.Helpers;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -72,6 +73,9 @@ builder.Services.AddScoped<IEContractSignerRepository, EContractSignerRepository
 builder.Services.AddSingleton<IMustacheRenderer, SimpleMustacheRenderer>();
 builder.Services.AddScoped<IContractService, EContractService>();
 builder.Services.AddScoped<IEContractMemberShareRepository, EContractMemberShareRepository>();
+builder.Services.AddHostedService<BookingMonitorService>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 
 

@@ -42,7 +42,7 @@ namespace DataAccessLayer.DataContext
         public DbSet<ServiceCenter> ServiceCenters { get; set; }
 
         public DbSet<Booking> Bookings { get; set; }
-        public DbSet<UsageSession> UsageSessions { get; set; }
+
         public DbSet<TripEvent> TripEvents { get; set; }
         public DbSet<UsageQuota> UsageQuotas { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

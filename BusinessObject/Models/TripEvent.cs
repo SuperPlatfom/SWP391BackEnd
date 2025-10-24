@@ -11,9 +11,7 @@ namespace BusinessObject.Models
         [Column("id")]
         public Guid Id { get; set; }
 
-        [Column("session_id")]
-        [ForeignKey(nameof(Session))]
-        public Guid SessionId { get; set; }
+
 
         [Column("event_type")]
         [MaxLength(20)]
@@ -34,7 +32,6 @@ namespace BusinessObject.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         //  Navigation Properties
-        public UsageSession Session { get; set; } = null!;
         public Account SignedByUser { get; set; } = null!;
     }
 }
