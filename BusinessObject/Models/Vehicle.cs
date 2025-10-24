@@ -16,7 +16,7 @@ namespace BusinessObject.Models
         public Guid Id { get; set; }
 
         [Column("plate_number")]
-        public string? PlateNumber { get; set; }  // Biển số (nếu có)
+        public string? PlateNumber { get; set; }  // Biển số 
 
         [Column("make")]
         public string? Make { get; set; }          // Hãng xe
@@ -35,9 +35,6 @@ namespace BusinessObject.Models
 
         [Column("range_km")]
         public int RangeKm { get; set; }          // Tầm hoạt động ước tính
-
-        [Column("telematics_device_id")]
-        public string? TelematicsDeviceId { get; set; } // Thiết bị/IMEI (nếu có)
 
         [Column("status")]
         public string Status { get; set; }        // ACTIVE / INACTIVE / MAINTENANCE

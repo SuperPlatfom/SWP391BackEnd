@@ -25,7 +25,7 @@ namespace BusinessObject.RequestModels
         public int RangeKm { get; set; }
 
         public string? PlateNumber { get; set; }
-        public string? TelematicsDeviceId { get; set; }
+
 
     }
     public class UpdateVehicleRequestModel
@@ -58,8 +58,7 @@ namespace BusinessObject.RequestModels
         [Range(50, 1000, ErrorMessage = "Range must be between 50 and 1000 km")]
         public int RangeKm { get; set; }
 
-        [JsonPropertyName("telematicsDeviceId")]
-        public string? TelematicsDeviceId { get; set; }
+
 
     }
 

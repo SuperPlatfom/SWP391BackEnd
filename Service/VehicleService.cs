@@ -38,7 +38,6 @@ namespace Service
                 Color = v.Color,
                 Status = v.Status,
                 BatteryCapacityKwh = v.BatteryCapacityKwh,
-                TelematicsDeviceId = v.TelematicsDeviceId,
                 RangeKm = v.RangeKm,
                 GroupId = v.GroupId
             });
@@ -62,7 +61,6 @@ namespace Service
                 Color = v.Color,
                 Status = v.Status,
                 BatteryCapacityKwh = v.BatteryCapacityKwh,
-                TelematicsDeviceId = v.TelematicsDeviceId,
                 RangeKm = v.RangeKm,
                 GroupId = v.GroupId
             };
@@ -88,7 +86,6 @@ namespace Service
                 Color = request.Color,
                 BatteryCapacityKwh = request.BatteryCapacityKwh,
                 RangeKm = request.RangeKm,
-                TelematicsDeviceId = request.TelematicsDeviceId,
                 Status = "INACTIVE", // Mặc định ACTIVE
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -111,7 +108,6 @@ namespace Service
                 Color = vehicle.Color,
                 Status = vehicle.Status,
                 BatteryCapacityKwh = vehicle.BatteryCapacityKwh,
-                TelematicsDeviceId = vehicle.TelematicsDeviceId,
                 RangeKm = vehicle.RangeKm
             };
         }
@@ -133,7 +129,6 @@ namespace Service
     vehicle.Color = request.Color;
     vehicle.BatteryCapacityKwh = request.BatteryCapacityKwh;
     vehicle.RangeKm = request.RangeKm;
-    vehicle.TelematicsDeviceId = request.TelematicsDeviceId;
     vehicle.UpdatedAt = DateTime.UtcNow;
 
     var updated = await _vehicleRepository.UpdateAsync(vehicle);
@@ -171,7 +166,6 @@ namespace Service
                 Status = v.Status,
                 BatteryCapacityKwh = v.BatteryCapacityKwh,
                 RangeKm = v.RangeKm,
-                TelematicsDeviceId = v.TelematicsDeviceId,
                HasGroup = v.GroupId !=null,
             }).ToList();
         }

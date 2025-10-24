@@ -3,6 +3,7 @@ using System;
 using DataAccessLayer.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251019192518_InitialUsageBooking")]
+    partial class InitialUsageBooking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -585,86 +588,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("e_contract_signer");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.ExpenseCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("expense_category");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.GroupExpense", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("amount");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer")
-                        .HasColumnName("category_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("group_id");
-
-                    b.Property<DateTime>("IncurredAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("incurred_at");
-
-                    b.Property<string>("InvoiceUrl")
-                        .HasColumnType("text")
-                        .HasColumnName("invoice_url");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("GroupId");
-
-                    b.ToTable("group_expense");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.GroupInvite", b =>
                 {
                     b.Property<Guid>("Id")
@@ -746,180 +669,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("group_member");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.MemberInvoice", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<decimal>("AmountPaid")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("amount_paid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("due_date");
-
-                    b.Property<Guid>("ExpenseId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("expense_id");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("group_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("title");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("total_amount");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExpenseId");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("member_invoice");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.PayOSTransaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("DeeplinkUrl")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("deeplink_url");
-
-                    b.Property<DateTime>("ExpiredAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expired_at");
-
-                    b.Property<string>("OrderCode")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("order_code");
-
-                    b.Property<Guid>("PaymentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("payment_id");
-
-                    b.Property<string>("QrCodeUrl")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("qr_code_url");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<DateTime?>("WebhookReceivedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("webhook_received_at");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PaymentId")
-                        .IsUnique();
-
-                    b.ToTable("payos_transaction");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.Payment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("amount");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("InvoiceId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("invoice_id");
-
-                    b.Property<DateTime?>("PaidAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("paid_at");
-
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("payment_method");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.Property<string>("TransactionCode")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("transaction_code");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InvoiceId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("payment");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -942,232 +691,6 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("role");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.ServiceCenter", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("address");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Phone")
-                        .HasColumnType("text")
-                        .HasColumnName("phone");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("service_center");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.ServiceJob", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("completed_at");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("ReportUrl")
-                        .HasColumnType("text")
-                        .HasColumnName("report_url");
-
-                    b.Property<Guid>("RequestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("request_id");
-
-                    b.Property<DateTime?>("ScheduledAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("scheduled_at");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.Property<Guid>("TechnicianId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("technician_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RequestId")
-                        .IsUnique();
-
-                    b.HasIndex("TechnicianId");
-
-                    b.ToTable("service_job");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.ServiceRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime?>("ApprovedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("approved_at");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("completed_at");
-
-                    b.Property<decimal?>("CostEstimate")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("cost_estimate");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<Guid?>("ExpenseId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("expense_id");
-
-                    b.Property<Guid?>("GroupExpenseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("group_id");
-
-                    b.Property<string>("InspectionNotes")
-                        .HasColumnType("text")
-                        .HasColumnName("inspection_notes");
-
-                    b.Property<DateTime?>("InspectionScheduledAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("inspection_scheduled_at");
-
-                    b.Property<Guid?>("ServiceCenterId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("service_center_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.Property<Guid?>("TechnicianId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("technician_id");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("title");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("type");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid>("VehicleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("vehicle_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("ExpenseId")
-                        .IsUnique();
-
-                    b.HasIndex("GroupExpenseId");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("ServiceCenterId");
-
-                    b.HasIndex("TechnicianId");
-
-                    b.HasIndex("VehicleId");
-
-                    b.ToTable("service_request");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.ServiceRequestConfirmation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("DecidedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("decided_at");
-
-                    b.Property<string>("Decision")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("decision");
-
-                    b.Property<string>("Reason")
-                        .HasColumnType("text")
-                        .HasColumnName("reason");
-
-                    b.Property<Guid>("RequestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("request_id");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RequestId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("service_request_confirmation");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.TripEvent", b =>
@@ -1195,11 +718,17 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("text")
                         .HasColumnName("photos_url");
 
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("session_id");
+
                     b.Property<Guid>("SignedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("signed_by");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SessionId");
 
                     b.HasIndex("SignedBy");
 
@@ -1233,10 +762,6 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_updated");
 
-                    b.Property<Guid>("VehicleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("vehicle_id");
-
                     b.Property<DateTime>("WeekStartDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("week_start_date");
@@ -1247,9 +772,70 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("GroupId");
 
+                    b.ToTable("usage_quota");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.UsageSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("end_time");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId")
+                        .IsUnique();
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId");
+
                     b.HasIndex("VehicleId");
 
-                    b.ToTable("usage_quota");
+                    b.ToTable("usage_session");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Vehicle", b =>
@@ -1303,6 +889,10 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("status");
+
+                    b.Property<string>("TelematicsDeviceId")
+                        .HasColumnType("text")
+                        .HasColumnName("telematics_device_id");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1472,25 +1062,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.GroupExpense", b =>
-                {
-                    b.HasOne("BusinessObject.Models.ExpenseCategory", "Category")
-                        .WithMany("GroupExpenses")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
-                        .WithMany("GroupExpenses")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Group");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.GroupInvite", b =>
                 {
                     b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
@@ -1521,159 +1092,21 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("UserAccount");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.MemberInvoice", b =>
-                {
-                    b.HasOne("BusinessObject.Models.GroupExpense", "Expense")
-                        .WithMany("MemberInvoices")
-                        .HasForeignKey("ExpenseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
-                        .WithMany("MemberInvoices")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Models.Account", "User")
-                        .WithMany("MemberInvoices")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Expense");
-
-                    b.Navigation("Group");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.PayOSTransaction", b =>
-                {
-                    b.HasOne("BusinessObject.Models.Payment", "Payment")
-                        .WithOne("PayOSTransaction")
-                        .HasForeignKey("BusinessObject.Models.PayOSTransaction", "PaymentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Payment");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.Payment", b =>
-                {
-                    b.HasOne("BusinessObject.Models.MemberInvoice", "Invoice")
-                        .WithMany("Payments")
-                        .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("BusinessObject.Models.Account", "User")
-                        .WithMany("Payments")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Invoice");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.ServiceJob", b =>
-                {
-                    b.HasOne("BusinessObject.Models.ServiceRequest", "Request")
-                        .WithOne("Job")
-                        .HasForeignKey("BusinessObject.Models.ServiceJob", "RequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Models.Account", "Technician")
-                        .WithMany("ServiceJobs")
-                        .HasForeignKey("TechnicianId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Request");
-
-                    b.Navigation("Technician");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.ServiceRequest", b =>
-                {
-                    b.HasOne("BusinessObject.Models.Account", "CreatedByAccount")
-                        .WithMany("CreatedServiceRequests")
-                        .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Models.GroupExpense", "Expense")
-                        .WithOne()
-                        .HasForeignKey("BusinessObject.Models.ServiceRequest", "ExpenseId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("BusinessObject.Models.GroupExpense", null)
-                        .WithMany("ServiceRequests")
-                        .HasForeignKey("GroupExpenseId");
-
-                    b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
-                        .WithMany("ServiceRequests")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Models.ServiceCenter", "ServiceCenter")
-                        .WithMany("ServiceRequests")
-                        .HasForeignKey("ServiceCenterId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("BusinessObject.Models.Account", "Technician")
-                        .WithMany("AssignedServiceRequests")
-                        .HasForeignKey("TechnicianId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("BusinessObject.Models.Vehicle", "Vehicle")
-                        .WithMany("ServiceRequests")
-                        .HasForeignKey("VehicleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CreatedByAccount");
-
-                    b.Navigation("Expense");
-
-                    b.Navigation("Group");
-
-                    b.Navigation("ServiceCenter");
-
-                    b.Navigation("Technician");
-
-                    b.Navigation("Vehicle");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.ServiceRequestConfirmation", b =>
-                {
-                    b.HasOne("BusinessObject.Models.ServiceRequest", "Request")
-                        .WithMany("Confirmations")
-                        .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Models.Account", "User")
-                        .WithMany("ServiceRequestConfirmations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Request");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.TripEvent", b =>
                 {
+                    b.HasOne("BusinessObject.Models.UsageSession", "Session")
+                        .WithMany("TripEvents")
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BusinessObject.Models.Account", "SignedByUser")
                         .WithMany("TripEvent")
                         .HasForeignKey("SignedBy")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Session");
 
                     b.Navigation("SignedByUser");
                 });
@@ -1692,17 +1125,44 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BusinessObject.Models.Vehicle", "Vehilce")
+                    b.Navigation("Account");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.UsageSession", b =>
+                {
+                    b.HasOne("BusinessObject.Models.Booking", "Booking")
+                        .WithOne("UsageSession")
+                        .HasForeignKey("BusinessObject.Models.UsageSession", "BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
+                        .WithMany("UsageSessions")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.Account", "User")
+                        .WithMany("UsageSession")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.Vehicle", "Vehicle")
                         .WithMany()
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Account");
+                    b.Navigation("Booking");
 
                     b.Navigation("Group");
 
-                    b.Navigation("Vehilce");
+                    b.Navigation("User");
+
+                    b.Navigation("Vehicle");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Vehicle", b =>
@@ -1725,8 +1185,6 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.Account", b =>
                 {
-                    b.Navigation("AssignedServiceRequests");
-
                     b.Navigation("Bookings");
 
                     b.Navigation("CitizenIdentityCard");
@@ -1735,19 +1193,9 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("CreatedGroups");
 
-                    b.Navigation("CreatedServiceRequests");
-
                     b.Navigation("GroupMemberships");
 
-                    b.Navigation("MemberInvoices");
-
                     b.Navigation("OwnershipShares");
-
-                    b.Navigation("Payments");
-
-                    b.Navigation("ServiceJobs");
-
-                    b.Navigation("ServiceRequestConfirmations");
 
                     b.Navigation("SignedContracts");
 
@@ -1755,7 +1203,14 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("UsageQuota");
 
+                    b.Navigation("UsageSession");
+
                     b.Navigation("Vehicles");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.Booking", b =>
+                {
+                    b.Navigation("UsageSession");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.CoOwnershipGroup", b =>
@@ -1764,15 +1219,11 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("Contracts");
 
-                    b.Navigation("GroupExpenses");
-
                     b.Navigation("Invites");
-
-                    b.Navigation("MemberInvoices");
 
                     b.Navigation("Members");
 
-                    b.Navigation("ServiceRequests");
+                    b.Navigation("UsageSessions");
 
                     b.Navigation("Vehicles");
 
@@ -1795,50 +1246,19 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Signers");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.ExpenseCategory", b =>
-                {
-                    b.Navigation("GroupExpenses");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.GroupExpense", b =>
-                {
-                    b.Navigation("MemberInvoices");
-
-                    b.Navigation("ServiceRequests");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.MemberInvoice", b =>
-                {
-                    b.Navigation("Payments");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.Payment", b =>
-                {
-                    b.Navigation("PayOSTransaction");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.Role", b =>
                 {
                     b.Navigation("Accounts");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.ServiceCenter", b =>
+            modelBuilder.Entity("BusinessObject.Models.UsageSession", b =>
                 {
-                    b.Navigation("ServiceRequests");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.ServiceRequest", b =>
-                {
-                    b.Navigation("Confirmations");
-
-                    b.Navigation("Job");
+                    b.Navigation("TripEvents");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Vehicle", b =>
                 {
                     b.Navigation("Contracts");
-
-                    b.Navigation("ServiceRequests");
                 });
 #pragma warning restore 612, 618
         }

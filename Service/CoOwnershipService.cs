@@ -54,7 +54,6 @@ namespace Service
                     Color = v.Color,
                     Status = v.Status,
                     BatteryCapacityKwh = v.BatteryCapacityKwh,
-                    TelematicsDeviceId = v.TelematicsDeviceId,
                     RangeKm = v.RangeKm,
                     GroupId = v.GroupId
                 }).ToList() ?? new List<VehicleResponseModel>()
@@ -105,7 +104,6 @@ namespace Service
                     Color = v.Color,
                     Status = v.Status,
                     BatteryCapacityKwh = v.BatteryCapacityKwh,
-                    TelematicsDeviceId = v.TelematicsDeviceId,
                     RangeKm = v.RangeKm,
                     GroupId = v.GroupId
                 }).ToList() ?? new List<VehicleResponseModel>();
@@ -317,7 +315,6 @@ namespace Service
                     ModelYear = v.ModelYear,
                     BatteryCapacityKwh = v.BatteryCapacityKwh,
                     RangeKm = v.RangeKm,
-                    TelematicsDeviceId = v.TelematicsDeviceId,
                     Status = v.Status
                 }).ToList()
             }).ToList();
