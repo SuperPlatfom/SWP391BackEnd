@@ -20,7 +20,7 @@ namespace SWP391BackEnd.Controllers
         }
 
         [HttpPost("{invoiceId}")]
-        [Authorize(Roles = "Co-owner")]
+        [Authorize]
         public async Task<IActionResult> Create(Guid invoiceId, [FromQuery] string returnUrl, [FromQuery] string cancelUrl)
         {
             var userId = Guid.Parse(User.FindFirst("id")!.Value);
@@ -46,7 +46,7 @@ namespace SWP391BackEnd.Controllers
         }
 
         [HttpGet("history/my")]
-        [Authorize(Roles = "Co-owner")]
+        [Authorize]
         public async Task<IActionResult> MyHistory()
         {
             var userId = Guid.Parse(User.FindFirst("id")!.Value);
@@ -55,7 +55,7 @@ namespace SWP391BackEnd.Controllers
         }
 
         [HttpGet("invoice/{invoiceId}")]
-        [Authorize(Roles = "Co-owner,Admin,Staff")]
+        [Authorize]
         public async Task<IActionResult> ByInvoice(Guid invoiceId)
         {
             var result = await _svc.GetInvoicePaymentsAsync(invoiceId);
