@@ -11,6 +11,7 @@ namespace Repository.Interfaces
     {
         Task AddRangeAsync(IEnumerable<EContractMemberShare> shares);
         Task<List<EContractMemberShare>> GetByContractIdAsync(Guid contractId);
-        Task DeleteByContractIdAsync(Guid contractId); 
+        Task DeleteByContractIdAsync(Guid contractId);
+        
     }
 }
