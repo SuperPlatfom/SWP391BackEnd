@@ -75,10 +75,14 @@ namespace Service
             };
 
             var item = new ItemData($"Invoice #{invoice.Id.ToString()[..8]}", 1, (int)Math.Round(outstanding));
+            var shortDesc = $"Invoice {invoice.Id.ToString()[..6]}"; 
+
             var request = new PaymentData(
                 orderCode, (int)Math.Round(outstanding),
-                $"Thanh toán Invoice {invoice.Id.ToString()[..8]}",
-                new List<ItemData> { item }, cancelUrl, returnUrl);
+                shortDesc,
+                new List<ItemData> { item },
+                cancelUrl, returnUrl);
+
 
             var link = await _payOS.createPaymentLink(request);
             tx.QrCodeUrl = link.qrCode;
