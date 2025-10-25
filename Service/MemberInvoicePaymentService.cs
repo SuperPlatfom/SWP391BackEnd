@@ -146,7 +146,7 @@ namespace Service
                     await _txRepo.UpdateAsync(tx);
                 }
             }
-
+            await _paymentRepo.SaveChangesAsync();
         }
 
         public async Task<PaymentStatusResponse?> GetPaymentStatusAsync(string orderCode)
