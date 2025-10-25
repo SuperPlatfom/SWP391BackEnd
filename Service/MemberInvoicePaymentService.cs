@@ -88,6 +88,7 @@ namespace Service
             tx.QrCodeUrl = link.qrCode;
             tx.DeeplinkUrl = link.checkoutUrl;
             await _txRepo.AddAsync(tx);
+            await _paymentRepo.SaveChangesAsync();
 
             return link;
         }
