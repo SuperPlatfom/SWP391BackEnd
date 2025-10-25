@@ -107,6 +107,18 @@ namespace Repository
                     .ThenInclude(u => u.CitizenIdentityCard) 
                 .ToListAsync();
         }
+        public async Task<bool> IsMemberAsync(Guid groupId, Guid userId)
+        {
+            return await _context.GroupMembers
+                .AnyAsync(gm => gm.GroupId == groupId && gm.UserId == userId && gm.InviteStatus == "ACCEPTED" && gm.IsActive);
+        }
+        public async Task<int> CountMembersAsync(Guid groupId)
+        {
+            return await _context.GroupMembers
+                .CountAsync(gm => gm.GroupId == groupId
+                    && gm.InviteStatus == "ACCEPTED"
+                    && gm.IsActive);
+        }
 
     }
 }

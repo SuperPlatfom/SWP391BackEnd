@@ -34,7 +34,6 @@ namespace DataAccessLayer.DataContext
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
         public DbSet<ServiceRequestConfirmation> ServiceRequestConfirmations { get; set; }
         public DbSet<ServiceJob> ServiceJobs { get; set; }
-        public DbSet<ExpenseCategory> ExpenseCategories { get; set; }
         public DbSet<GroupExpense> GroupExpenses { get; set; }
         public DbSet<MemberInvoice> MemberInvoices { get; set; }
         public DbSet<Payment> Payments { get; set; }
@@ -200,11 +199,11 @@ namespace DataAccessLayer.DataContext
                 .HasForeignKey(sr => sr.ServiceCenterId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<ServiceRequest>()
-                .HasOne(sr => sr.Expense)
-                .WithOne()
-                .HasForeignKey<ServiceRequest>(sr => sr.ExpenseId)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<GroupExpense>()
+                .HasOne(ge => ge.ServiceRequest)
+                .WithOne(sr => sr.GroupExpense)
+                .HasForeignKey<GroupExpense>(ge => ge.ServiceRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<ServiceRequestConfirmation>()
                 .HasOne(c => c.Request)
@@ -228,12 +227,6 @@ namespace DataAccessLayer.DataContext
                 .HasOne(j => j.Technician)
                 .WithMany(a => a.ServiceJobs)
                 .HasForeignKey(j => j.TechnicianId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<GroupExpense>()
-                .HasOne(ge => ge.Category)
-                .WithMany(ec => ec.GroupExpenses)
-                .HasForeignKey(ge => ge.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<GroupExpense>()
@@ -277,6 +270,10 @@ namespace DataAccessLayer.DataContext
                 .WithOne(p => p.PayOSTransaction)
                 .HasForeignKey<PayOSTransaction>(pt => pt.PaymentId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ServiceRequest>()
+                .Property(sr => sr.Type)
+                .HasConversion<string>()  
+                .HasMaxLength(50);
 
 
         }

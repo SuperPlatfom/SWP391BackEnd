@@ -13,8 +13,8 @@ namespace BusinessObject.Models
         [Column("group_id")]
         public Guid GroupId { get; set; }
 
-        [Column("category_id")]
-        public int CategoryId { get; set; }
+        [Column("service_request_id")]
+        public Guid? ServiceRequestId { get; set; }
 
         [Column("description")]
         public string? Description { get; set; }
@@ -38,8 +38,8 @@ namespace BusinessObject.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public CoOwnershipGroup Group { get; set; } = null!;
-        public ExpenseCategory Category { get; set; } = null!;
         public ICollection<MemberInvoice> MemberInvoices { get; set; } = new List<MemberInvoice>();
-        public ICollection<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();
+        public ServiceRequest? ServiceRequest { get; set; } 
+
     }
 }

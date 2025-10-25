@@ -3,6 +3,7 @@ using System;
 using DataAccessLayer.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251024070711_RemoveExpenseCategory")]
+    partial class RemoveExpenseCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -616,10 +619,6 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("text")
                         .HasColumnName("invoice_url");
 
-                    b.Property<Guid?>("ServiceRequestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("service_request_id");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text")
@@ -632,9 +631,6 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
-
-                    b.HasIndex("ServiceRequestId")
-                        .IsUnique();
 
                     b.ToTable("group_expense");
                 });
@@ -1037,6 +1033,13 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<Guid?>("ExpenseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expense_id");
+
+                    b.Property<Guid?>("GroupExpenseId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid")
                         .HasColumnName("group_id");
@@ -1069,8 +1072,7 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("text")
                         .HasColumnName("type");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1084,6 +1086,11 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedBy");
+
+                    b.HasIndex("ExpenseId")
+                        .IsUnique();
+
+                    b.HasIndex("GroupExpenseId");
 
                     b.HasIndex("GroupId");
 
@@ -1443,14 +1450,7 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BusinessObject.Models.ServiceRequest", "ServiceRequest")
-                        .WithOne("GroupExpense")
-                        .HasForeignKey("BusinessObject.Models.GroupExpense", "ServiceRequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.Navigation("Group");
-
-                    b.Navigation("ServiceRequest");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.GroupInvite", b =>
@@ -1566,6 +1566,15 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("BusinessObject.Models.GroupExpense", "Expense")
+                        .WithOne()
+                        .HasForeignKey("BusinessObject.Models.ServiceRequest", "ExpenseId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BusinessObject.Models.GroupExpense", null)
+                        .WithMany("ServiceRequests")
+                        .HasForeignKey("GroupExpenseId");
+
                     b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
                         .WithMany("ServiceRequests")
                         .HasForeignKey("GroupId")
@@ -1589,6 +1598,8 @@ namespace DataAccessLayer.Migrations
                         .IsRequired();
 
                     b.Navigation("CreatedByAccount");
+
+                    b.Navigation("Expense");
 
                     b.Navigation("Group");
 
@@ -1749,6 +1760,8 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("BusinessObject.Models.GroupExpense", b =>
                 {
                     b.Navigation("MemberInvoices");
+
+                    b.Navigation("ServiceRequests");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.MemberInvoice", b =>
@@ -1774,8 +1787,6 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("BusinessObject.Models.ServiceRequest", b =>
                 {
                     b.Navigation("Confirmations");
-
-                    b.Navigation("GroupExpense");
 
                     b.Navigation("Job");
                 });

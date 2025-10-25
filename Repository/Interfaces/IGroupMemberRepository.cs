@@ -22,6 +22,8 @@ namespace Repository.Interfaces
         Task<bool> IsGroupEmptyAsync(Guid groupId);
         Task<bool> DeleteGroupAsync(Guid groupId);
         Task<List<GroupMember>> GetByGroupIdAsync(Guid groupId);
-   
+        Task<bool> IsMemberAsync(Guid groupId, Guid userId);
+        Task<int> CountMembersAsync(Guid groupId);
+
     }
 }

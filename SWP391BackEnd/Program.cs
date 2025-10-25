@@ -76,8 +76,22 @@ builder.Services.AddScoped<IEContractMemberShareRepository, EContractMemberShare
 builder.Services.AddHostedService<BookingMonitorService>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
-
-
+builder.Services.AddScoped<IServiceCenterRepository, ServiceCenterRepository>();
+builder.Services.AddScoped<IServiceCenterService, ServiceCenterService>();
+builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
+builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
+builder.Services.AddScoped<IServiceRequestConfirmationRepository, ServiceRequestConfirmationRepository>();
+builder.Services.AddScoped<IServiceRequestConfirmationService, ServiceRequestConfirmationService>();
+//builder.Services.AddScoped<IServiceJobRepository, ServiceJobRepository>();
+//builder.Services.AddScoped<IServiceJobService, ServiceJobService>();
+builder.Services.AddScoped<IGroupExpenseRepository, GroupExpenseRepository>();
+builder.Services.AddScoped<IGroupExpenseService, GroupExpenseService>();
+builder.Services.AddScoped<IMemberInvoiceRepository, MemberInvoiceRepository>();
+builder.Services.AddScoped<IMemberInvoiceService, MemberInvoiceService>();
+builder.Services.AddScoped<IMemberInvoicePaymentService, MemberInvoicePaymentService>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPayosTransactionRepository, PayosTransactionRepository>();
+builder.Services.AddScoped<IMemberInvoiceRepository, MemberInvoiceRepository>();
 
 
 
