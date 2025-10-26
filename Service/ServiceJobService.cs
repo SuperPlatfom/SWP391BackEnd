@@ -12,11 +12,13 @@ namespace Service
     {
         private readonly IServiceRequestRepository _requestRepo;
         private readonly IServiceJobRepository _jobRepo;
+        private readonly IFirebaseStorageService _firebaseStorageService;
 
-        public ServiceJobService(IServiceRequestRepository requestRepo, IServiceJobRepository jobRepo)
+        public ServiceJobService(IServiceRequestRepository requestRepo, IServiceJobRepository jobRepo, IFirebaseStorageService firebaseStorageService)
         {
             _requestRepo = requestRepo;
             _jobRepo = jobRepo;
+            _firebaseStorageService = firebaseStorageService;
         }
 
         public async Task CreateAfterFullPaymentAsync(Guid expenseId)
@@ -143,7 +145,8 @@ namespace Service
             if (job.TechnicianId != technicianId)
                 throw new UnauthorizedAccessException("Bạn không có quyền cập nhật công việc này.");
 
-            job.ReportUrl = req.ReportUrl;
+            var fileUrl = await _firebaseStorageService.UploadFileAsync(req.ReportFile, "service_reports");
+            job.ReportUrl = fileUrl;
             job.UpdatedAt = DateTime.UtcNow;
             await _jobRepo.UpdateAsync(job);
             await _jobRepo.SaveChangesAsync();

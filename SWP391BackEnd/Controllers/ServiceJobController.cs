@@ -88,29 +88,26 @@ namespace SWP391BackEnd.Controllers
         }
 
         [HttpPut("{id}/report")]
-        [Authorize(Roles = "Admin,Technician")]
-        public async Task<IActionResult> UpdateReport(Guid id, [FromBody] UpdateServiceJobReportRequest req)
+        [Authorize(Roles = "Technician,Admin")]
+        public async Task<IActionResult> UpdateReport(Guid id, [FromForm] UpdateServiceJobReportRequest req)
         {
             try
             {
                 var technicianId = Guid.Parse(User.FindFirst("id")?.Value ?? throw new UnauthorizedAccessException());
                 await _service.UpdateReportAsync(id, req, technicianId);
 
-                return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
-                    "Cập nhật báo cáo công việc thành công", null);
+                return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,"Cập nhật báo cáo thành công", null);
             }
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 return CustomErrorHandler.SimpleError(ex.Message, 500);
             }
         }
+
+
     }
 }
