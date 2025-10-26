@@ -45,7 +45,7 @@ namespace Service
 
             request.Status = "IN_PROGRESS";
             request.UpdatedAt = DateTime.UtcNow;
-            await _requestRepo.UpdateAsync(request);
+
 
 
             await _jobRepo.SaveChangesAsync();
@@ -114,7 +114,7 @@ namespace Service
                     request.CompletedAt = DateTime.UtcNow;
                     request.UpdatedAt = DateTime.UtcNow;
 
-                    await _requestRepo.UpdateAsync(request);
+
                 }
             }
             else if (newStatus == "CANCELED")
@@ -125,7 +125,7 @@ namespace Service
                 {
                     request.Status = "CANCELED";
                     request.UpdatedAt = DateTime.UtcNow;
-                    await _requestRepo.UpdateAsync(request);
+
                 }
             }
 
