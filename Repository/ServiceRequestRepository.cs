@@ -90,7 +90,6 @@ namespace Repository
                 .Include(sr => sr.Technician)
                 .Include(sr => sr.Group)
                 .Include(sr => sr.ServiceCenter)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(sr => sr.Id == expense.ServiceRequestId);
         }
 
