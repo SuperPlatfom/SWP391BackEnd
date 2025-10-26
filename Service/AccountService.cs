@@ -22,16 +22,18 @@ namespace Service
         private readonly IIdentityCardRepository _identityCardRepository;
         private readonly IMailService _mailService;
         private readonly IRoleRepository _roleRepository;
+        private readonly IFirebaseStorageService _firebaseStorageService;
         public AccountService(IAccountRepository accountRepository, IUserRepository userRepository, 
-            IMailService mailService, IRoleRepository roleRepository,IIdentityCardRepository identityCardRepository)
+            IMailService mailService, IRoleRepository roleRepository,IIdentityCardRepository identityCardRepository, IFirebaseStorageService firebaseStorageService)
         {
             _accountRepository = accountRepository;
             _userRepository = userRepository;
             _mailService = mailService;
             _identityCardRepository = identityCardRepository;
             _roleRepository = roleRepository;
+            _firebaseStorageService = firebaseStorageService;
         }
-        public async Task AddAsync(AddAccountRequestModel userDto)
+        public async Task AddAsync(AddAccountRequestModel userDto, string roleName)
         {
             var errors = new Dictionary<string, string>();
 
@@ -44,9 +46,9 @@ namespace Service
             if (errors.Any())
                 throw new CustomValidationError(errors);
 
-            var officerRole = await _roleRepository.GetByNameAsync("Staff");
-            if (officerRole == null)
-                throw new Exception("Staff role does not exist. Please initialize roles first.");
+            var targetRole = await _roleRepository.GetByNameAsync(roleName);
+            if (targetRole == null)
+                throw new Exception($"{roleName} role does not exist. Please initialize roles first.");
 
             var accountId = Guid.NewGuid();
 
@@ -60,7 +62,7 @@ namespace Service
                 Phone = userDto.phone,
                 Gender = userDto.gender,
                 Status = "active",
-                RoleId = officerRole.Id,
+                RoleId = targetRole.Id,
                 ImageUrl = "",
                 ActivationCode = null,
                 RefreshToken = null,
@@ -69,6 +71,13 @@ namespace Service
                 CreatedAt = DateTime.UtcNow
             };
 
+            string frontImageUrl = userDto.frontImage != null
+                ? await _firebaseStorageService.UploadFileAsync(userDto.frontImage, "uploads")
+                : string.Empty;
+
+            string backImageUrl = userDto.backImage != null
+                ? await _firebaseStorageService.UploadFileAsync(userDto.backImage, "uploads")
+                : string.Empty;
             var identityCard = new CitizenIdentityCard
             {
                 Id = Guid.NewGuid(),
@@ -79,8 +88,8 @@ namespace Service
                 ExpiryDate = userDto.expiryDate.ToUniversalTime(),
                 PlaceOfIssue = userDto.placeOfIssue,
                 PlaceOfBirth = userDto.placeOfBirth,
-                FrontImageUrl = "N/A",
-                BackImageUrl = "N/A",
+                FrontImageUrl = frontImageUrl,
+                BackImageUrl = backImageUrl,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -88,20 +97,21 @@ namespace Service
             await _accountRepository.AddAsync(account);
             await _identityCardRepository.CreateAsync(identityCard);
 
-            string subject = "Thông tin tài khoản Cán bộ địa phương";
+            string subject = $"Thông tin tài khoản {roleName}";
             string message = $@"
         <p>Kính chào anh/chị,</p>
-        <p>Hệ thống <strong>EV Sharing</strong> đã khởi tạo tài khoản nhân viên.</p>
+        <p>Hệ thống <strong>EV Sharing</strong> đã khởi tạo tài khoản <strong>{roleName}</strong>.</p>
         <p><strong>Thông tin đăng nhập:</strong></p>
         <ul>
             <li><strong>Email:</strong> {userDto.email}</li>
             <li><strong>Mật khẩu:</strong> {userDto.password}</li>
         </ul>
         <p>Vui lòng đăng nhập và đổi mật khẩu ngay sau lần đăng nhập đầu tiên để đảm bảo bảo mật.</p>
-        <p>Trân trọng,<br/>Safe City</p>";
+        <p>Trân trọng,<br/>Hệ thống EV Sharing</p>";
 
             await _mailService.SendEmailVerificationCode(userDto.email, subject, message);
         }
+
 
         private async Task<string?> CheckDuplicateFieldsAsync(AddAccountRequestModel userDto, string idNumber)
         {

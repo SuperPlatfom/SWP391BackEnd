@@ -73,5 +73,12 @@ namespace BusinessObject.DTOs.RequestModels
         [Required(ErrorMessage = "Address is required")]
         [MinLength(5, ErrorMessage = "Address must be at least 5 characters long")]
         public string address { get; set; } = string.Empty;
+
+        [JsonPropertyName("frontImage")]
+        public IFormFile? frontImage { get; set; }
+
+        [JsonPropertyName("backImage")]
+        public IFormFile? backImage { get; set; }
+
     }
 }

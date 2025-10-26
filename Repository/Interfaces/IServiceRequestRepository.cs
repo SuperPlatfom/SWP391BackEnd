@@ -14,6 +14,7 @@ namespace Repository.Interfaces
         Task AddAsync(ServiceRequest entity);
         Task UpdateAsync(ServiceRequest entity);
         Task<IEnumerable<ServiceRequest>> GetByGroupMembersAsync(Guid currentUserId);
+        Task<ServiceRequest?> GetByExpenseIdAsync(Guid expenseId);
         Task SaveChangesAsync();
     }
 }
