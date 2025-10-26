@@ -4,7 +4,6 @@ using BusinessObject.DTOs.RequestModels;
 using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Enums;
 using BusinessObject.Models;
-using Repository;
 using Repository.Interfaces;
 using Service.Helpers;
 using Service.Interfaces;
@@ -23,13 +22,15 @@ namespace Service
 
         public async Task<(bool IsSuccess, string Message, BookingResponseModel? Data)> CreateBookingAsync(BookingRequestModel request, ClaimsPrincipal user)
         {
-            var now = DateTimeHelper.NowVietnamTime();
+        
             var userId = GetUserId(user);
 
-            if (request.StartTime < now.AddMinutes(30))
-                return (false, "Thời gian bắt đầu phải cách hiện tại ít nhất 30 phút.", null);
+            var startUtc = DateTimeHelper.ToUtcFromVietnamTime(request.StartTime);
+            var endUtc = DateTimeHelper.ToUtcFromVietnamTime(request.EndTime);
 
-            if (request.EndTime <= request.StartTime)
+            if (startUtc < DateTime.UtcNow.AddMinutes(30))
+                return (false, "Thời gian bắt đầu phải cách hiện tại ít nhất 30 phút.", null);
+            if (endUtc <= startUtc)
                 return (false, "Thời gian kết thúc phải sau thời gian bắt đầu.", null);
 
             var existingBookings = await _bookingRepo.GetBookingsByVehicleAsync(request.VehicleId);
@@ -48,9 +49,9 @@ namespace Service
                 if (isOverlap)
                 {
                     return (false,
-                        $"Xe này đã có người đặt từ {b.StartTime:HH:mm} đến {b.EndTime:HH:mm}. " +
-                        $"Vui lòng chọn thời gian cách ít nhất 30 phút.",
-                        null);
+                $"Xe này đã có người đặt từ {DateTimeHelper.ToVietnamTime(b.StartTime):HH:mm} đến {DateTimeHelper.ToVietnamTime(b.EndTime):HH:mm}. " +
+                $"Vui lòng chọn thời gian cách ít nhất 30 phút.",
+                null);
                 }
             }
 
@@ -60,11 +61,11 @@ namespace Service
                 GroupId = request.GroupId,
                 VehicleId = request.VehicleId,
                 UserId = userId,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
+                StartTime = startUtc,
+                EndTime = endUtc,
                 Status = BookingStatus.Booked,
-                CreatedAt = now,
-                UpdatedAt = now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             await _bookingRepo.AddAsync(booking);
@@ -139,6 +140,106 @@ namespace Service
                 throw new UnauthorizedAccessException("Không tìm thấy thông tin người dùng trong token.");
             return Guid.Parse(userIdClaim);
         }
+
+        public async Task<(bool IsSuccess, string Message, BookingResponseModel? Data)>
+    UpdateBookingAsync(BookingUpdateRequestModel request, ClaimsPrincipal user)
+        {
+            var booking = await _bookingRepo.GetByIdAsync(request.Id);
+            if (booking == null)
+                return (false, "Không tìm thấy lịch đặt.", null);
+
+            // Chỉ cho phép update khi status là BOOKED hoặc INUSE
+            if (booking.Status != BookingStatus.Booked && booking.Status != BookingStatus.InUse)
+                return (false, "Chỉ có thể cập nhật lịch ở trạng thái BOOKED hoặc INUSE.", null);
+
+            var nowVN = DateTimeHelper.NowVietnamTime();
+
+            if (request.EndTime <= request.StartTime)
+                return (false, "Thời gian kết thúc phải sau thời gian bắt đầu.", null);
+
+            // Chuyển về UTC để lưu DB
+            var newStartUtc = DateTimeHelper.ToUtcFromVietnamTime(request.StartTime);
+            var newEndUtc = DateTimeHelper.ToUtcFromVietnamTime(request.EndTime);
+
+            // Lấy danh sách booking khác của cùng xe để kiểm tra overlap
+            var existingBookings = await _bookingRepo.GetBookingsByVehicleAsync(booking.VehicleId);
+
+            // Lọc bỏ chính booking đang update
+            existingBookings = existingBookings
+                .Where(b => b.Id != booking.Id &&
+                            b.Status != BookingStatus.Cancelled &&
+                            b.Status != BookingStatus.Completed)
+                .ToList();
+
+            // ----------------------------
+            // CASE 1: Status = INUSE
+            // ----------------------------
+            if (booking.Status == BookingStatus.InUse)
+            {
+                if (newStartUtc != booking.StartTime)
+                    return (false, "Không thể thay đổi thời gian bắt đầu khi xe đang được sử dụng.", null);
+
+                if (newEndUtc <= booking.StartTime)
+                    return (false, "Thời gian kết thúc phải sau thời gian bắt đầu.", null);
+
+     
+                foreach (var b in existingBookings)
+                {
+                    bool isOverlap = newEndUtc > b.StartTime && booking.StartTime < b.EndTime;
+                    if (isOverlap)
+                    {
+                        return (false,
+                            $"Thời gian kết thúc mới ({DateTimeHelper.ToVietnamTime(newEndUtc):HH:mm}) " +
+                            $"bị trùng với lịch đặt khác từ {DateTimeHelper.ToVietnamTime(b.StartTime):HH:mm} " +
+                            $"đến {DateTimeHelper.ToVietnamTime(b.EndTime):HH:mm}.",
+                            null);
+                    }
+                }
+
+                booking.EndTime = newEndUtc;
+                booking.UpdatedAt = DateTime.UtcNow;
+                await _bookingRepo.UpdateAsync(booking);
+
+                return (true, "Cập nhật thời gian kết thúc thành công.", MapToResponse(booking));
+            }
+
+            // ----------------------------
+            // CASE 2: Status = BOOKED
+            // ----------------------------
+            if (booking.Status == BookingStatus.Booked)
+            {
+                if (request.StartTime < nowVN.AddMinutes(30))
+                    return (false, "Thời gian bắt đầu phải cách hiện tại ít nhất 30 phút.", null);
+
+                foreach (var b in existingBookings)
+                {
+
+                    var existingStart = b.StartTime.AddMinutes(-30);
+                    var existingEnd = b.EndTime.AddMinutes(30);
+
+                    bool isOverlap = newStartUtc < existingEnd && newEndUtc > existingStart;
+
+                    if (isOverlap)
+                    {
+                        return (false,
+                            $"Xe này đã có người đặt từ {DateTimeHelper.ToVietnamTime(b.StartTime):HH:mm} " +
+                            $"đến {DateTimeHelper.ToVietnamTime(b.EndTime):HH:mm}. " +
+                            $"Vui lòng chọn thời gian cách ít nhất 30 phút.",
+                            null);
+                    }
+                }
+
+                booking.StartTime = newStartUtc;
+                booking.EndTime = newEndUtc;
+                booking.UpdatedAt = DateTime.UtcNow;
+                await _bookingRepo.UpdateAsync(booking);
+
+                return (true, "Cập nhật lịch đặt thành công.", MapToResponse(booking));
+            }
+
+            return (false, "Không thể cập nhật lịch đặt.", null);
+        }
+
         private static BookingResponseModel MapToResponse(Booking booking)
         {
             return new BookingResponseModel
@@ -146,15 +247,12 @@ namespace Service
                 Id = booking.Id,
                 GroupId = booking.GroupId,
                 VehicleId = booking.VehicleId,
-                StartTime = booking.StartTime,
-                EndTime = booking.EndTime,
+                StartTime = DateTimeHelper.ToVietnamTime(booking.StartTime),
+                EndTime = DateTimeHelper.ToVietnamTime(booking.EndTime),
                 Purpose = booking.Purpose,
                 Status = booking.Status,
-                CreatedAt = booking.CreatedAt,
-                UpdatedAt = booking.UpdatedAt,
-                //VehicleName = booking.Vehicle?.Model,
-              //  GroupName = booking.Group?.Name,
-              //  UserName = booking.User?.FullName
+                CreatedAt = DateTimeHelper.ToVietnamTime(booking.CreatedAt),
+                UpdatedAt = DateTimeHelper.ToVietnamTime(booking.UpdatedAt)
             };
         }
     }

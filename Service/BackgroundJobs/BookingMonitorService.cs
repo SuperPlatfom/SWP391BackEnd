@@ -47,20 +47,20 @@ namespace Service.BackgroundJobs
             foreach (var booking in allBookings)
             {
                 // --- 1️⃣ Tự động hủy nếu quá 15 phút mà chưa check-in ---
-                if (booking.Status == BookingStatus.Booked && now > booking.StartTime.AddMinutes(15))
+                if (booking.Status == BookingStatus.Booked && DateTime.UtcNow >= booking.StartTime.AddMinutes(15))
                 {
                     booking.Status = BookingStatus.Cancelled;
-                    booking.UpdatedAt = now;
+                    booking.UpdatedAt = DateTime.UtcNow;
                     await bookingRepo.UpdateAsync(booking);
                     cancelCount++;
                     continue;
                 }
 
                 // --- 2️⃣ Tự động chuyển sang OVERTIME nếu quá EndTime mà vẫn đang InUse ---
-                if (booking.Status == BookingStatus.InUse && now > booking.EndTime)
+                if (booking.Status == BookingStatus.InUse && DateTime.UtcNow > booking.EndTime)
                 {
                     booking.Status = BookingStatus.Overtime;
-                    booking.UpdatedAt = now;
+                    booking.UpdatedAt = DateTime.UtcNow;
                     await bookingRepo.UpdateAsync(booking);
                     overtimeCount++;
                 }
