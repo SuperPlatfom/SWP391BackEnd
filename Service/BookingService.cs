@@ -4,7 +4,6 @@ using BusinessObject.DTOs.RequestModels;
 using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Enums;
 using BusinessObject.Models;
-using Repository;
 using Repository.Interfaces;
 using Service.Helpers;
 using Service.Interfaces;
@@ -26,10 +25,12 @@ namespace Service
             var now = DateTimeHelper.NowVietnamTime();
             var userId = GetUserId(user);
 
-            if (request.StartTime < now.AddMinutes(30))
-                return (false, "Thời gian bắt đầu phải cách hiện tại ít nhất 30 phút.", null);
+            var startUtc = DateTimeHelper.ToUtcFromVietnamTime(request.StartTime);
+            var endUtc = DateTimeHelper.ToUtcFromVietnamTime(request.EndTime);
 
-            if (request.EndTime <= request.StartTime)
+            if (startUtc < DateTime.UtcNow.AddMinutes(30))
+                return (false, "Thời gian bắt đầu phải cách hiện tại ít nhất 30 phút.", null);
+            if (endUtc <= startUtc)
                 return (false, "Thời gian kết thúc phải sau thời gian bắt đầu.", null);
 
             var existingBookings = await _bookingRepo.GetBookingsByVehicleAsync(request.VehicleId);
@@ -60,8 +61,8 @@ namespace Service
                 GroupId = request.GroupId,
                 VehicleId = request.VehicleId,
                 UserId = userId,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
+                StartTime = startUtc,
+                EndTime = endUtc,
                 Status = BookingStatus.Booked,
                 CreatedAt = now,
                 UpdatedAt = now
@@ -146,8 +147,8 @@ namespace Service
                 Id = booking.Id,
                 GroupId = booking.GroupId,
                 VehicleId = booking.VehicleId,
-                StartTime = booking.StartTime,
-                EndTime = booking.EndTime,
+                StartTime = DateTimeHelper.ToVietnamTime(booking.StartTime),
+                EndTime = DateTimeHelper.ToVietnamTime(booking.EndTime),
                 Purpose = booking.Purpose,
                 Status = booking.Status,
                 CreatedAt = booking.CreatedAt,
