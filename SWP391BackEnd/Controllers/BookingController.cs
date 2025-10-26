@@ -32,6 +32,21 @@ namespace SWP391BackEnd.Controllers
             return Ok(new { message = result.Message, data = result.Data });
         }
 
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateBooking([FromBody] BookingUpdateRequestModel request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _bookingService.UpdateBookingAsync(request, HttpContext.User);
+
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new { message = result.Message, data = result.Data });
+        }
+
+
         [HttpPut("cancel/{id}")]
         public async Task<IActionResult> CancelBooking(Guid id)
         {

@@ -5,6 +5,8 @@ namespace Service.Helpers
 {
     public static class DateTimeHelper
     {
+        private static readonly TimeZoneInfo _vnTimeZone = TZConvert.GetTimeZoneInfo("SE Asia Standard Tie");
+
         public static TimeZoneInfo GetVietnamTimeZone()
         {
             try
@@ -16,14 +18,12 @@ namespace Service.Helpers
                 return TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             }
         }
-        private static readonly TimeZoneInfo _vnTimeZone = TZConvert.GetTimeZoneInfo("SE Asia Standard Time");
-
-      /*  public static DateTime ToVietnamTime(DateTime utcTime)
+        public static DateTime ToVietnamTime(DateTime utcTime)
         {
-            var tz = GetVietnamTimeZone();
-            return TimeZoneInfo.ConvertTimeFromUtc(utcTime, tz);
+            return TimeZoneInfo.ConvertTimeFromUtc(utcTime, _vnTimeZone);
         }
-      */
+
+
         public static DateTime NowVietnamTime()
         {
 
@@ -32,20 +32,12 @@ namespace Service.Helpers
             return DateTime.SpecifyKind(vietnamTime, DateTimeKind.Utc); 
         }
 
-        public static DateTime ToVietnamTime(DateTime utcTime)
-        {
-            if (utcTime.Kind == DateTimeKind.Unspecified)
-                utcTime = DateTime.SpecifyKind(utcTime, DateTimeKind.Utc);
-            var tz = GetVietnamTimeZone();
-            return TimeZoneInfo.ConvertTimeFromUtc(utcTime, tz);
-        }
-
         public static DateTime ToUtcFromVietnamTime(DateTime vietnamTime)
         {
             if (vietnamTime.Kind == DateTimeKind.Unspecified)
                 vietnamTime = DateTime.SpecifyKind(vietnamTime, DateTimeKind.Unspecified);
-            var tz = GetVietnamTimeZone();
-            return TimeZoneInfo.ConvertTimeToUtc(vietnamTime, tz);
+
+            return TimeZoneInfo.ConvertTimeToUtc(vietnamTime, _vnTimeZone);
         }
     }
 }
