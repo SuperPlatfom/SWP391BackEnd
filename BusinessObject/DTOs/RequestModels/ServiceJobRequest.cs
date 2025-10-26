@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,6 @@ namespace BusinessObject.DTOs.RequestModels
 
     public class UpdateServiceJobReportRequest
     {
-        public string ReportUrl { get; set; } = string.Empty;
+        public IFormFile ReportFile { get; set; }
     }
 }
