@@ -82,8 +82,8 @@ builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>(
 builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
 builder.Services.AddScoped<IServiceRequestConfirmationRepository, ServiceRequestConfirmationRepository>();
 builder.Services.AddScoped<IServiceRequestConfirmationService, ServiceRequestConfirmationService>();
-//builder.Services.AddScoped<IServiceJobRepository, ServiceJobRepository>();
-//builder.Services.AddScoped<IServiceJobService, ServiceJobService>();
+builder.Services.AddScoped<IServiceJobRepository, ServiceJobRepository>();
+builder.Services.AddScoped<IServiceJobService, ServiceJobService>();
 builder.Services.AddScoped<IGroupExpenseRepository, GroupExpenseRepository>();
 builder.Services.AddScoped<IGroupExpenseService, GroupExpenseService>();
 builder.Services.AddScoped<IMemberInvoiceRepository, MemberInvoiceRepository>();

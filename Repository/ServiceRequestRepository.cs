@@ -76,6 +76,23 @@ namespace Repository
                 .ToListAsync();
         }
 
+        public async Task<ServiceRequest?> GetByExpenseIdAsync(Guid expenseId)
+        {
+            var expense = await _db.GroupExpenses
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == expenseId);
+
+            if (expense == null || expense.ServiceRequestId == Guid.Empty)
+                return null;
+
+            return await _db.ServiceRequests
+                .Include(sr => sr.Vehicle)
+                .Include(sr => sr.Technician)
+                .Include(sr => sr.Group)
+                .Include(sr => sr.ServiceCenter)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(sr => sr.Id == expense.ServiceRequestId);
+        }
 
 
         public async Task SaveChangesAsync()

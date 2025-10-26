@@ -18,13 +18,17 @@ namespace Service
         private readonly IPaymentRepository _paymentRepo;
         private readonly IPayosTransactionRepository _txRepo;
         private readonly IMemberInvoiceRepository _invoiceRepo;
+        private readonly IGroupExpenseRepository _expenseRepo;
+        private readonly IServiceJobService _serviceJobService;
         private readonly PayOS _payOS;
 
         public MemberInvoicePaymentService(
             IConfiguration config,
             IPaymentRepository paymentRepo,
             IPayosTransactionRepository txRepo,
-            IMemberInvoiceRepository invoiceRepo)
+            IMemberInvoiceRepository invoiceRepo,
+            IGroupExpenseRepository expenseRepo,
+            IServiceJobService serviceJobService)
         {
             _paymentRepo = paymentRepo;
             _txRepo = txRepo;
@@ -35,6 +39,8 @@ namespace Service
                 config["Environment:PAYOS_API_KEY"],
                 config["Environment:PAYOS_CHECKSUM_KEY"]
             );
+            _expenseRepo = expenseRepo;
+            _serviceJobService = serviceJobService;
         }
 
         public async Task<CreatePaymentResult> CreatePaymentForInvoiceAsync(
@@ -118,6 +124,22 @@ namespace Service
                             invoice.Status = "PARTIAL";
                         invoice.UpdatedAt = DateTime.UtcNow;
                         await _invoiceRepo.UpdateAsync(invoice);
+
+                        var allInvoices = await _invoiceRepo.GetByExpenseIdAsync(invoice.ExpenseId);
+                        if (allInvoices.All(i => i.Status == "PAID"))
+                        {
+
+                            var expense = await _expenseRepo.GetByIdAsync(invoice.ExpenseId);
+                            if (expense != null)
+                            {
+                                expense.Status = "PAID";
+                                expense.UpdatedAt = DateTime.UtcNow;
+                                await _expenseRepo.UpdateAsync(expense);
+                                await _expenseRepo.SaveChangesAsync();
+
+                                await _serviceJobService.CreateAfterFullPaymentAsync(expense.Id);
+                            }
+                        }
                     }
                 }
 

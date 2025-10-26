@@ -44,14 +44,6 @@ namespace Repository.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Account>> GetAllOfficerAsync()
-        {
-            return await _context.Accounts
-                .Include(x => x.Role)
-                .Include(x => x.CitizenIdentityCard)
-                .Where(x => x.Role.Name == "Officer")
-                .ToListAsync();
-        }
 
         public async Task<Account?> GetByIdAsync(Guid id)
         {
@@ -60,15 +52,12 @@ namespace Repository.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<Account> UpdateOfficerAsync(Account account)
-        {
-            _context.Accounts.Update(account);
-            await _context.SaveChangesAsync();
-            return account;
-        }
+
 
         public async Task<Account> UpdateAsync(Account account)
         {
+            _context.Accounts.Update(account);
+            await _context.SaveChangesAsync();
             return account;
         }
 

@@ -12,7 +12,7 @@ namespace Service.Interfaces
     public interface IAccountService
     {
 
-        Task AddAsync(AddAccountRequestModel requestModel);
+        Task AddAsync(AddAccountRequestModel userDto, string roleName);
 
 
     }
