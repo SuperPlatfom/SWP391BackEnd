@@ -7,17 +7,6 @@ namespace Service.Helpers
     {
         private static readonly TimeZoneInfo _vnTimeZone = TZConvert.GetTimeZoneInfo("SE Asia Standard Tie");
 
-        public static TimeZoneInfo GetVietnamTimeZone()
-        {
-            try
-            {
-                return TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                return TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-            }
-        }
         public static DateTime ToVietnamTime(DateTime utcTime)
         {
             return TimeZoneInfo.ConvertTimeFromUtc(utcTime, _vnTimeZone);
