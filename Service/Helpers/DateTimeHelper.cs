@@ -5,7 +5,7 @@ namespace Service.Helpers
 {
     public static class DateTimeHelper
     {
-        private static readonly TimeZoneInfo _vnTimeZone = TZConvert.GetTimeZoneInfo("SE Asia Standard Tie");
+        private static readonly TimeZoneInfo _vnTimeZone = TZConvert.GetTimeZoneInfo("SE Asia Standard Time");
 
         public static DateTime ToVietnamTime(DateTime utcTime)
         {
@@ -18,13 +18,13 @@ namespace Service.Helpers
 
             var utcNow = DateTime.UtcNow;
             var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
-            return DateTime.SpecifyKind(vietnamTime, DateTimeKind.Utc); 
+            return DateTime.SpecifyKind(vietnamTime, DateTimeKind.Local); 
         }
 
         public static DateTime ToUtcFromVietnamTime(DateTime vietnamTime)
         {
             if (vietnamTime.Kind == DateTimeKind.Unspecified)
-                vietnamTime = DateTime.SpecifyKind(vietnamTime, DateTimeKind.Unspecified);
+                vietnamTime = DateTime.SpecifyKind(vietnamTime, DateTimeKind.Local);
 
             return TimeZoneInfo.ConvertTimeToUtc(vietnamTime, _vnTimeZone);
         }
