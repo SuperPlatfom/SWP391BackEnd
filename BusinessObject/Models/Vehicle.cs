@@ -37,7 +37,7 @@ namespace BusinessObject.Models
         public int RangeKm { get; set; }          // Tầm hoạt động ước tính
 
         [Column("status")]
-        public string Status { get; set; }        // ACTIVE / INACTIVE / MAINTENANCE
+        public string Status { get; set; } =   "INACTIVE";        // ACTIVE / INACTIVE / MAINTENANCE
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
@@ -45,6 +45,8 @@ namespace BusinessObject.Models
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; }
 
+        [Column("weekly_quota_hours")]
+        public decimal WeeklyQuotaHours { get; set; } = 112;
         [Column("created_by")]
         [ForeignKey(nameof(Creator))]
         public Guid CreatedBy { get; set; }
@@ -57,7 +59,7 @@ namespace BusinessObject.Models
         public CoOwnershipGroup? Group { get; set; }
         public ICollection<EContract> Contracts { get; set; } = new List<EContract>();
         public ICollection<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();
-
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
     }
 }

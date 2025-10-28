@@ -92,7 +92,8 @@ builder.Services.AddScoped<IMemberInvoicePaymentService, MemberInvoicePaymentSer
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPayosTransactionRepository, PayosTransactionRepository>();
 builder.Services.AddScoped<IMemberInvoiceRepository, MemberInvoiceRepository>();
-
+builder.Services.AddScoped<IUsageQuotaRepository, UsageQuotaRepository>();
+builder.Services.AddScoped<IUsageQuotaService, UsageQuotaService>();
 
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
