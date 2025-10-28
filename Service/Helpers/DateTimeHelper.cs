@@ -21,7 +21,7 @@ namespace Service.Helpers
             return DateTime.SpecifyKind(vietnamTime, DateTimeKind.Local); 
         }
 
-        public static DateTime ToUtcFromVietnamTime(DateTime vietnamTime)
+          public static DateTime ToUtcFromVietnamTime(DateTime vietnamTime)
         {
             return TimeZoneInfo.ConvertTimeToUtc(vietnamTime, _vnTimeZone);
         }

@@ -14,10 +14,12 @@ namespace Service
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepo;
+        private readonly IUsageQuotaService _usageQuotaRepo;
 
-        public BookingService(IBookingRepository bookingRepo)
+        public BookingService(IBookingRepository bookingRepo, IUsageQuotaService usageQuotaRepo)
         {
             _bookingRepo = bookingRepo;
+            _usageQuotaRepo = usageQuotaRepo;
         }
 
         public async Task<(bool IsSuccess, string Message, BookingResponseModel? Data)> CreateBookingAsync(BookingRequestModel request, ClaimsPrincipal user)
@@ -54,6 +56,10 @@ namespace Service
                 null);
                 }
             }
+            decimal bookingDuration = (decimal)(endUtc - startUtc).TotalHours;
+            if (bookingDuration <= 0)
+                return (false, "Thời lượng đặt xe không hợp lệ.", null);
+
 
             var booking = new Booking
             {
@@ -240,6 +246,36 @@ namespace Service
             return (false, "Không thể cập nhật lịch đặt.", null);
         }
 
+        private DateTime GetWeekStartDate(DateTime vietnamNow)
+        {
+            // Đảm bảo ngày truyền vào là giờ Việt Nam
+            int diff = (7 + (vietnamNow.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var monday = vietnamNow.Date.AddDays(-diff);
+
+            // Trả về DateTime có Kind = Unspecified (vì sẽ convert qua UTC sau)
+            return DateTime.SpecifyKind(monday, DateTimeKind.Unspecified);
+        }
+
+        private List<(DateTime Start, DateTime End)> SplitBookingByWeek(DateTime startUtc, DateTime endUtc)
+        {
+            var segments = new List<(DateTime Start, DateTime End)>();
+            var currentStart = startUtc;
+
+            while (currentStart < endUtc)
+            {
+                var weekStart = GetWeekStartDate(DateTimeHelper.ToVietnamTime(currentStart));
+                var weekEnd = weekStart.AddDays(7);
+
+                var segmentEnd = endUtc < DateTimeHelper.ToUtcFromVietnamTime(weekEnd)
+                    ? endUtc
+                    : DateTimeHelper.ToUtcFromVietnamTime(weekEnd);
+
+                segments.Add((currentStart, segmentEnd));
+                currentStart = segmentEnd;
+            }
+
+            return segments;
+        }
         private static BookingResponseModel MapToResponse(Booking booking)
         {
             return new BookingResponseModel

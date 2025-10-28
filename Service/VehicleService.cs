@@ -11,16 +11,12 @@ namespace Service
     public class VehicleService : IVehicleService
     {
         private readonly IVehicleRepository _vehicleRepository;
-        private readonly ICoOwnershipGroupRepository _groupRepository; // thêm dependency
-        private readonly IHttpContextAccessor _httpContextAccessor;
+       
         public VehicleService(
-            IVehicleRepository vehicleRepository,
-            ICoOwnershipGroupRepository groupRepository,
-            IHttpContextAccessor httpContextAccessor)
+            IVehicleRepository vehicleRepository)
         {
             _vehicleRepository = vehicleRepository;
-            _groupRepository = groupRepository;
-            _httpContextAccessor = httpContextAccessor;
+          
         }
 
         public async Task<IEnumerable<VehicleResponseModel>> GetAllVehiclesAsync()

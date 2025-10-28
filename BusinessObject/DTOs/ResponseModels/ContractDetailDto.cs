@@ -29,7 +29,7 @@ namespace BusinessObject.DTOs.ResponseModels
         public string? VehicleName { get; set; } 
         public int ModelYear { get; set; }
         public string? Color { get; set; }
-        public decimal BatteryCapacityKwh { get; set; }
+        public decimal? BatteryCapacityKwh { get; set; }
         public int RangeKm { get; set; }
 
 
