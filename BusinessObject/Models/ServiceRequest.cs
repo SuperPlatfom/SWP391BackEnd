@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BusinessObject.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessObject.Models
@@ -17,7 +18,7 @@ namespace BusinessObject.Models
         public Guid VehicleId { get; set; }
 
         [Column("type")]
-        public string Type { get; set; } = string.Empty; // MAINTENANCE/REPAIR/CLEANING/UPGRADE/INSPECTION
+        public ServiceRequestType Type { get; set; }  // MAINTENANCE/REPAIR/CLEANING/UPGRADE/INSPECTION
 
         [Column("title")]
         public string Title { get; set; } = string.Empty;
@@ -46,9 +47,6 @@ namespace BusinessObject.Models
         [Column("status")]
         public string Status { get; set; } = "DRAFT";
 
-        [Column("expense_id")]
-        public Guid? ExpenseId { get; set; }
-
         [Column("approved_at")]
         public DateTime? ApprovedAt { get; set; }
 
@@ -65,7 +63,7 @@ namespace BusinessObject.Models
         public Vehicle Vehicle { get; set; } = null!;
         public Account CreatedByAccount { get; set; } = null!;
         public Account? Technician { get; set; }
-        public GroupExpense? Expense { get; set; }
+        public GroupExpense? GroupExpense { get; set; }
 
         public ICollection<ServiceRequestConfirmation> Confirmations { get; set; } = new List<ServiceRequestConfirmation>();
         public ServiceJob? Job { get; set; }

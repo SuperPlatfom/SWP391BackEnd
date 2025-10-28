@@ -3,6 +3,7 @@ using System;
 using DataAccessLayer.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251024070711_RemoveExpenseCategory")]
+    partial class RemoveExpenseCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,7 +101,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("account", (string)null);
+                    b.ToTable("account");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Booking", b =>
@@ -154,7 +157,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("VehicleId");
 
-                    b.ToTable("booking", (string)null);
+                    b.ToTable("booking");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.CitizenIdentityCard", b =>
@@ -219,7 +222,7 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("citizen_identity_card", (string)null);
+                    b.ToTable("citizen_identity_card");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.CoOwnershipGroup", b =>
@@ -250,11 +253,15 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<double>("WeeklyQuotaHours")
+                        .HasColumnType("double precision")
+                        .HasColumnName("weekly_quota_hours");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("co_ownership_group", (string)null);
+                    b.ToTable("co_ownership_group");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ContractClause", b =>
@@ -298,7 +305,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("TemplateId");
 
-                    b.ToTable("contract_clause", (string)null);
+                    b.ToTable("contract_clause");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ContractTemplate", b =>
@@ -349,7 +356,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("contract_template", (string)null);
+                    b.ToTable("contract_template");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ContractVariable", b =>
@@ -398,7 +405,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("TemplateId");
 
-                    b.ToTable("contract_variable", (string)null);
+                    b.ToTable("contract_variable");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.EContract", b =>
@@ -485,7 +492,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("VehicleId");
 
-                    b.ToTable("e_contract", (string)null);
+                    b.ToTable("e_contract");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.EContractMemberShare", b =>
@@ -517,7 +524,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("econtract_member_share", (string)null);
+                    b.ToTable("econtract_member_share");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.EContractSigner", b =>
@@ -578,7 +585,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("e_contract_signer", (string)null);
+                    b.ToTable("e_contract_signer");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.GroupExpense", b =>
@@ -612,10 +619,6 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("text")
                         .HasColumnName("invoice_url");
 
-                    b.Property<Guid?>("ServiceRequestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("service_request_id");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text")
@@ -628,9 +631,6 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
-
-                    b.HasIndex("ServiceRequestId")
-                        .IsUnique();
 
                     b.ToTable("group_expense");
                 });
@@ -663,7 +663,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("group_invite", (string)null);
+                    b.ToTable("group_invite");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.GroupMember", b =>
@@ -713,7 +713,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("group_member", (string)null);
+                    b.ToTable("group_member");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.MemberInvoice", b =>
@@ -777,7 +777,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("member_invoice", (string)null);
+                    b.ToTable("member_invoice");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.PayOSTransaction", b =>
@@ -832,7 +832,7 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("PaymentId")
                         .IsUnique();
 
-                    b.ToTable("payos_transaction", (string)null);
+                    b.ToTable("payos_transaction");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Payment", b =>
@@ -887,7 +887,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("payment", (string)null);
+                    b.ToTable("payment");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Role", b =>
@@ -911,7 +911,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("role", (string)null);
+                    b.ToTable("role");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ServiceCenter", b =>
@@ -949,7 +949,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("service_center", (string)null);
+                    b.ToTable("service_center");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ServiceJob", b =>
@@ -999,7 +999,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("TechnicianId");
 
-                    b.ToTable("service_job", (string)null);
+                    b.ToTable("service_job");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ServiceRequest", b =>
@@ -1033,6 +1033,13 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<Guid?>("ExpenseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expense_id");
+
+                    b.Property<Guid?>("GroupExpenseId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid")
                         .HasColumnName("group_id");
@@ -1065,8 +1072,7 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("text")
                         .HasColumnName("type");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1081,6 +1087,11 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("CreatedBy");
 
+                    b.HasIndex("ExpenseId")
+                        .IsUnique();
+
+                    b.HasIndex("GroupExpenseId");
+
                     b.HasIndex("GroupId");
 
                     b.HasIndex("ServiceCenterId");
@@ -1089,7 +1100,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("VehicleId");
 
-                    b.ToTable("service_request", (string)null);
+                    b.ToTable("service_request");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ServiceRequestConfirmation", b =>
@@ -1126,7 +1137,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("service_request_confirmation", (string)null);
+                    b.ToTable("service_request_confirmation");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.TripEvent", b =>
@@ -1162,7 +1173,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("SignedBy");
 
-                    b.ToTable("trip_event", (string)null);
+                    b.ToTable("trip_event");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.UsageQuota", b =>
@@ -1180,12 +1191,12 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("group_id");
 
-                    b.Property<decimal>("HoursLimit")
-                        .HasColumnType("numeric")
+                    b.Property<double>("HoursLimit")
+                        .HasColumnType("double precision")
                         .HasColumnName("hours_limit");
 
-                    b.Property<decimal>("HoursUsed")
-                        .HasColumnType("numeric")
+                    b.Property<double>("HoursUsed")
+                        .HasColumnType("double precision")
                         .HasColumnName("hours_used");
 
                     b.Property<DateTime>("LastUpdated")
@@ -1208,7 +1219,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("VehicleId");
 
-                    b.ToTable("usage_quota", (string)null);
+                    b.ToTable("usage_quota");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Vehicle", b =>
@@ -1267,17 +1278,13 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<decimal>("WeeklyQuotaHours")
-                        .HasColumnType("numeric")
-                        .HasColumnName("weekly_quota_hours");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("vehicle", (string)null);
+                    b.ToTable("vehicle");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Account", b =>
@@ -1306,7 +1313,7 @@ namespace DataAccessLayer.Migrations
                         .IsRequired();
 
                     b.HasOne("BusinessObject.Models.Vehicle", "Vehicle")
-                        .WithMany("Bookings")
+                        .WithMany()
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1443,14 +1450,7 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BusinessObject.Models.ServiceRequest", "ServiceRequest")
-                        .WithOne("GroupExpense")
-                        .HasForeignKey("BusinessObject.Models.GroupExpense", "ServiceRequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.Navigation("Group");
-
-                    b.Navigation("ServiceRequest");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.GroupInvite", b =>
@@ -1566,6 +1566,15 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("BusinessObject.Models.GroupExpense", "Expense")
+                        .WithOne()
+                        .HasForeignKey("BusinessObject.Models.ServiceRequest", "ExpenseId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BusinessObject.Models.GroupExpense", null)
+                        .WithMany("ServiceRequests")
+                        .HasForeignKey("GroupExpenseId");
+
                     b.HasOne("BusinessObject.Models.CoOwnershipGroup", "Group")
                         .WithMany("ServiceRequests")
                         .HasForeignKey("GroupId")
@@ -1589,6 +1598,8 @@ namespace DataAccessLayer.Migrations
                         .IsRequired();
 
                     b.Navigation("CreatedByAccount");
+
+                    b.Navigation("Expense");
 
                     b.Navigation("Group");
 
@@ -1749,6 +1760,8 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("BusinessObject.Models.GroupExpense", b =>
                 {
                     b.Navigation("MemberInvoices");
+
+                    b.Navigation("ServiceRequests");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.MemberInvoice", b =>
@@ -1775,15 +1788,11 @@ namespace DataAccessLayer.Migrations
                 {
                     b.Navigation("Confirmations");
 
-                    b.Navigation("GroupExpense");
-
                     b.Navigation("Job");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Vehicle", b =>
                 {
-                    b.Navigation("Bookings");
-
                     b.Navigation("Contracts");
 
                     b.Navigation("ServiceRequests");

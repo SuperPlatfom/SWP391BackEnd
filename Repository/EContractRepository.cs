@@ -49,6 +49,18 @@ namespace Repository
             return Task.FromResult(q);
         }
 
+        public async Task<EContract?> GetLatestApprovedByGroupAndVehicleAsync(Guid groupId, Guid vehicleId)
+        {
+            return await _db.EContracts
+                .Where(c => c.GroupId == groupId
+                            && c.VehicleId == vehicleId
+                            && c.Status == "APPROVED"
+                            && (c.EffectiveFrom == null || c.EffectiveFrom <= DateTime.UtcNow)
+                            && (c.ExpiresAt == null || c.ExpiresAt >= DateTime.UtcNow))
+                .OrderByDescending(c => c.EffectiveFrom) 
+                .FirstOrDefaultAsync();
+        }
+
         public Task SaveChangesAsync() => _db.SaveChangesAsync();
     }
 }

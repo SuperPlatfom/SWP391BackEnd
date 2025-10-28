@@ -14,5 +14,6 @@ namespace Repository.Interfaces
         Task<EContract?> GetDetailAsync(Guid id);
         Task<IQueryable<EContract>> QueryAsync(); 
         Task SaveChangesAsync();
+        Task<EContract?> GetLatestApprovedByGroupAndVehicleAsync(Guid groupId, Guid vehicleId);
     }
 }
