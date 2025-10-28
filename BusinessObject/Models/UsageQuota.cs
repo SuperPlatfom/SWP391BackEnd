@@ -36,10 +36,10 @@ namespace BusinessObject.Models
 
         [Required]
         [Column("hours_limit")]
-        public double HoursLimit { get; set; }
+        public decimal HoursLimit { get; set; }
 
         [Column("hours_used")]
-        public double HoursUsed { get; set; } = 0;
+        public decimal HoursUsed { get; set; } = 0;
 
         [Column("last_updated")]
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;

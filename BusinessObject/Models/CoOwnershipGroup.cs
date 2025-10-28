@@ -33,8 +33,7 @@ namespace BusinessObject.Models
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        [Column("weekly_quota_hours")]
-        public double WeeklyQuotaHours { get; set; } = 20;
+    
         // Quan hệ 1-N với group_member
         public ICollection<GroupMember> Members { get; set; } = new List<GroupMember>();
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();

@@ -28,7 +28,25 @@ namespace Repository
         {
             await _context.UsageQuotas.AddAsync(quota);
         }
+        public async Task<(decimal weeklyQuotaHours, decimal? ownershipRate)?> GetQuotaRateAsync(Guid accountId, Guid vehicleId)
+        {
+            var result = await (
+                from share in _context.EContractMemberShares
+                join contract in _context.EContracts on share.ContractId equals contract.Id
+                join vehicle in _context.Vehicles on contract.VehicleId equals vehicle.Id
+                where share.UserId == accountId && vehicle.Id == vehicleId
+                select new
+                {
+                    vehicle.WeeklyQuotaHours,
+                    share.OwnershipRate
+                }
+            ).FirstOrDefaultAsync();
 
+            if (result == null)
+                return null;
+
+            return (result.WeeklyQuotaHours, result.OwnershipRate);
+        }
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
