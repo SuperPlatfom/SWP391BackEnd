@@ -14,10 +14,14 @@ namespace Service
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepo;
+        private readonly IUsageQuotaService _usageQuotaService;
+        private readonly IUsageQuotaRepository _usageQuotaRepository;
 
-        public BookingService(IBookingRepository bookingRepo)
+        public BookingService(IBookingRepository bookingRepo, IUsageQuotaService usageQuotaService, IUsageQuotaRepository usageQuotaRepository)
         {
             _bookingRepo = bookingRepo;
+            _usageQuotaService = usageQuotaService;
+            _usageQuotaRepository = usageQuotaRepository;
         }
 
         public async Task<(bool IsSuccess, string Message, BookingResponseModel? Data)> CreateBookingAsync(BookingRequestModel request, ClaimsPrincipal user)
@@ -55,6 +59,33 @@ namespace Service
                 }
             }
 
+            var bookingHours = (decimal)(endUtc - startUtc).TotalHours;
+            var vietnamNow = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
+            var weekStartVietnam = DateTimeHelper.GetWeekStartDate(vietnamNow);
+            var weekStartUtc = DateTime.SpecifyKind(
+                DateTimeHelper.ToUtcFromVietnamTime(weekStartVietnam),
+                DateTimeKind.Utc
+            );
+
+            var ensureResult = await _usageQuotaService.EnsureQuotaExistsAsync(userId, request.GroupId, request.VehicleId, weekStartUtc);
+            if (!ensureResult.IsSuccess)
+                return (false, ensureResult.Message, null);
+
+            var quota = await _usageQuotaRepository.GetUsageQuotaAsync(userId, request.GroupId, request.VehicleId, weekStartUtc);
+            if (quota == null)
+                return (false, "Không thể lấy thông tin quota.", null);
+
+            var remaining = quota.HoursLimit - quota.HoursUsed;
+            if (bookingHours > remaining)
+            {
+                return (false, $"Thời gian đặt lịch tuần này của bạn không đủ. Thời gian còn lại: {remaining:F2} giờ.", null);
+            }
+
+            quota.HoursUsed += bookingHours;
+            quota.LastUpdated = DateTime.UtcNow;
+            await _usageQuotaRepository.UpdateAsync(quota);
+            await _usageQuotaRepository.SaveChangesAsync();
+
             var booking = new Booking
             {
                 Id = Guid.NewGuid(),
@@ -69,6 +100,7 @@ namespace Service
             };
 
             await _bookingRepo.AddAsync(booking);
+            await _bookingRepo.SaveChangesAsync();
             return (true, "Đặt lịch thành công.", MapToResponse(booking));
         }
 
@@ -98,7 +130,7 @@ namespace Service
                 return (false, "Chỉ có thể check-in lịch đang ở trạng thái Booked.");
 
             booking.Status = BookingStatus.InUse;
-            booking.UpdatedAt = DateTimeHelper.NowVietnamTime();
+            booking.UpdatedAt = DateTime.UtcNow;
 
             await _bookingRepo.UpdateAsync(booking);
             return (true, "Check-in thành công.");
@@ -114,7 +146,7 @@ namespace Service
                 return (false, "Chỉ có thể check-out lịch đã check-in.");
 
             booking.Status = BookingStatus.Completed;
-            booking.UpdatedAt = DateTimeHelper.NowVietnamTime();
+            booking.UpdatedAt = DateTime.UtcNow;
 
             await _bookingRepo.UpdateAsync(booking);
             return (true, "Check-out thành công.");
@@ -196,6 +228,33 @@ namespace Service
                     }
                 }
 
+                var userId = booking.UserId;
+                var groupId = booking.GroupId;
+                var vehicleId = booking.VehicleId;
+
+                var vietnamNow = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
+                var weekStartVietnam = DateTimeHelper.GetWeekStartDate(vietnamNow);
+                var weekStartUtc = DateTime.SpecifyKind(
+                    DateTimeHelper.ToUtcFromVietnamTime(weekStartVietnam),
+                    DateTimeKind.Utc
+                );
+
+                var quota = await _usageQuotaRepository.GetUsageQuotaAsync(userId, groupId, vehicleId, weekStartUtc);
+                if (quota != null)
+                {
+                    var oldDuration = (decimal)(booking.EndTime - booking.StartTime).TotalHours;
+                    var newDuration = (decimal)(newEndUtc - booking.StartTime).TotalHours;
+                    var deltaHours = newDuration - oldDuration;
+
+                    if (deltaHours > 0 && quota.HoursUsed + deltaHours > quota.HoursLimit)
+                        return (false, $"Không đủ quota để kéo dài thời gian. Bạn còn {quota.HoursLimit - quota.HoursUsed:F2} giờ.", null);
+
+                    quota.HoursUsed += deltaHours;
+                    quota.LastUpdated = DateTime.UtcNow;
+                    await _usageQuotaRepository.UpdateAsync(quota);
+                    await _usageQuotaRepository.SaveChangesAsync();
+                }
+
                 booking.EndTime = newEndUtc;
                 booking.UpdatedAt = DateTime.UtcNow;
                 await _bookingRepo.UpdateAsync(booking);
@@ -227,6 +286,33 @@ namespace Service
                             $"Vui lòng chọn thời gian cách ít nhất 30 phút.",
                             null);
                     }
+                }
+
+                var userId = booking.UserId;
+                var groupId = booking.GroupId;
+                var vehicleId = booking.VehicleId;
+
+                var vietnamNow = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
+                var weekStartVietnam = DateTimeHelper.GetWeekStartDate(vietnamNow);
+                var weekStartUtc = DateTime.SpecifyKind(
+                    DateTimeHelper.ToUtcFromVietnamTime(weekStartVietnam),
+                    DateTimeKind.Utc
+                );
+
+                var quota = await _usageQuotaRepository.GetUsageQuotaAsync(userId, groupId, vehicleId, weekStartUtc);
+                if (quota != null)
+                {
+                    var oldDuration = (decimal)(booking.EndTime - booking.StartTime).TotalHours;
+                    var newDuration = (decimal)(newEndUtc - newStartUtc).TotalHours;
+                    var deltaHours = newDuration - oldDuration;
+
+                    if (deltaHours > 0 && quota.HoursUsed + deltaHours > quota.HoursLimit)
+                        return (false, $"Không đủ quota để cập nhật lịch. Bạn còn {quota.HoursLimit - quota.HoursUsed:F2} giờ.", null);
+
+                    quota.HoursUsed += deltaHours;
+                    quota.LastUpdated = DateTime.UtcNow;
+                    await _usageQuotaRepository.UpdateAsync(quota);
+                    await _usageQuotaRepository.SaveChangesAsync();
                 }
 
                 booking.StartTime = newStartUtc;

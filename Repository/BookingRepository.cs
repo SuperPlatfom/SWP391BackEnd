@@ -35,19 +35,19 @@ namespace Repository
         public async Task AddAsync(Booking booking)
         {
             await _context.Bookings.AddAsync(booking);
-            await _context.SaveChangesAsync();
+   
         }
 
         public async Task UpdateAsync(Booking booking)
         {
             _context.Bookings.Update(booking);
-            await _context.SaveChangesAsync();
+    
         }
 
         public async Task DeleteAsync(Booking booking)
         {
             _context.Bookings.Remove(booking);
-            await _context.SaveChangesAsync();
+ 
         }
 
         public async Task<bool> ExistsAsync(Guid id)
@@ -70,6 +70,11 @@ namespace Repository
                 .Where(b => b.GroupId == groupId && b.VehicleId == vehicleId)
                 .OrderBy(b => b.StartTime)
                 .ToListAsync();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

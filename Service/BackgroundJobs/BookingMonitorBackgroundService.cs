@@ -7,11 +7,11 @@ using Service.Helpers;
 
 namespace Service.BackgroundJobs
 {
-    public class BookingMonitorService : BackgroundService
+    public class BookingMonitorBackgroundService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public BookingMonitorService(IServiceProvider serviceProvider)
+        public BookingMonitorBackgroundService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }

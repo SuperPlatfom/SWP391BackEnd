@@ -11,6 +11,7 @@ namespace Repository.Interfaces
         Task AddAsync(Booking booking);
         Task UpdateAsync(Booking booking);
         Task DeleteAsync(Booking booking);
+        Task SaveChangesAsync();
         Task<bool> ExistsAsync(Guid id);
         Task<List<Booking>> GetBookingsByVehicleAsync(Guid vehicleId);
         Task<IEnumerable<Booking>> GetBookingsByVehicleInGroupAsync(Guid groupId, Guid vehicleId);
