@@ -12,6 +12,7 @@ using Repository.Interfaces;
 using Repository.Repositories;
 using Service;
 using Service.BackgroundJobs;
+using Service.Helpers;
 using Service.Interfaces;
 using SWP391BackEnd.Helpers;
 using System.Text;
@@ -73,7 +74,7 @@ builder.Services.AddScoped<IEContractSignerRepository, EContractSignerRepository
 builder.Services.AddSingleton<IMustacheRenderer, SimpleMustacheRenderer>();
 builder.Services.AddScoped<IContractService, EContractService>();
 builder.Services.AddScoped<IEContractMemberShareRepository, EContractMemberShareRepository>();
-builder.Services.AddHostedService<BookingMonitorService>();
+builder.Services.AddHostedService<BookingMonitorBackgroundService>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IServiceCenterRepository, ServiceCenterRepository>();
@@ -94,7 +95,8 @@ builder.Services.AddScoped<IPayosTransactionRepository, PayosTransactionReposito
 builder.Services.AddScoped<IMemberInvoiceRepository, MemberInvoiceRepository>();
 builder.Services.AddScoped<IUsageQuotaRepository, UsageQuotaRepository>();
 builder.Services.AddScoped<IUsageQuotaService, UsageQuotaService>();
-
+builder.Services.AddScoped<QuotaResetHelper>();
+builder.Services.AddHostedService<QuotaResetBackgroundService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
