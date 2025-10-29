@@ -15,5 +15,6 @@ namespace Repository.Interfaces
         Task<Vehicle> UpdateAsync(Vehicle vehicle);
         Task<Vehicle> DeleteAsync(Guid id);
         Task<List<Vehicle>> GetVehiclesByCreatorAsync(Guid creatorId);
+        Task<bool> IsActiveInGroupAsync(Guid vehicleId, Guid groupId);
     }
 }

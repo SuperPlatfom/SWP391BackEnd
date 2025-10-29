@@ -64,5 +64,11 @@ namespace Repository
                 .Where(v => v.CreatedBy == creatorId)
                 .ToListAsync();
         }
+
+        public async Task<bool> IsActiveInGroupAsync(Guid vehicleId, Guid groupId)
+        {
+            var vehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.Id == vehicleId);
+            return vehicle != null && vehicle.Status == "ACTIVE" && vehicle.GroupId == groupId;
+        }
     }
 }

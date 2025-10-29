@@ -13,7 +13,6 @@ namespace Service.Interfaces
     {
 
         Task AddAsync(AddAccountRequestModel userDto, string roleName);
-
-
+        Task<IEnumerable<AccountResponseModel>> GetAllAsync(string? role = null);
     }
 }

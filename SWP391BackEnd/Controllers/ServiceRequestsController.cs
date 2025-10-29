@@ -62,6 +62,59 @@ namespace SWP391BackEnd.Controllers
             }
         }
 
+        [HttpGet("my-group/{groupId}")]
+        [Authorize]
+        public async Task<IActionResult> GetMyGroupServiceRequestsByGroup(Guid groupId)
+        {
+            try
+            {
+                var userId = Guid.Parse(User.FindFirst("id")!.Value);
+                var result = await _service.GetByGroupAsync(groupId, userId);
+                return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                    "Lấy danh sách yêu cầu dịch vụ của nhóm thành công", result);
+            }
+            catch (Exception ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 400);
+            }
+        }
+
+        [HttpGet("my")]
+        [Authorize]
+        public async Task<IActionResult> GetMyRequests()
+        {
+            try
+            {
+                var userId = Guid.Parse(User.FindFirst("id")!.Value);
+                var result = await _service.GetMyRequestsAsync(userId);
+                return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                    "Lấy danh sách yêu cầu dịch vụ của bạn thành công", result);
+            }
+            catch (Exception ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 400);
+            }
+        }
+
+        [HttpGet("assigned")]
+        [Authorize]
+        public async Task<IActionResult> GetAssignedRequests()
+        {
+            try
+            {
+                var userId = Guid.Parse(User.FindFirst("id")!.Value);
+                var result = await _service.GetAssignedRequestsByUserAsync(userId);
+
+                return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                    "Lấy danh sách yêu cầu dịch vụ đã được giao thành công", result);
+            }
+            catch (Exception ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 400);
+            }
+        }
+
+
 
         [HttpPost]
         [Authorize]

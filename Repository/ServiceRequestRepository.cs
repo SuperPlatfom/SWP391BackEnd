@@ -93,6 +93,42 @@ namespace Repository
                 .FirstOrDefaultAsync(sr => sr.Id == expense.ServiceRequestId);
         }
 
+        public async Task<IEnumerable<ServiceRequest>> GetByGroupIdAsync(Guid groupId)
+        {
+            return await _db.ServiceRequests
+                .Include(s => s.ServiceCenter)
+                .Include(s => s.Vehicle)
+                .Include(s => s.Technician)
+                .Include(s => s.Group)
+                .Where(s => s.GroupId == groupId)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ServiceRequest>> GetByTechnicianAsync(Guid technicianId)
+        {
+            return await _db.ServiceRequests
+                .Include(x => x.Technician)
+                .Include(x => x.ServiceCenter)
+                .Include(x => x.Vehicle)
+                .Include(x => x.Group)
+                .Where(x => x.TechnicianId == technicianId)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ServiceRequest>> GetByStatusesAsync(IEnumerable<string> statuses)
+        {
+            return await _db.ServiceRequests
+                .Include(x => x.Technician)
+                .Include(x => x.ServiceCenter)
+                .Include(x => x.Vehicle)
+                .Include(x => x.Group)
+                .Where(x => statuses.Contains(x.Status))
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
 
         public async Task SaveChangesAsync()
         {

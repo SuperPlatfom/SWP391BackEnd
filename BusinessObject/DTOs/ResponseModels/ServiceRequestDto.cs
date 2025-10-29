@@ -13,6 +13,8 @@ namespace BusinessObject.DTOs.ResponseModels
         public string Type { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public decimal? CostEstimate { get; set; }
+        public DateTime? InspectionScheduledAt { get; set; }
+        public string? TechnicianName { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

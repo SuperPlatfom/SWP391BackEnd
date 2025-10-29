@@ -2,7 +2,6 @@
 using BusinessObject.DTOs.ResponseModels;
 using Repository.Interfaces;
 using Service.Interfaces;
-using DataAccessLayer.Mappers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -127,10 +126,32 @@ namespace Service
             return null;
         }
 
+        public async Task<IEnumerable<AccountResponseModel>> GetAllAsync(string? role = null)
+        {
+            var accounts = await _accountRepository.GetByRoleAsync(role);
 
+            return accounts.Select(a => new AccountResponseModel
+            {
+                Id = a.Id,
+                FullName = a.FullName,
+                Email = a.Email,
+                Phone = a.Phone,
+                Gender = a.Gender,
+                DateOfBirth = a.DateOfBirth,
+                Status = a.Status,
+                ImageUrl = a.ImageUrl,
+                RoleName = a.Role?.Name ?? "",
+                CreatedAt = a.CreatedAt,
+                CitizenIdNumber = a.CitizenIdentityCard?.IdNumber,
+                Address = a.CitizenIdentityCard?.Address,
+                PlaceOfIssue = a.CitizenIdentityCard?.PlaceOfIssue,
+                IssueDate = a.CitizenIdentityCard?.IssueDate,
+                ExpiryDate = a.CitizenIdentityCard?.ExpiryDate,
+                FrontImageUrl = a.CitizenIdentityCard?.FrontImageUrl,
+                BackImageUrl = a.CitizenIdentityCard?.BackImageUrl,
+            }).ToList();
+        }
 
-
-     
 
     }
 }

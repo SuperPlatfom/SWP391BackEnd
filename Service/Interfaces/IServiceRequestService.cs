@@ -1,5 +1,6 @@
 ﻿using BusinessObject.DTOs.RequestModels;
 using BusinessObject.DTOs.ResponseModels;
+using BusinessObject.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +17,10 @@ namespace Service.Interfaces
         Task<ServiceRequestDetailDto> UpdateInspectionScheduleAsync(Guid id, UpdateInspectionScheduleRequest req, Guid technicianId);
         Task<IEnumerable<ServiceRequestDto>> GetMyGroupRequestsAsync(Guid currentUserId);
         Task<ServiceRequestDetailDto> ProvideCostEstimateAsync(Guid id, ProvideCostEstimateRequest req, Guid technicianId);
+        Task<IEnumerable<ServiceRequestDto>> GetByGroupAsync(Guid groupId, Guid currentUserId);
+        Task<IEnumerable<ServiceRequestDto>> GetMyRequestsAsync(Guid currentUserId);
+        Task<IEnumerable<ServiceRequestDto>> GetAssignedRequestsByUserAsync(Guid currentUserId);
+        
+
     }
 }

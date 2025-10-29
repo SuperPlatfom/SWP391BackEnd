@@ -11,5 +11,6 @@ namespace Service.Interfaces
     {
         Task<ServiceRequestConfirmationDto> ConfirmAsync(Guid currentUserId, Guid requestId, bool confirm, string? reason);
         Task<IEnumerable<ServiceRequestConfirmationDto>> GetByRequestIdAsync(Guid requestId);
+        Task<IEnumerable<ServiceRequestConfirmationDto>> GetByUserAsync(Guid currentUserId);
     }
 }

@@ -80,5 +80,24 @@ namespace Repository.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Account>> GetByRoleAsync(string? roleName)
+        {
+            var query = _context.Accounts
+                .Include(a => a.Role)
+                .Include(a => a.CitizenIdentityCard)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(roleName))
+            {
+                query = query.Where(a => a.Role.Name.ToLower() == roleName.ToLower());
+            }
+
+            return await query
+                .OrderByDescending(a => a.CreatedAt)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+
     }
 }
