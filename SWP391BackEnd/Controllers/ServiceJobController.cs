@@ -57,6 +57,24 @@ namespace SWP391BackEnd.Controllers
             }
         }
 
+        [HttpGet("my")]
+        [Authorize(Roles = "Admin,Technician")]
+        public async Task<IActionResult> GetMyJobs()
+        {
+            try
+            {
+                var technicianId = Guid.Parse(User.FindFirst("id")!.Value);
+                var result = await _service.GetAllAsync(technicianId);
+                return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                    "Lấy danh sách công việc của kỹ thuật viên thành công", result);
+            }
+            catch (Exception ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 400);
+            }
+        }
+
+
         [HttpPut("{id}/update-status")]
         [Authorize(Roles = "Admin,Technician")]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateServiceJobStatusRequest req)

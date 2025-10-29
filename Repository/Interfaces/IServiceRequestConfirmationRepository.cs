@@ -12,6 +12,7 @@ namespace Repository.Interfaces
         Task<IEnumerable<ServiceRequestConfirmation>> GetByRequestIdAsync(Guid requestId);
         Task<ServiceRequestConfirmation?> GetByUserAsync(Guid requestId, Guid userId);
         Task AddAsync(ServiceRequestConfirmation entity);
+        Task<IEnumerable<ServiceRequestConfirmation>> GetAllByUserAsync(Guid userId);
         Task SaveChangesAsync();
     }
 }

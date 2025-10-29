@@ -51,6 +51,24 @@ namespace SWP391BackEnd.Controllers
             return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
                 "Lấy danh sách biểu quyết thành công", list);
         }
+
+        [HttpGet("my")]
+        [Authorize]
+        public async Task<IActionResult> GetMyConfirmations()
+        {
+            try
+            {
+                var userId = Guid.Parse(User.FindFirst("id")!.Value);
+                var list = await _service.GetByUserAsync(userId);
+                return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                    "Lấy danh sách biểu quyết của bạn thành công", list);
+            }
+            catch (Exception ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 400);
+            }
+        }
+
     }
 
 }

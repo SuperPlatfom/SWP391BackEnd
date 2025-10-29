@@ -120,5 +120,21 @@ namespace Service
                 DecidedAt = c.DecidedAt
             }).ToList();
         }
+
+        public async Task<IEnumerable<ServiceRequestConfirmationDto>> GetByUserAsync(Guid currentUserId)
+        {
+            var list = await _confirmationRepo.GetAllByUserAsync(currentUserId);
+
+            return list.Select(c => new ServiceRequestConfirmationDto
+            {
+                Id = c.Id,
+                RequestId = c.RequestId,
+                UserId = c.UserId,
+                Decision = c.Decision,
+                Reason = c.Reason,
+                DecidedAt = c.DecidedAt
+            }).ToList();
+        }
+
     }
 }

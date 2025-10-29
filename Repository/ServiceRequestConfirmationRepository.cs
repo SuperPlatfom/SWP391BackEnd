@@ -37,6 +37,16 @@ namespace Repository
             await _db.ServiceRequestConfirmations.AddAsync(entity);
         }
 
+        public async Task<IEnumerable<ServiceRequestConfirmation>> GetAllByUserAsync(Guid userId)
+        {
+            return await _db.ServiceRequestConfirmations
+                .Include(x => x.Request)
+                .Where(x => x.UserId == userId)
+                .OrderByDescending(x => x.DecidedAt)
+                .ToListAsync();
+        }
+
+
         public async Task SaveChangesAsync()
         {
             await _db.SaveChangesAsync();

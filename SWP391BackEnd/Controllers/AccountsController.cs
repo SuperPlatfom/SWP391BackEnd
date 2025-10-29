@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Repository.HandleException;
 using System.ComponentModel.DataAnnotations;
 using SWP391BackEnd.Helpers;
+using Service;
 
 namespace SWP391BackEnd.Controllers
 {
@@ -79,8 +80,16 @@ namespace SWP391BackEnd.Controllers
                 return CustomErrorHandler.SimpleError(ex.Message, 500);
             }
         }
-    }
 
+        [HttpGet]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetAll([FromQuery] string? role = null)
+        {
+            var result = await _accountService.GetAllAsync(role);
+            return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                "Lấy danh sách tài khoản thành công", result);
+        }
+    }
 
 }
 

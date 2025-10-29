@@ -15,10 +15,22 @@ namespace Service
     public class ServiceRequestService : IServiceRequestService
     {
         private readonly IServiceRequestRepository _repo;
+        private readonly ICoOwnershipGroupRepository _groupRepo;
+        private readonly IGroupMemberRepository _groupMemberRepo;
+        private readonly IVehicleRepository _vehicleRepo;
+        private readonly IServiceCenterRepository _serviceCenterRepo;
+        private readonly IEContractRepository _contractRepo;
+        private readonly IAccountRepository _accountRepo;
 
-        public ServiceRequestService(IServiceRequestRepository repo)
+        public ServiceRequestService(IServiceRequestRepository repo, ICoOwnershipGroupRepository groupRepo, IGroupMemberRepository groupMemberRepo, IVehicleRepository vehicleRepo, IServiceCenterRepository serviceCenterRepo, IEContractRepository contractRepo, IAccountRepository accountRepo)
         {
             _repo = repo;
+            _groupRepo = groupRepo;
+            _groupMemberRepo = groupMemberRepo;
+            _vehicleRepo = vehicleRepo;
+            _serviceCenterRepo = serviceCenterRepo;
+            _contractRepo = contractRepo;
+            _accountRepo = accountRepo;
         }
 
         public async Task<IEnumerable<ServiceRequestDto>> GetAllAsync()
@@ -32,6 +44,7 @@ namespace Service
                 Type = x.Type.ToString(),
                 Status = x.Status,
                 CostEstimate = x.CostEstimate,
+                InspectionScheduledAt = x.InspectionScheduledAt,
                 CreatedAt = DateTimeHelper.ToVietnamTime(x.CreatedAt)
             }).ToList();
         }
@@ -60,6 +73,34 @@ namespace Service
 
         public async Task<ServiceRequestDetailDto> CreateAsync(CreateServiceRequestRequest req, Guid currentUserId)
         {
+
+            var group = await _groupRepo.GetByIdAsync(req.GroupId)
+                ?? throw new KeyNotFoundException("Nhóm đồng sở hữu không tồn tại.");
+
+            if (!await _groupMemberRepo.IsMemberAsync(req.GroupId, currentUserId))
+                throw new UnauthorizedAccessException("Bạn không thuộc nhóm này.");
+
+
+            var vehicle = await _vehicleRepo.GetByIdAsync(req.VehicleId)
+                ?? throw new KeyNotFoundException("Phương tiện không tồn tại.");
+
+            if (vehicle.Status != "ACTIVE")
+                throw new InvalidOperationException("Phương tiện hiện không hoạt động, không thể yêu cầu dịch vụ.");
+
+            if (!await _vehicleRepo.IsActiveInGroupAsync(req.VehicleId, req.GroupId))
+                throw new InvalidOperationException("Xe không thuộc nhóm hoặc không ở trạng thái hoạt động.");
+
+            var center = await _serviceCenterRepo.GetByIdAsync(req.ServiceCenterId)
+                ?? throw new KeyNotFoundException("Trung tâm dịch vụ không tồn tại.");
+
+            if (!center.IsActive)
+                throw new InvalidOperationException("Trung tâm dịch vụ hiện đang ngừng hoạt động.");
+
+            var contract = await _contractRepo.GetLatestApprovedByGroupAndVehicleAsync(req.GroupId, req.VehicleId);
+            if (contract == null)
+                throw new InvalidOperationException("Xe này chưa có hợp đồng đồng sở hữu hợp lệ. Vui lòng tạo hợp đồng trước khi yêu cầu dịch vụ.");
+
+
             var entity = new ServiceRequest
             {
                 Id = Guid.NewGuid(),
@@ -127,9 +168,86 @@ namespace Service
                 Type = x.Type.ToString(),
                 Status = x.Status,
                 CostEstimate = x.CostEstimate,
+                InspectionScheduledAt = x.InspectionScheduledAt,
                 CreatedAt = DateTimeHelper.ToVietnamTime(x.CreatedAt)
             }).ToList();
         }
+
+        public async Task<IEnumerable<ServiceRequestDto>> GetByGroupAsync(Guid groupId, Guid currentUserId)
+        {
+            if (!await _groupMemberRepo.IsMemberAsync(groupId, currentUserId))
+                throw new UnauthorizedAccessException("Bạn không thuộc nhóm này.");
+
+            var list = await _repo.GetByGroupIdAsync(groupId);
+
+            return list.Select(x => new ServiceRequestDto
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Type = x.Type.ToString(),
+                Status = x.Status,
+                CostEstimate = x.CostEstimate,
+                InspectionScheduledAt = x.InspectionScheduledAt,
+                CreatedAt = DateTimeHelper.ToVietnamTime(x.CreatedAt)
+            }).ToList();
+        }
+
+        public async Task<IEnumerable<ServiceRequestDto>> GetMyRequestsAsync(Guid currentUserId)
+        {
+            var list = await _repo.GetAllAsync();
+            list = list.Where(x => x.CreatedBy == currentUserId);
+
+            return list.Select(x => new ServiceRequestDto
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Type = x.Type.ToString(),
+                Status = x.Status,
+                CostEstimate = x.CostEstimate,
+                InspectionScheduledAt = x.InspectionScheduledAt,
+                CreatedAt = DateTimeHelper.ToVietnamTime(x.CreatedAt)
+            }).ToList();
+        }
+
+        public async Task<IEnumerable<ServiceRequestDto>> GetAssignedRequestsByUserAsync(Guid currentUserId)
+        {
+            var account = await _accountRepo.GetByIdAsync(currentUserId)
+                ?? throw new KeyNotFoundException("Không tìm thấy người dùng.");
+
+            var role = account.Role?.Name?.ToLower() ?? "";
+
+            IEnumerable<ServiceRequest> list;
+
+            if (role == "technician")
+            {
+                list = await _repo.GetByTechnicianAsync(currentUserId);
+            }
+            else if (role == "admin" || role == "staff")
+            {
+                list = await _repo.GetByStatusesAsync(new[]
+                {
+            "PENDING_QUOTE", "VOTING", "APPROVED", "IN_PROGRESS", "COMPLETED"
+        });
+            }
+            else
+            {
+                throw new UnauthorizedAccessException("Bạn không có quyền xem danh sách này.");
+            }
+
+            return list.Select(x => new ServiceRequestDto
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Type = x.Type.ToString(),
+                Status = x.Status,
+                CostEstimate = x.CostEstimate,
+                TechnicianName = x.Technician?.FullName,
+                InspectionScheduledAt = x.InspectionScheduledAt,
+                CreatedAt = DateTimeHelper.ToVietnamTime(x.CreatedAt)
+            }).ToList();
+        }
+
+
 
     }
 }

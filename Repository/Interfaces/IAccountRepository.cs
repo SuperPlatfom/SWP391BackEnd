@@ -16,5 +16,6 @@ namespace Repository.Interfaces
         Task<Account> UpdateAsync(Account account);
         Task<Account> DeleteAsync(Guid id);
         Task<List<Account>> GetByIdsAsync(IEnumerable<Guid> ids);
+        Task<IEnumerable<Account>> GetByRoleAsync(string? roleName);
     }
 }
