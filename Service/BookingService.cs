@@ -182,13 +182,18 @@ namespace Service
                 return (false, "Huỷ lịch không thành công");
 
             var nowUtc = DateTime.UtcNow;
+            var vietnamNow = DateTimeHelper.ToVietnamTime(nowUtc);
+
+            var weekStartVN = DateTimeHelper.GetWeekStartDate(vietnamNow);
+            var weekEndVN = weekStartVN.AddDays(7);
+            var weekStartUtc = DateTime.SpecifyKind(  DateTimeHelper.ToUtcFromVietnamTime(weekStartVN), DateTimeKind.Utc
+           );
+
+       
+
             var startTimeVN = DateTimeHelper.ToVietnamTime(booking.StartTime);
             var endTimeVN = DateTimeHelper.ToVietnamTime(booking.EndTime);
             var minutesUntilStart = (booking.StartTime - nowUtc).TotalMinutes;
-
-            var vietnamNow = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
-            var weekStartVN = DateTimeHelper.GetWeekStartDate(vietnamNow);
-            var weekEndVN = weekStartVN.AddDays(7);
 
             decimal hoursThisWeek = 0;
             decimal hoursNextWeek = 0;
@@ -210,31 +215,29 @@ namespace Service
                 hoursNextWeek = (decimal)(endTimeVN - weekEndVN).TotalHours;
             }
 
-            var weekStartUtc = DateTimeHelper.ToUtcFromVietnamTime(weekStartVN);
-            var nextWeekStartUtc = DateTimeHelper.ToUtcFromVietnamTime(weekEndVN);
 
-            var quotaThisWeek = await _usageQuotaRepository.GetUsageQuotaAsync(
-                booking.UserId, booking.GroupId, booking.VehicleId, weekStartUtc);
-            var quotaNextWeek = await _usageQuotaRepository.GetUsageQuotaAsync(
-                booking.UserId, booking.GroupId, booking.VehicleId, nextWeekStartUtc);
+            var quota = await _usageQuotaRepository.GetUsageQuotaAsync(
+                    booking.UserId, booking.GroupId, booking.VehicleId, weekStartUtc);
 
-            if (quotaThisWeek == null && quotaNextWeek == null)
+        
+
+            if (quota == null )
                 return (false, "Không thể lấy thông tin quota để hoàn giờ.");
 
             string message;
 
             if (minutesUntilStart >= 15)
             {
-                if (hoursThisWeek > 0 && quotaThisWeek != null)
+                if (hoursThisWeek > 0 && quota != null)
                 {
-                    quotaThisWeek.HoursUsed -= hoursThisWeek;
-                    if (quotaThisWeek.HoursUsed < 0) quotaThisWeek.HoursUsed = 0;
+                    quota.HoursUsed -= hoursThisWeek;
+                    if (quota.HoursUsed < 0) quota.HoursUsed = 0;
                 }
 
-                if (hoursNextWeek > 0 && quotaNextWeek != null)
+                if (hoursNextWeek > 0 && quota != null)
                 {
-                    quotaNextWeek.HoursAdvance -= hoursNextWeek;
-                    if (quotaNextWeek.HoursAdvance < 0) quotaNextWeek.HoursAdvance = 0;
+                    quota.HoursAdvance -= hoursNextWeek;
+                    if (quota.HoursAdvance < 0) quota.HoursAdvance = 0;
                 }
 
                 message = "Hủy lịch thành công. Giờ đã được hoàn lại.";
@@ -242,36 +245,30 @@ namespace Service
             else
             {
                 
-                if (hoursThisWeek > 0 && quotaThisWeek != null)
+                if (hoursThisWeek > 0 && quota != null)
                 {
-                    quotaThisWeek.HoursUsed -= hoursThisWeek;
-                    if (quotaThisWeek.HoursUsed < 0) quotaThisWeek.HoursUsed = 0;
-                    quotaThisWeek.HoursDebt += 0.5m;
+                    quota.HoursUsed -= hoursThisWeek;
+                    if (quota.HoursUsed < 0) quota.HoursUsed = 0;
+                    quota.HoursDebt += 0.5m;
                 }
 
-                if (hoursNextWeek > 0 && quotaNextWeek != null)
+                if (hoursNextWeek > 0 && quota != null)
                 {
-                    quotaNextWeek.HoursAdvance -= hoursNextWeek;
-                    if (quotaNextWeek.HoursAdvance < 0) quotaNextWeek.HoursAdvance = 0;
-                    quotaNextWeek.HoursDebt += 0.5m;
+                    quota.HoursAdvance -= hoursNextWeek;
+                    if (quota.HoursAdvance < 0) quota.HoursAdvance = 0;
+                    quota.HoursDebt += 0.5m;
                 }
 
                 message = "Hủy lịch trễ, bạn bị phạt 30 phút. Giờ đặt đã được hoàn lại.";
             }
 
-            if (quotaThisWeek != null)
+            if (quota != null)
             {
-                quotaThisWeek.LastUpdated = DateTime.UtcNow;
-                await _usageQuotaRepository.UpdateAsync(quotaThisWeek);
-            }
-
-            if (quotaNextWeek != null)
-            {
-                quotaNextWeek.LastUpdated = DateTime.UtcNow;
-                await _usageQuotaRepository.UpdateAsync(quotaNextWeek);
+                quota.LastUpdated = DateTime.UtcNow;
+                await _usageQuotaRepository.UpdateAsync(quota);
             }
             booking.Status = BookingStatus.Cancelled;
-            booking.UpdatedAt = DateTimeHelper.NowVietnamTime();
+            booking.UpdatedAt = DateTime.UtcNow;
             await _bookingRepo.UpdateAsync(booking);
 
             await _usageQuotaRepository.SaveChangesAsync();
@@ -316,12 +313,14 @@ namespace Service
                 return (false, "Chỉ có thể check-out lịch đã check-in.");
 
 
-            var nowUtc = DateTime.UtcNow;
-            var expectedEndUtc = booking.EndTime;
-            var overtimeMinutes = (nowUtc - expectedEndUtc).TotalMinutes;
+     
+           
 
-
-            var weekStartUtc = DateTimeHelper.GetWeekStartDate(nowUtc);
+            var vietnamNow = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
+            var weekStartVN = DateTimeHelper.GetWeekStartDate(vietnamNow);
+            var weekStartUtc = DateTime.SpecifyKind(DateTimeHelper.ToUtcFromVietnamTime(weekStartVN), DateTimeKind.Utc);
+            var expectedEndVN = DateTimeHelper.ToVietnamTime(booking.EndTime);
+            var overtimeMinutes = (vietnamNow - expectedEndVN).TotalMinutes;
             var quota = await _usageQuotaRepository.GetUsageQuotaAsync(
                 booking.UserId, booking.GroupId, booking.VehicleId, weekStartUtc);
 
@@ -333,14 +332,14 @@ namespace Service
 
             if (overtimeMinutes <= -5)
             {
-                var actualUsedHours = (decimal)(nowUtc - booking.StartTime).TotalHours;
+                var actualUsedHours = (decimal)(vietnamNow - DateTimeHelper.ToVietnamTime(booking.StartTime)).TotalHours;
                 if (actualUsedHours < 0) actualUsedHours = 0;
 
                 var diff = plannedHours - actualUsedHours;
                 quota.HoursUsed -= diff;
                 if (quota.HoursUsed < 0) quota.HoursUsed = 0;
 
-                booking.EndTime = nowUtc;
+                booking.EndTime = DateTimeHelper.ToUtcFromVietnamTime(vietnamNow);
                 booking.Status = BookingStatus.Completed;
                 booking.UpdatedAt = DateTime.UtcNow;
 
