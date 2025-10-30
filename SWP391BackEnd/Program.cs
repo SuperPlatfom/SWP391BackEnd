@@ -96,7 +96,7 @@ builder.Services.AddScoped<IMemberInvoiceRepository, MemberInvoiceRepository>();
 builder.Services.AddScoped<IUsageQuotaRepository, UsageQuotaRepository>();
 builder.Services.AddScoped<IUsageQuotaService, UsageQuotaService>();
 builder.Services.AddScoped<QuotaResetHelper>();
-builder.Services.AddHostedService<QuotaResetBackgroundService>();
+
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
