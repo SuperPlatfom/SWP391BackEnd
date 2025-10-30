@@ -271,7 +271,7 @@ namespace Service
                 await _usageQuotaRepository.UpdateAsync(quotaNextWeek);
             }
             booking.Status = BookingStatus.Cancelled;
-            booking.UpdatedAt = DateTimeHelper.NowVietnamTime();
+            booking.UpdatedAt = DateTime.UtcNow;
             await _bookingRepo.UpdateAsync(booking);
 
             await _usageQuotaRepository.SaveChangesAsync();
@@ -316,12 +316,14 @@ namespace Service
                 return (false, "Chỉ có thể check-out lịch đã check-in.");
 
 
-            var nowUtc = DateTime.UtcNow;
-            var expectedEndUtc = booking.EndTime;
-            var overtimeMinutes = (nowUtc - expectedEndUtc).TotalMinutes;
+     
+           
 
-
-            var weekStartUtc = DateTimeHelper.GetWeekStartDate(nowUtc);
+            var vietnamNow = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
+            var weekStartVN = DateTimeHelper.GetWeekStartDate(vietnamNow);
+            var weekStartUtc = DateTimeHelper.ToUtcFromVietnamTime(weekStartVN);
+            var expectedEndVN = DateTimeHelper.ToVietnamTime(booking.EndTime);
+            var overtimeMinutes = (vietnamNow - expectedEndVN).TotalMinutes;
             var quota = await _usageQuotaRepository.GetUsageQuotaAsync(
                 booking.UserId, booking.GroupId, booking.VehicleId, weekStartUtc);
 
@@ -333,14 +335,14 @@ namespace Service
 
             if (overtimeMinutes <= -5)
             {
-                var actualUsedHours = (decimal)(nowUtc - booking.StartTime).TotalHours;
+                var actualUsedHours = (decimal)(vietnamNow - DateTimeHelper.ToVietnamTime(booking.StartTime)).TotalHours;
                 if (actualUsedHours < 0) actualUsedHours = 0;
 
                 var diff = plannedHours - actualUsedHours;
                 quota.HoursUsed -= diff;
                 if (quota.HoursUsed < 0) quota.HoursUsed = 0;
 
-                booking.EndTime = nowUtc;
+                booking.EndTime = DateTimeHelper.ToUtcFromVietnamTime(vietnamNow);
                 booking.Status = BookingStatus.Completed;
                 booking.UpdatedAt = DateTime.UtcNow;
 
