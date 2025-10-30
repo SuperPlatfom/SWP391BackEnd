@@ -24,9 +24,29 @@ namespace Repository
                 u.WeekStartDate == weekStart);
         }
 
+        /// <summary>
+        /// Reset toàn bộ HoursUsed về 0
+        /// </summary>
+        public async Task ResetAllQuotaHoursUsedAsync()
+        {
+            var quotas = await _context.UsageQuotas.ToListAsync();
+
+            foreach (var quota in quotas)
+            {
+                quota.HoursUsed = 0;
+            }
+
+            await _context.SaveChangesAsync();
+        }
         public async Task AddAsync(UsageQuota quota)
         {
             await _context.UsageQuotas.AddAsync(quota);
+        }
+
+        public async Task UpdateAsync(UsageQuota quota)
+        {
+  
+            _context.UsageQuotas.Update(quota);
         }
         public async Task<(decimal weeklyQuotaHours, decimal? ownershipRate)?> GetQuotaRateAsync(Guid accountId, Guid vehicleId)
         {

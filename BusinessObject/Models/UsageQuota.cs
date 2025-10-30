@@ -28,7 +28,7 @@ namespace BusinessObject.Models
         [Column("vehicle_id")]
         [ForeignKey(nameof(Vehicle))]
         public Guid VehicleId { get; set; }
-        public Vehicle Vehilce { get; set; } = null!;
+        public Vehicle Vehicle { get; set; } = null!;
 
         [Required]
         [Column("week_start_date")]
@@ -40,6 +40,10 @@ namespace BusinessObject.Models
 
         [Column("hours_used")]
         public decimal HoursUsed { get; set; } = 0;
+        [Column("hours_debt")]
+        public decimal HoursDebt { get; set; } = 0;
+        [Column("hours_advance")]
+        public decimal HoursAdvance { get; set; } = 0;
 
         [Column("last_updated")]
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;

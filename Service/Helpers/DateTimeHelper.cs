@@ -25,5 +25,11 @@ namespace Service.Helpers
         {
             return TimeZoneInfo.ConvertTimeToUtc(vietnamTime, _vnTimeZone);
         }
+
+        public static DateTime GetWeekStartDate(DateTime vietnamNow)
+        {
+            int diff = (7 + (vietnamNow.DayOfWeek - DayOfWeek.Monday)) % 7;
+            return vietnamNow.Date.AddDays(-diff);
+        }
     }
 }
