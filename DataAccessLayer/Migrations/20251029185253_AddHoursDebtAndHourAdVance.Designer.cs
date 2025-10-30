@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251028082723_AddWeeklyQuota")]
-    partial class AddWeeklyQuota
+    [Migration("20251029185253_AddHoursDebtAndHourAdVance")]
+    partial class AddHoursDebtAndHourAdVance
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1183,6 +1183,14 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("group_id");
 
+                    b.Property<decimal>("HoursAdvance")
+                        .HasColumnType("numeric")
+                        .HasColumnName("hours_advance");
+
+                    b.Property<decimal>("HoursDebt")
+                        .HasColumnType("numeric")
+                        .HasColumnName("hours_debt");
+
                     b.Property<decimal>("HoursLimit")
                         .HasColumnType("numeric")
                         .HasColumnName("hours_limit");
@@ -1646,7 +1654,7 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BusinessObject.Models.Vehicle", "Vehilce")
+                    b.HasOne("BusinessObject.Models.Vehicle", "Vehicle")
                         .WithMany()
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1656,7 +1664,7 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("Group");
 
-                    b.Navigation("Vehilce");
+                    b.Navigation("Vehicle");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Vehicle", b =>

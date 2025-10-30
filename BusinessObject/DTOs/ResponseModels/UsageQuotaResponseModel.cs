@@ -13,7 +13,11 @@ namespace BusinessObject.DTOs.ResponseModels
         public DateTime WeekStartDate { get; set; }
         public decimal HoursLimit { get; set; }
         public decimal HoursUsed { get; set; }
+        public decimal HoursDebt { get; set; }
+        public decimal HoursAdvance { get; set; }
+
         public decimal RemainingHours { get; set; }
 
+        public decimal RemainingHoursNextWeek { get; set; }
     }
 }

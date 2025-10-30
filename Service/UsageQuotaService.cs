@@ -49,6 +49,8 @@ namespace Service
                 WeekStartDate = weekStartUtc,
                 HoursLimit = hoursLimit,
                 HoursUsed = 0,
+                HoursAdvance = 0,
+                HoursDebt = 0,
                 LastUpdated = DateTime.UtcNow
             };
 
@@ -81,7 +83,21 @@ namespace Service
             if (quota == null)
                 return (false, "Không thể lấy quota sau khi tạo.", null);
 
-            decimal remaining = quota.HoursLimit - quota.HoursUsed;
+            decimal remaining = quota.HoursLimit - quota.HoursUsed - quota.HoursDebt;
+            if (remaining < 0) remaining = 0;
+
+            // --- Tính giờ có thể đặt cho tuần sau ---
+            decimal debtOverflow = 0; // phần nợ vượt qua limit tuần này
+            if (quota.HoursUsed + quota.HoursDebt > quota.HoursLimit)
+            {
+                debtOverflow = (quota.HoursUsed + quota.HoursDebt) - quota.HoursLimit;
+            }
+
+            // Công thức: Giờ có thể đặt tuần sau = Limit - Advance - debtOverflow
+            decimal remainingNextWeek = quota.HoursLimit - quota.HoursAdvance - debtOverflow;
+            if (remainingNextWeek < 0) remainingNextWeek = 0;
+
+            // Dữ liệu trả về
             var data = new UsageQuotaResponseModel
             {
                 VehicleId = quota.VehicleId,
@@ -89,12 +105,45 @@ namespace Service
                 WeekStartDate = quota.WeekStartDate,
                 HoursLimit = quota.HoursLimit,
                 HoursUsed = quota.HoursUsed,
-                RemainingHours = remaining
+                HoursAdvance = quota.HoursAdvance,
+                HoursDebt = quota.HoursDebt,
+                RemainingHours = remaining,
+                RemainingHoursNextWeek = remainingNextWeek,
             };
 
-            string message = remaining <= 0
-             ? "Bạn đã hết quota tuần này."
-             : $"Bạn còn {remaining:F2} giờ quota.";
+            // -------------------------
+            // Format thời gian (hiển thị giờ & phút)
+            // -------------------------
+            int remainingHours = (int)Math.Floor(remaining);
+            int remainingMinutes = (int)Math.Round((remaining - remainingHours) * 60);
+
+            string formattedTime = remainingHours > 0 && remainingMinutes > 0
+                ? $"{remainingHours} giờ {remainingMinutes} phút"
+                : remainingHours > 0 ? $"{remainingHours} giờ" : $"{remainingMinutes} phút";
+
+            int nextHours = (int)Math.Floor(remainingNextWeek);
+            int nextMinutes = (int)Math.Round((remainingNextWeek - nextHours) * 60);
+
+            string formattedNextWeek = nextHours > 0 && nextMinutes > 0
+                ? $"{nextHours} giờ {nextMinutes} phút"
+                : nextHours > 0 ? $"{nextHours} giờ" : $"{nextMinutes} phút";
+
+            // -------------------------
+            // Tạo thông báo kết quả
+            // -------------------------
+            string message;
+            if (remaining <= 0 && remainingNextWeek <= 0)
+            {
+                message = "Bạn đã hết giờ đặt lịch cho tuần này và tuần sau.";
+            }
+            else if (remaining <= 0)
+            {
+                message = $"Bạn đã hết giờ đặt lịch cho tuần này. Tuần sau bạn còn {formattedNextWeek} để đặt trước.";
+            }
+            else
+            {
+                message = $"Bạn còn {formattedTime} để đặt trong tuần này, và {formattedNextWeek} để đặt trước cho tuần sau.";
+            }
 
             return (true, message, data);
         }
@@ -113,7 +162,7 @@ namespace Service
             return claim != null ? Guid.Parse(claim.Value) : Guid.Empty;
         }
 
-        // 🧩 Helper: Tính ngày bắt đầu tuần (Thứ Hai)
+       
        
     }
 }
