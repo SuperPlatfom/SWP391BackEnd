@@ -33,29 +33,9 @@ namespace SWP391BackEnd.Controllers
                 result.Data
             });
         }
-        /// <summary>
-        /// Reset toàn bộ quota (HoursUsed = 0)
-        /// </summary>
-        [HttpPost("reset")]
-        public async Task<IActionResult> ResetQuotaAsync()
-        {
-            try
-            {
-                await _quotaService.ResetWeeklyQuotaAsync();
-                return Ok(new
-                {
-                    message = "Reset quota thành công.",
-                    time = DateTime.UtcNow
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    message = "Lỗi khi reset quota.",
-                    error = ex.Message
-                });
+        
+     
             }
         }
-    }
-}
+    
+
