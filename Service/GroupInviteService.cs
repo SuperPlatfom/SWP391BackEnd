@@ -38,7 +38,7 @@ namespace Service
                 Id = Guid.NewGuid(),
                 GroupId = groupId,
                 InviteCode = code,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                ExpiresAt = DateTime.UtcNow.AddSeconds(30),
                 CreatedAt = DateTime.UtcNow
             };
 
