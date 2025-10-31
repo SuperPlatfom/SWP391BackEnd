@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +12,7 @@ namespace Repository.Interfaces
     {
         Task<UsageQuota?> GetUsageQuotaAsync(Guid accountId, Guid groupId, Guid vehicleId, DateTime weekStart);
         Task<(decimal weeklyQuotaHours, decimal? ownershipRate)?> GetQuotaRateAsync(Guid accountId, Guid vehicleId);
+        Task<IEnumerable<UsageQuota>> GetAllAsync(Expression<Func<UsageQuota, bool>>? filter = null);
         Task ResetAllQuotaHoursUsedAsync();
         Task AddAsync(UsageQuota quota);
         Task UpdateAsync(UsageQuota quota);

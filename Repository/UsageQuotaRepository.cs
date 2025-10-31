@@ -2,6 +2,8 @@
 using DataAccessLayer.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
+using System.Linq;
+using System.Linq.Expressions;
 
 
 namespace Repository
@@ -22,6 +24,16 @@ namespace Repository
                 u.GroupId == groupId &&
                 u.VehicleId == vehicleId &&
                 u.WeekStartDate == weekStart);
+        }
+
+        public async Task<IEnumerable<UsageQuota>> GetAllAsync(Expression<Func<UsageQuota, bool>>? filter = null)
+        {
+            IQueryable<UsageQuota> query = _context.UsageQuotas;
+
+            if (filter != null)
+                query = query.Where(filter);
+
+            return await query.ToListAsync();
         }
 
         /// <summary>
