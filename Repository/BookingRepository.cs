@@ -60,6 +60,16 @@ namespace Repository
                 .Where(b => b.VehicleId == vehicleId)
                 .ToListAsync();
         }
+        public async Task<List<Booking>> GetUserBookingsByVehicleAsync(Guid userId, Guid vehicleId)
+        {
+            return await _context.Bookings
+                .Include(b => b.Vehicle)
+                .Include(b => b.Group)
+                .Include(b => b.User)
+                .Where(b => b.UserId == userId && b.VehicleId == vehicleId)
+                .OrderByDescending(b => b.CreatedAt) // mới nhất → cũ nhất
+                .ToListAsync();
+        }
 
         public async Task<IEnumerable<Booking>> GetBookingsByVehicleInGroupAsync(Guid groupId, Guid vehicleId)
         {

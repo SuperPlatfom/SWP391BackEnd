@@ -1,70 +1,53 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace BusinessObject.RequestModels
+namespace BusinessObject.RequestModels;
+
+public class VehicleRequestModel
 {
-    public class VehicleRequestModel
-    {
+    [JsonPropertyName("make")]
+    [Required]
+    public string make { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Make is required")]
-        public string Make { get; set; } = string.Empty;
+    [JsonPropertyName("model")]
+    [Required]
+    public string model { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Model is required")]
-        public string Model { get; set; } = string.Empty;
+    [JsonPropertyName("modelYear")]
+    [Required, Range(1900, 2100, ErrorMessage = "Invalid model year")]
+    public int modelYear { get; set; }
 
-        [Range(1900, 2100, ErrorMessage = "Invalid model year")]
-        public int ModelYear { get; set; }
+    [JsonPropertyName("color")]
+    [Required]
+    public string color { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Color is required")]
-        public string Color { get; set; } = string.Empty;
+    [JsonPropertyName("batteryCapacityKwh")]
+    [Required, Range(0.1, 500, ErrorMessage = "Battery capacity must be positive")]
+    public decimal batteryCapacityKwh { get; set; }
 
-        [Range(0.1, double.MaxValue, ErrorMessage = "Battery capacity must be positive")]
-        public decimal BatteryCapacityKwh { get; set; }
+    [JsonPropertyName("rangeKm")]
+    [Required, Range(1, int.MaxValue, ErrorMessage = "Range must be positive")]
+    public int rangeKm { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "Range must be positive")]
-        public int RangeKm { get; set; }
+    [JsonPropertyName("plateNumber")]
+    [Required]
+    public string plateNumber { get; set; }
 
-        public string? PlateNumber { get; set; }
+    [JsonPropertyName("vehicleImage")]
+    [Required]
+    public IFormFile vehicleImage { get; set; }
 
-
-    }
-    public class UpdateVehicleRequestModel
-    {
-        [JsonPropertyName("plateNumber")]
-        [RegularExpression(@"^[0-9A-Z\-]{5,15}$", ErrorMessage = "Invalid plate number format")]
-        public string? PlateNumber { get; set; }
-
-        [JsonPropertyName("make")]
-        [Required(ErrorMessage = "Vehicle make is required")]
-        public string Make { get; set; } = string.Empty;
-
-        [JsonPropertyName("model")]
-        [Required(ErrorMessage = "Vehicle model is required")]
-        public string Model { get; set; } = string.Empty;
-
-        [JsonPropertyName("modelYear")]
-        [Range(2000, 2100, ErrorMessage = "Model year must be between 2000 and 2100")]
-        public int ModelYear { get; set; }
-
-        [JsonPropertyName("color")]
-        [Required(ErrorMessage = "Color is required")]
-        public string Color { get; set; } = string.Empty;
-
-        [JsonPropertyName("batteryCapacityKwh")]
-        [Range(10, 200, ErrorMessage = "Battery capacity must be between 10 and 200 kWh")]
-        public decimal BatteryCapacityKwh { get; set; }
-
-        [JsonPropertyName("rangeKm")]
-        [Range(50, 1000, ErrorMessage = "Range must be between 50 and 1000 km")]
-        public int RangeKm { get; set; }
-
-
-
-    }
-
-    public class AttachVehicleRequest
-    {
-        public Guid GroupId { get; set; }
-        public Guid VehicleId { get; set; }
-    }
+    [JsonPropertyName("registrationPaperUrl")]
+    [Required]
+    public IFormFile registrationPaperUrl { get; set; }
 }
+
+
+ 
+
+
+
+
+
+

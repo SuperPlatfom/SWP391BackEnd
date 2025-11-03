@@ -2,6 +2,7 @@
 using DataAccessLayer.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
+using System.Linq.Expressions;
 
 namespace Repository
 {
@@ -69,6 +70,11 @@ namespace Repository
         {
             var vehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.Id == vehicleId);
             return vehicle != null && vehicle.Status == "ACTIVE" && vehicle.GroupId == groupId;
+        }
+
+        public async Task<bool> ExistsAsync(Expression<Func<Vehicle, bool>> predicate)
+        {
+            return await _context.Vehicles.AnyAsync(predicate);
         }
     }
 }

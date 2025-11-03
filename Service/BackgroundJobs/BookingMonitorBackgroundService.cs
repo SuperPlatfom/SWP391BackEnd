@@ -49,14 +49,14 @@ namespace Service.BackgroundJobs
 
             foreach (var booking in allBookings)
             {
-                // --- 1️⃣ Tự động hủy nếu quá 15 phút mà chưa check-in ---
+               
                 if (booking.Status == BookingStatus.Booked && DateTime.UtcNow >= booking.StartTime.AddMinutes(15))
                 {
                     await bookingService.CancelBookingAsync(booking.Id);
                     continue;
                 }
 
-                // --- 2️⃣ Tự động chuyển sang OVERTIME nếu quá EndTime mà vẫn đang InUse ---
+               
                 if (booking.Status == BookingStatus.InUse && DateTime.UtcNow > booking.EndTime)
                 {
                     booking.Status = BookingStatus.Overtime;
@@ -74,7 +74,7 @@ namespace Service.BackgroundJobs
                 var overlappingBookings = allBookings.Where(b =>
                     b.VehicleId == overtime.VehicleId &&
                     b.Id != overtime.Id &&
-                    b.StartTime < overtime.EndTime && // bị trùng thời gian
+                    b.StartTime < overtime.EndTime && 
                     b.Status == BookingStatus.Booked
                 ).ToList();
 
@@ -82,7 +82,7 @@ namespace Service.BackgroundJobs
                 {
                     Console.WriteLine($"[BookingMonitor] Booking {nextBooking.Id} bị hủy do trùng với booking overtime {overtime.Id}.");
 
-                    // ✅ Hoàn lại toàn bộ giờ cho người dùng booking sau
+                 
                     var weekStartUtc = DateTimeHelper.GetWeekStartDate(nextBooking.StartTime);
                     var quota = await usageQuotaRepo.GetUsageQuotaAsync(nextBooking.UserId, nextBooking.GroupId, nextBooking.VehicleId, weekStartUtc);
 
@@ -96,7 +96,7 @@ namespace Service.BackgroundJobs
                         await usageQuotaRepo.UpdateAsync(quota);
                     }
 
-                    // Cập nhật trạng thái booking sau
+               
                     nextBooking.Status = BookingStatus.Cancelled;
                     nextBooking.UpdatedAt = DateTime.UtcNow;
                     await bookingRepo.UpdateAsync(nextBooking);

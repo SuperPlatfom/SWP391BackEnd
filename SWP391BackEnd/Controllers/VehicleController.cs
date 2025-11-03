@@ -9,7 +9,7 @@ namespace SWP391BackEnd.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [ApiExplorerSettings(GroupName = "Vehicle Management")]
-    public class VehicleController : ControllerBase
+    public class VehicleController : Controller
     {
         private readonly IVehicleService _vehicleService;
 
@@ -35,34 +35,7 @@ namespace SWP391BackEnd.Controllers
             return Ok(vehicle);
         }
 
-        [Authorize] // ✅ yêu cầu đăng nhập (có token)
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateVehicle([FromBody] VehicleRequestModel request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var user = HttpContext.User;
-            var result = await _vehicleService.CreateVehicleAsync(request, user);
-
-            return Ok(new
-            {
-                message = "Tạo vehicle thành công",
-                data = result
-            });
-        }
-
-        [Authorize]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] VehicleRequestModel request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var user = HttpContext.User;
-            var result = await _vehicleService.UpdateVehicleAsync(id, request, user);
-            return Ok(new { message = "Cập nhật vehicle thành công", data = result });
-        }
+       
 
         [HttpDelete("delete-vehicle-by-id")]
         public async Task<IActionResult> Delete(Guid id)

@@ -1,14 +1,10 @@
-﻿    using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace BusinessObject.Models
 {
     [Table("vehicle")]
+    [Index(nameof(PlateNumber), IsUnique = true)]
     public class Vehicle
     {
         [Key]
@@ -16,28 +12,32 @@ namespace BusinessObject.Models
         public Guid Id { get; set; }
 
         [Column("plate_number")]
-        public string? PlateNumber { get; set; }  // Biển số 
+        public string PlateNumber { get; set; } = null!;
 
         [Column("make")]
-        public string? Make { get; set; }          // Hãng xe
+        public string Make { get; set; } = null!;
 
         [Column("model")]
-        public string? Model { get; set; }         // Dòng xe
-
+        public string Model { get; set; } = null!;
         [Column("model_year")]
-        public int ModelYear { get; set; }        // Năm sản xuất
+        public int ModelYear { get; set; }
 
         [Column("color")]
-        public string? Color { get; set; }         // Màu sắc
+        public string Color { get; set; } = null!;   
 
         [Column("battery_capacity_kwh")]
-        public decimal BatteryCapacityKwh { get; set; } // Dung lượng pin danh định
+        public decimal BatteryCapacityKwh { get; set; } 
 
         [Column("range_km")]
-        public int RangeKm { get; set; }          // Tầm hoạt động ước tính
-
+        public int RangeKm { get; set; }         
         [Column("status")]
-        public string Status { get; set; } =   "INACTIVE";        // ACTIVE / INACTIVE / MAINTENANCE
+        public string Status { get; set; } =   "INACTIVE";
+
+        [Column("vehicle_image_url")]
+        public string VehicleImageUrl { get; set; } = null!;
+
+        [Column("registration_paper_url")]
+        public string RegistrationPaperUrl { get; set; } = null!;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
@@ -60,6 +60,8 @@ namespace BusinessObject.Models
         public ICollection<EContract> Contracts { get; set; } = new List<EContract>();
         public ICollection<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+        public ICollection<VehicleRequest> VehicleRequests { get; set; } = new List<VehicleRequest>();
+        public ICollection<TripEvent> TripEvents { get; set; } = new List<TripEvent>();
 
     }
 }

@@ -100,6 +100,10 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 
+builder.Services.AddScoped<IVehicleRequestRepository, VehicleRequestRepository>();
+builder.Services.AddScoped<IVehicleRequestService, VehicleRequestService>();
+builder.Services.AddScoped<ITripEventRepository, TripEventRepository>();
+builder.Services.AddScoped<ITripEventService, TripEventService>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var firebasePath = builder.Configuration["Firebase:CredentialPath"];

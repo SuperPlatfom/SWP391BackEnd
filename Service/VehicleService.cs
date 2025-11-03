@@ -1,7 +1,6 @@
 ﻿using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Models;
 using BusinessObject.RequestModels;
-using Microsoft.AspNetCore.Http;
 using Repository.Interfaces;
 using Service.Interfaces;
 using System.Security.Claims;
@@ -11,20 +10,19 @@ namespace Service
     public class VehicleService : IVehicleService
     {
         private readonly IVehicleRepository _vehicleRepository;
+        private readonly IVehicleRequestRepository _vehicleRequestRepository;
     
-        public VehicleService(
-            IVehicleRepository vehicleRepository
-           )
+        public VehicleService(IVehicleRepository vehicleRepository, IVehicleRequestRepository vehicleRequestRepository)
         {
             _vehicleRepository = vehicleRepository;
-           
+            _vehicleRequestRepository = vehicleRequestRepository;
         }
 
         public async Task<IEnumerable<VehicleResponseModel>> GetAllVehiclesAsync()
         {
             var vehicles = await _vehicleRepository.GetAllAsync();
 
-            // ✅ Ánh xạ trực tiếp trong lệnh select
+           
             var result = vehicles.Select(v => new VehicleResponseModel
             {
                 Id = v.Id,
@@ -59,39 +57,14 @@ namespace Service
                 Status = v.Status,
                 BatteryCapacityKwh = v.BatteryCapacityKwh,
                 RangeKm = v.RangeKm,
-                GroupId = v.GroupId
+                GroupId = v.GroupId,
+                VehicleImageUrl = v.VehicleImageUrl,
+                RegistrationPaperUrl = v.RegistrationPaperUrl,
             };
         }
 
-        public async Task<VehicleResponseModel> CreateVehicleAsync(VehicleRequestModel request, ClaimsPrincipal user)
-        {
-            if (user == null || !user.Identity?.IsAuthenticated == true)
-                throw new UnauthorizedAccessException("Bạn cần đăng nhập để tạo vehicle.");
+       
 
-            // Lấy userId từ token JWT
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("Không thể xác định người dùng từ token.");
-
-            var vehicle = new Vehicle
-            {
-                Id = Guid.NewGuid(),
-                PlateNumber = request.PlateNumber,
-                Make = request.Make,
-                Model = request.Model,
-                ModelYear = request.ModelYear,
-                Color = request.Color,
-                BatteryCapacityKwh = request.BatteryCapacityKwh,
-                RangeKm = request.RangeKm,
-                Status = "INACTIVE", // Mặc định ACTIVE
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                CreatedBy = Guid.Parse(userId) // ✅ Gán người tạo
-            };
-
-            var created = await _vehicleRepository.AddAsync(vehicle);
-            return MapToResponseModel(created);
-        }
 
         private VehicleResponseModel MapToResponseModel(Vehicle vehicle)
         {
@@ -109,28 +82,7 @@ namespace Service
             };
         }
 
-        public async Task<VehicleResponseModel> UpdateVehicleAsync(Guid id, VehicleRequestModel request, ClaimsPrincipal user)
-{
-    var vehicle = await _vehicleRepository.GetByIdAsync(id);
-    if (vehicle == null)
-        throw new KeyNotFoundException("Vehicle not found");
-
-    // xác thực người tạo (CreatedBy == userId)
-    var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    if (vehicle.CreatedBy.ToString() != userId)
-        throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa vehicle này.");
-
-    vehicle.Make = request.Make;
-    vehicle.Model = request.Model;
-    vehicle.ModelYear = request.ModelYear;
-    vehicle.Color = request.Color;
-    vehicle.BatteryCapacityKwh = request.BatteryCapacityKwh;
-    vehicle.RangeKm = request.RangeKm;
-    vehicle.UpdatedAt = DateTime.UtcNow;
-
-    var updated = await _vehicleRepository.UpdateAsync(vehicle);
-    return MapToResponseModel(updated);
-}
+       
 
         public async Task<VehicleResponseModel> DeleteVehicleAsync(Guid id)
         {
