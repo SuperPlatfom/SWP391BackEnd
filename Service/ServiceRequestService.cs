@@ -38,7 +38,8 @@ namespace Service
 
         public async Task<IEnumerable<ServiceRequestDto>> GetAllAsync()
         {
-            var list = await _repo.GetAllAsync();
+            var list = (await _repo.GetAllAsync())
+            .OrderByDescending(x => x.CreatedAt);
 
             return list.Select(x => new ServiceRequestDto
             {
@@ -47,7 +48,9 @@ namespace Service
                 Type = x.Type.ToString(),
                 Status = x.Status,
                 CostEstimate = x.CostEstimate,
-                InspectionScheduledAt = x.InspectionScheduledAt,
+                InspectionScheduledAt = x.InspectionScheduledAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(x.InspectionScheduledAt.Value)
+                : null,
                 CreatedAt = DateTimeHelper.ToVietnamTime(x.CreatedAt)
             }).ToList();
         }
@@ -71,9 +74,15 @@ namespace Service
                 GroupName = entity.Group.Name,
                 CreatedByName = entity.CreatedByAccount.FullName,
                 CostEstimate = entity.CostEstimate,
-                CompletedAt = entity.CompletedAt,
-                ApprovedAt = entity.ApprovedAt,
-                InspectionScheduledAt = entity.InspectionScheduledAt,
+                CompletedAt = entity.CompletedAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(entity.CompletedAt.Value)
+                : null,
+                ApprovedAt = entity.ApprovedAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(entity.ApprovedAt.Value)
+                : null,
+                InspectionScheduledAt = entity.InspectionScheduledAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(entity.InspectionScheduledAt.Value)
+                : null,
                 InspectionNotes = entity.InspectionNotes,
                 ServiceCenterName = entity.ServiceCenter?.Name,
                 ServiceCenterAddress = entity.ServiceCenter?.Address,
@@ -232,7 +241,9 @@ namespace Service
         }
         public async Task<IEnumerable<ServiceRequestDto>> GetMyGroupRequestsAsync(Guid currentUserId)
         {
-            var list = await _repo.GetByGroupMembersAsync(currentUserId);
+            var list = (await _repo.GetByGroupMembersAsync(currentUserId))
+            .OrderByDescending(x => x.CreatedAt); 
+
 
             return list.Select(x => new ServiceRequestDto
             {
@@ -251,7 +262,9 @@ namespace Service
             if (!await _groupMemberRepo.IsMemberAsync(groupId, currentUserId))
                 throw new UnauthorizedAccessException("Bạn không thuộc nhóm này.");
 
-            var list = await _repo.GetByGroupIdAsync(groupId);
+            var list = (await _repo.GetByGroupIdAsync(groupId))
+                .OrderByDescending(x => x.CreatedAt); 
+
 
             return list.Select(x => new ServiceRequestDto
             {
@@ -260,7 +273,9 @@ namespace Service
                 Type = x.Type.ToString(),
                 Status = x.Status,
                 CostEstimate = x.CostEstimate,
-                InspectionScheduledAt = x.InspectionScheduledAt,
+                InspectionScheduledAt = x.InspectionScheduledAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(x.InspectionScheduledAt.Value)
+                : null,
                 CreatedAt = DateTimeHelper.ToVietnamTime(x.CreatedAt)
             }).ToList();
         }
@@ -268,7 +283,8 @@ namespace Service
         public async Task<IEnumerable<ServiceRequestDto>> GetMyRequestsAsync(Guid currentUserId)
         {
             var list = await _repo.GetAllAsync();
-            list = list.Where(x => x.CreatedBy == currentUserId);
+            list = list.Where(x => x.CreatedBy == currentUserId)
+            .OrderByDescending(x => x.CreatedAt);
 
             return list.Select(x => new ServiceRequestDto
             {
@@ -277,7 +293,9 @@ namespace Service
                 Type = x.Type.ToString(),
                 Status = x.Status,
                 CostEstimate = x.CostEstimate,
-                InspectionScheduledAt = x.InspectionScheduledAt,
+                InspectionScheduledAt = x.InspectionScheduledAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(x.InspectionScheduledAt.Value)
+                : null,
                 CreatedAt = DateTimeHelper.ToVietnamTime(x.CreatedAt)
             }).ToList();
         }
@@ -307,6 +325,7 @@ namespace Service
             {
                 throw new UnauthorizedAccessException("Bạn không có quyền xem danh sách này.");
             }
+            list = list.OrderByDescending(x => x.CreatedAt); 
 
             return list.Select(x => new ServiceRequestDetailDto
             {
@@ -320,9 +339,13 @@ namespace Service
                 GroupName = x.Group.Name,
                 CreatedByName = x.CreatedByAccount.FullName,
                 CostEstimate = x.CostEstimate,
-                CompletedAt = x.CompletedAt,
+                CompletedAt = x.CompletedAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(x.CompletedAt.Value)
+                : null,
                 TechnicianName = x.Technician?.FullName,
-                InspectionScheduledAt = x.InspectionScheduledAt,
+                InspectionScheduledAt = x.InspectionScheduledAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(x.InspectionScheduledAt.Value)
+                : null,
                 CreatedAt = DateTimeHelper.ToVietnamTime(x.CreatedAt)
             }).ToList();
         }

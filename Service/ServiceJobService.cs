@@ -2,6 +2,7 @@
 using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Models;
 using Repository.Interfaces;
+using Service.Helpers;
 using Service.Interfaces;
 using System;
 using System.Threading.Tasks;
@@ -60,17 +61,21 @@ namespace Service
             var list = await _jobRepo.GetAllAsync();
             if (technicianId.HasValue)
                 list = list.Where(j => j.TechnicianId == technicianId.Value);
-
+            list = list.OrderByDescending(j => j.CreatedAt);
             return list.Select(j => new ServiceJobListDto
             {
                 Id = j.Id,
                 Title = j.Request.Title,
                 TechnicianName = j.Technician.FullName,
-                ScheduledAt = j.ScheduledAt,
-                CompletedAt = j.CompletedAt,
+                ScheduledAt = j.ScheduledAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(j.ScheduledAt.Value)
+                : null,
+                CompletedAt = j.CompletedAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(j.CompletedAt.Value)
+                : null,
                 ReportUrl = j.ReportUrl,
                 Status = j.Status,
-                CreatedAt = j.CreatedAt
+                CreatedAt = DateTimeHelper.ToVietnamTime(j.CreatedAt)
             });
         }
 
@@ -85,8 +90,12 @@ namespace Service
                 Id = job.Id,
                 Title = job.Request.Title,
                 TechnicianName = job.Technician.FullName,
-                ScheduledAt = job.ScheduledAt,
-                CompletedAt = job.CompletedAt,
+                ScheduledAt = job.ScheduledAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(job.ScheduledAt.Value)
+                : null,
+                CompletedAt = job.CompletedAt.HasValue
+                ? DateTimeHelper.ToVietnamTime(job.CompletedAt.Value)
+                : null,
                 ReportUrl = job.ReportUrl,
                 Status = job.Status,
                 VehicleName = $"{job.Request.Vehicle.Make} {job.Request.Vehicle.Model}",
@@ -94,7 +103,7 @@ namespace Service
                 GroupName = job.Request.Group.Name,
                 RequestCreatedBy = job.Request.CreatedByAccount.FullName,
                 IssueDescription = job.Request.Description ?? "",
-                CreatedAt = job.CreatedAt
+                CreatedAt = DateTimeHelper.ToVietnamTime(job.CreatedAt)
             };
         }
 
