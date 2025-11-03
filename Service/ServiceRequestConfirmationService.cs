@@ -1,6 +1,7 @@
 ﻿using BusinessObject.DTOs.RequestModels;
 using BusinessObject.Models;
 using Repository.Interfaces;
+using Service.Helpers;
 using Service.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -139,7 +140,7 @@ namespace Service
                 UserId = confirmation.UserId,
                 Decision = confirmation.Decision,
                 Reason = confirmation.Reason,
-                DecidedAt = confirmation.DecidedAt
+                DecidedAt = DateTimeHelper.ToVietnamTime(confirmation.DecidedAt)
             };
         }
 
@@ -156,7 +157,8 @@ namespace Service
                 UserId = c.UserId,
                 Decision = c.Decision,
                 Reason = c.Reason,
-                DecidedAt = c.DecidedAt
+                DecidedAt = DateTimeHelper.ToVietnamTime(c.DecidedAt)
+
             }).ToList();
         }
 
@@ -171,7 +173,8 @@ namespace Service
                 UserId = c.UserId,
                 Decision = c.Decision,
                 Reason = c.Reason,
-                DecidedAt = c.DecidedAt
+                DecidedAt = DateTimeHelper.ToVietnamTime(c.DecidedAt)
+
             }).ToList();
         }
         public async Task<IEnumerable<ServiceRequestVoteStatusDto>> GetVoteStatusAsync(Guid requestId)
