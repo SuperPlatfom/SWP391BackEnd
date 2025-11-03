@@ -33,7 +33,6 @@ namespace Service
                 var share = await _shareRepo.GetActiveShareAsync(inv.GroupId, inv.UserId);
                 var sharePercent = share?.OwnershipRate ?? 0;
                 var shareAmount = Math.Round(inv.TotalAmount * (sharePercent / 100), 2);
-                var remaining = Math.Round(shareAmount - inv.AmountPaid, 2);
 
                 result.Add(new MemberInvoiceDto
                 {
@@ -59,7 +58,6 @@ namespace Service
 
             var share = await _shareRepo.GetActiveShareAsync(inv.GroupId, inv.UserId);
             var sharePercent = share?.OwnershipRate ?? 0;
-            var shareAmount = Math.Round(inv.TotalAmount * (sharePercent / 100), 2);
 
             return new MemberInvoiceDto
             {
