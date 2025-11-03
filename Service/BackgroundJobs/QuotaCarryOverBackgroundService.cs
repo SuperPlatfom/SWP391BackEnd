@@ -44,7 +44,7 @@ namespace Service.BackgroundJobs
         }
 private async Task CarryOverQuotaAsync()
     {
-            // Lấy danh sách quota của tuần cũ (tuần vừa kết thúc)
+           
             var vietnamNow = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
 
             var previousWeekStartVN = DateTimeHelper.GetWeekStartDate(vietnamNow).AddDays(-7);
@@ -59,13 +59,13 @@ private async Task CarryOverQuotaAsync()
 
         foreach (var oldQuota in oldQuotas)
         {
-                // Lấy quota của tuần hiện tại
+               
             await _usageQuotaService.EnsureQuotaExistsAsync(oldQuota.AccountId, oldQuota.GroupId, oldQuota.VehicleId, currentWeekStartUtc);
                 var newQuota = await _usageQuotaRepository.GetUsageQuotaAsync(oldQuota.AccountId, oldQuota.GroupId, oldQuota.VehicleId, currentWeekStartUtc);
 
             if (newQuota != null)
             {
-                    // Chuyển phần dư hoặc nợ sang tuần mới
+                   
                 newQuota.HoursUsed += oldQuota.HoursAdvance;
                     var calculatingDebt = (oldQuota.HoursDebt + oldQuota.HoursUsed) - oldQuota.HoursLimit;
                     if (calculatingDebt > 0)
@@ -76,7 +76,7 @@ private async Task CarryOverQuotaAsync()
                
                 newQuota.LastUpdated = DateTime.UtcNow;
 
-                // Reset quota cũ để tránh cộng dồn nhiều lần
+            
                 oldQuota.HoursAdvance = 0;
                 oldQuota.LastUpdated = DateTime.UtcNow;
 

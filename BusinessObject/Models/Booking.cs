@@ -34,9 +34,6 @@ namespace BusinessObject.Models
         [Column("end_time")]
         public DateTime EndTime { get; set; }
 
-        [Column("purpose")]
-        public string? Purpose { get; set; }
-
         [Column("status")]
         [MaxLength(20)]
         public string Status { get; set; } = BookingStatus.Booked;

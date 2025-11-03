@@ -96,8 +96,10 @@ builder.Services.AddScoped<IMemberInvoiceRepository, MemberInvoiceRepository>();
 builder.Services.AddScoped<IUsageQuotaRepository, UsageQuotaRepository>();
 builder.Services.AddScoped<IUsageQuotaService, UsageQuotaService>();
 builder.Services.AddScoped<QuotaResetHelper>();
-
-
+builder.Services.AddScoped<IVehicleRequestRepository, VehicleRequestRepository>();
+builder.Services.AddScoped<IVehicleRequestService, VehicleRequestService>();
+builder.Services.AddScoped<ITripEventRepository, TripEventRepository>();
+builder.Services.AddScoped<ITripEventService, TripEventService>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var firebasePath = builder.Configuration["Firebase:CredentialPath"];
