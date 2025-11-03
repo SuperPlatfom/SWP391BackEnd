@@ -11,7 +11,7 @@ namespace Service.Interfaces
     public interface IServiceJobService
     {
         Task CreateAfterFullPaymentAsync(Guid expenseId);
-        Task<IEnumerable<ServiceJobDto>> GetAllAsync(Guid? technicianId = null);
+        Task<IEnumerable<ServiceJobListDto>> GetAllAsync(Guid? technicianId = null);
         Task<ServiceJobDto> GetByIdAsync(Guid id);
         Task UpdateStatusAsync(Guid jobId, UpdateServiceJobStatusRequest req, Guid technicianId);
         Task UpdateReportAsync(Guid jobId, UpdateServiceJobReportRequest req, Guid technicianId);

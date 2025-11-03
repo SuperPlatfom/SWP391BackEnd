@@ -19,8 +19,9 @@ namespace Service.Interfaces
         Task<ServiceRequestDetailDto> ProvideCostEstimateAsync(Guid id, ProvideCostEstimateRequest req, Guid technicianId);
         Task<IEnumerable<ServiceRequestDto>> GetByGroupAsync(Guid groupId, Guid currentUserId);
         Task<IEnumerable<ServiceRequestDto>> GetMyRequestsAsync(Guid currentUserId);
-        Task<IEnumerable<ServiceRequestDto>> GetAssignedRequestsByUserAsync(Guid currentUserId);
-        
+        Task<IEnumerable<ServiceRequestDetailDto>> GetAssignedRequestsByUserAsync(Guid currentUserId);
+
+
 
     }
 }

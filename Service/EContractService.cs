@@ -26,6 +26,7 @@ namespace Service
         private readonly IMailService _mailService;
         private readonly IConfiguration _config;
         private readonly IFirebaseStorageService _firebaseStorageService;
+        private readonly INotificationService _noti;
 
         public EContractService(
             IEContractRepository contractRepo,
@@ -39,7 +40,8 @@ namespace Service
             IMustacheRenderer renderer,
             IMailService mailService,
             IConfiguration config,
-            IFirebaseStorageService firebaseStorageService)
+            IFirebaseStorageService firebaseStorageService,
+            INotificationService noti)
         {
             _contractRepo = contractRepo;
             _signerRepo = signerRepo;
@@ -53,6 +55,7 @@ namespace Service
             _mailService = mailService;
             _config = config;
             _firebaseStorageService = firebaseStorageService;
+            _noti = noti;
         }
 
         public async Task<ContractDetailDto> CreateAsync(CreateContractRequest req, Guid currentUserId)
@@ -83,8 +86,8 @@ namespace Service
                 );
             }
 
-            if (req.ExpiresAt.HasValue && req.ExpiresAt <= req.EffectiveFrom)
-                throw new ArgumentException("Expiration date must be after effective date");
+            if (req.ExpiresAt.HasValue && req.ExpiresAt <= DateTime.UtcNow)
+                throw new ArgumentException("Ngày hết hạn phải sau thời điểm hiện tại");
 
 
             var members = await _groupMemberRepo.GetByGroupIdAsync(req.GroupId);
@@ -104,7 +107,6 @@ namespace Service
                     ? $"Hợp đồng đồng sở hữu - {vehicle.Make} {vehicle.Model}"
                     : req.Title,
                 Status = "DRAFT",
-                EffectiveFrom = req.EffectiveFrom,
                 ExpiresAt = req.ExpiresAt,
                 CreatedBy = currentUserId,
                 CreatedAt = DateTime.UtcNow,
@@ -123,6 +125,21 @@ namespace Service
                 UpdatedAt = DateTime.UtcNow
             }).ToList();
             await _signerRepo.AddRangeAsync(signers);
+
+            var vehicleName = $"{vehicle.Make} {vehicle.Model}";
+            var plate = string.IsNullOrEmpty(vehicle.PlateNumber) ? "" : $" - {vehicle.PlateNumber}";
+
+            foreach (var signer in signers)
+            {
+                await _noti.CreateAsync(
+                    signer.UserId,
+                    "Mời ký hợp đồng",
+                    $"Bạn được mời ký hợp đồng sở hữu xe {vehicle.Make} {vehicle.Model}{(string.IsNullOrEmpty(vehicle.PlateNumber) ? "" : $" - {vehicle.PlateNumber}")}",
+                    "ECONTRACT_SIGN_REQUEST",
+                    contract.Id
+                );
+            }
+
 
             if (req.OwnershipShares?.Any() == true)
             {
@@ -180,6 +197,17 @@ namespace Service
 
             contract.Content = _renderer.Render(template.Content, htmlData);
             await _contractRepo.SaveChangesAsync();
+                      
+            foreach (var m in members.Where(m => m.UserId != currentUserId))
+            {
+                await _noti.CreateAsync(
+                    m.UserId,
+                    "Hợp đồng đồng sở hữu mới",
+                    $"Một hợp đồng sở hữu cho xe {vehicleName}{plate} vừa được tạo.",
+                    "ECONTRACT_CREATED",
+                    contract.Id
+                );
+            }
 
 
             return await BuildDetailDto(contract.Id);
@@ -199,12 +227,11 @@ namespace Service
             if (contract.Status != ContractStatus.Draft.ToString())
                 throw new InvalidOperationException("Chỉ được chỉnh sửa hợp đồng ở trạng thái DRAFT");
 
-
-            if (req.ExpiresAt.HasValue && req.ExpiresAt <= req.EffectiveFrom)
+            if (req.ExpiresAt.HasValue && req.ExpiresAt <= contract.EffectiveFrom)
                 throw new InvalidOperationException("Ngày hết hạn phải sau ngày hiệu lực");
 
+
             contract.Title = string.IsNullOrWhiteSpace(req.Title) ? contract.Title : req.Title;
-            contract.EffectiveFrom = req.EffectiveFrom;
             contract.ExpiresAt = req.ExpiresAt;
             contract.UpdatedAt = DateTime.UtcNow;
 
@@ -445,13 +472,50 @@ namespace Service
             signer.SignedAt = DateTime.UtcNow;
             await _signerRepo.UpdateAsync(signer);
 
+            var signerAccount = await _accountRepo.GetByIdAsync(signerUserId);
+            var signerName = signerAccount?.FullName ?? "Thành viên";
+
+            var vehicle = contract.Vehicle;
+            var vehicleName = $"{vehicle.Make} {vehicle.Model}";
+            var plate = string.IsNullOrWhiteSpace(vehicle.PlateNumber) ? "" : $" - {vehicle.PlateNumber}";
+
+            await _noti.CreateAsync(
+                contract.CreatedBy,
+                "Thành viên đã ký hợp đồng",
+                $"{signerName} đã ký hợp đồng xe {vehicleName}{plate}",
+                "ECONTRACT_SIGNED",
+                contract.Id
+            );
+
+            var members = contract.Signers.Select(s => s.UserId).Distinct().ToList();
+            foreach (var uid in members.Where(uid => uid != signerUserId && uid != contract.CreatedBy))
+            {
+                await _noti.CreateAsync(
+                    uid,
+                    "Hợp đồng có cập nhật",
+                    $"{signerName} đã ký hợp đồng xe {vehicleName}{plate}",
+                    "ECONTRACT_SIGNED_UPDATE",
+                    contract.Id
+                );
+            }
 
             bool allSigned = contract.Signers.All(s => s.IsSigned);
             if (allSigned)
             {
                 contract.SignedAt = DateTime.UtcNow;
+                contract.EffectiveFrom = contract.SignedAt;
                 contract.Status = "PENDING_REVIEW";
                 await _contractRepo.UpdateAsync(contract);
+                foreach (var uid in members)
+                {
+                    await _noti.CreateAsync(
+                        uid,
+                        "Tất cả thành viên đã ký hợp đồng",
+                        $"Hợp đồng xe {vehicleName}{plate} đã được ký đầy đủ và chờ duyệt.",
+                        "ECONTRACT_ALL_SIGNED",
+                        contract.Id
+                    );
+                }
             }
         }
 
@@ -615,7 +679,11 @@ public async Task ReviewContractAsync(Guid contractId, Guid staffId, bool approv
 
         if (approve && (contract.Signers == null || contract.Signers.Any(s => !s.IsSigned)))
             throw new InvalidOperationException("Không thể phê duyệt vì vẫn còn người ký chưa hoàn tất.");
-
+            
+        var vehicle = contract.Vehicle!;
+        var vehicleName = $"{vehicle.Make} {vehicle.Model}";
+        var plate = string.IsNullOrWhiteSpace(vehicle.PlateNumber) ? "" : $" - {vehicle.PlateNumber}";
+        var groupMembers = await _groupMemberRepo.GetByGroupIdAsync(contract.GroupId);
 
         contract.ReviewedAt = DateTime.UtcNow;
         contract.ReviewedBy = staffId;
@@ -627,14 +695,33 @@ public async Task ReviewContractAsync(Guid contractId, Guid staffId, bool approv
         await _contractRepo.SaveChangesAsync();
 
             if (!approve)
-        {
-            contract.Status = ContractStatus.Rejected;
-            await _contractRepo.SaveChangesAsync();
-            return;
-        }
+            {
+                contract.Status = ContractStatus.Rejected;
+                await _contractRepo.SaveChangesAsync();
+
+                await _noti.CreateAsync(
+                    contract.CreatedBy,
+                    "Hợp đồng bị từ chối ❌",
+                    $"Hợp đồng sở hữu xe {vehicleName}{plate} đã bị từ chối.",
+                    "ECONTRACT_REJECTED",
+                    contract.Id
+                );
+
+                foreach (var m in groupMembers.Where(m => m.UserId != contract.CreatedBy))
+                {
+                    await _noti.CreateAsync(
+                     m.UserId,
+                     "Hợp đồng bị từ chối",
+                     $"Hợp đồng xe {vehicleName}{plate} đã bị từ chối bởi quản trị viên.",
+                     "ECONTRACT_REJECTED_UPDATE",
+                     contract.Id
+                    );
+                }
+                return;
+            }
 
         if (string.IsNullOrWhiteSpace(contract.Content))
-            throw new InvalidOperationException("Nội dung hợp đồng rỗng, không thể tạo PDF.");
+        throw new InvalidOperationException("Nội dung hợp đồng rỗng, không thể tạo PDF.");
 
         var pdfBytes = PdfHelper.RenderHtmlToPdf(contract.Content, $"Hợp đồng: {contract.Title}");
 
@@ -647,6 +734,17 @@ public async Task ReviewContractAsync(Guid contractId, Guid staffId, bool approv
             contract.Vehicle.Status = VehicleStatus.Active;
 
         await _contractRepo.SaveChangesAsync();
+
+        foreach (var m in groupMembers)
+        {
+             await _noti.CreateAsync(
+             m.UserId,
+             "Hợp đồng được phê duyệt ✅",
+             $"Hợp đồng sở hữu xe {vehicleName}{plate} đã được phê duyệt.",
+             "ECONTRACT_APPROVED",
+             contract.Id
+                );
+        }
 
         foreach (var signer in contract.Signers)
         {

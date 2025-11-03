@@ -1,6 +1,7 @@
 ﻿using BusinessObject.DTOs.RequestModels;
 using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Models;
+using MediatR;
 using Repository.Interfaces;
 using Service.Helpers;
 using Service.Interfaces;
@@ -21,8 +22,9 @@ namespace Service
         private readonly IServiceCenterRepository _serviceCenterRepo;
         private readonly IEContractRepository _contractRepo;
         private readonly IAccountRepository _accountRepo;
+        private readonly INotificationService _notificationService;
 
-        public ServiceRequestService(IServiceRequestRepository repo, ICoOwnershipGroupRepository groupRepo, IGroupMemberRepository groupMemberRepo, IVehicleRepository vehicleRepo, IServiceCenterRepository serviceCenterRepo, IEContractRepository contractRepo, IAccountRepository accountRepo)
+        public ServiceRequestService(IServiceRequestRepository repo, ICoOwnershipGroupRepository groupRepo, IGroupMemberRepository groupMemberRepo, IVehicleRepository vehicleRepo, IServiceCenterRepository serviceCenterRepo, IEContractRepository contractRepo, IAccountRepository accountRepo, INotificationService notificationService)
         {
             _repo = repo;
             _groupRepo = groupRepo;
@@ -31,6 +33,7 @@ namespace Service
             _serviceCenterRepo = serviceCenterRepo;
             _contractRepo = contractRepo;
             _accountRepo = accountRepo;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<ServiceRequestDto>> GetAllAsync()
@@ -53,6 +56,8 @@ namespace Service
         {
             var entity = await _repo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException("Không tìm thấy yêu cầu dịch vụ");
+            var latestApprovedContract = await _contractRepo
+                .GetLatestApprovedByGroupAndVehicleAsync(entity.GroupId, entity.VehicleId);
 
             return new ServiceRequestDetailDto
             {
@@ -61,11 +66,21 @@ namespace Service
                 Type = entity.Type.ToString(),
                 Description = entity.Description,
                 Status = entity.Status,
+                VehicleName = $"{entity.Vehicle.Make} {entity.Vehicle.Model}",
+                PlateNumber = entity.Vehicle.PlateNumber ?? string.Empty,
+                GroupName = entity.Group.Name,
+                CreatedByName = entity.CreatedByAccount.FullName,
                 CostEstimate = entity.CostEstimate,
+                CompletedAt = entity.CompletedAt,
+                ApprovedAt = entity.ApprovedAt,
                 InspectionScheduledAt = entity.InspectionScheduledAt,
                 InspectionNotes = entity.InspectionNotes,
                 ServiceCenterName = entity.ServiceCenter?.Name,
+                ServiceCenterAddress = entity.ServiceCenter?.Address,
                 TechnicianName = entity.Technician?.FullName,
+                VehicleContractStatus = latestApprovedContract?.Status,
+                ContractEffectiveFrom = latestApprovedContract?.EffectiveFrom,
+                ContractExpiresAt = latestApprovedContract?.ExpiresAt,
                 CreatedAt = DateTimeHelper.ToVietnamTime(entity.CreatedAt),
                 UpdatedAt = DateTimeHelper.ToVietnamTime(entity.UpdatedAt)
             };
@@ -100,6 +115,8 @@ namespace Service
             if (contract == null)
                 throw new InvalidOperationException("Xe này chưa có hợp đồng đồng sở hữu hợp lệ. Vui lòng tạo hợp đồng trước khi yêu cầu dịch vụ.");
 
+            var vehicleName = $"{vehicle.Make} {vehicle.Model}";
+            var plate = string.IsNullOrEmpty(vehicle.PlateNumber) ? "" : $" - {vehicle.PlateNumber}";
 
             var entity = new ServiceRequest
             {
@@ -119,6 +136,19 @@ namespace Service
             await _repo.AddAsync(entity);
             await _repo.SaveChangesAsync();
 
+
+            var members = await _groupMemberRepo.GetByGroupIdAsync(req.GroupId);
+            foreach (var m in members.Where(m => m.UserId != currentUserId))
+            {
+                await _notificationService.CreateAsync(
+                    m.UserId,
+                    "Yêu cầu dịch vụ mới",
+                    $"Một thành viên đã tạo yêu cầu dịch vụ cho xe: {vehicleName}{plate}",
+                    "SERVICE_REQUEST_CREATED",
+                    entity.Id
+                );
+            }
+
             return await GetDetailAsync(entity.Id);
         }
 
@@ -136,6 +166,24 @@ namespace Service
             await _repo.UpdateAsync(entity);
             await _repo.SaveChangesAsync();
 
+            var members = await _groupMemberRepo.GetByGroupIdAsync(entity.GroupId);
+            var vehicle = await _vehicleRepo.GetByIdAsync(entity.VehicleId);
+
+            var vehicleName = $"{vehicle.Make} {vehicle.Model}";
+            var plate = string.IsNullOrWhiteSpace(vehicle.PlateNumber) ? "" : $" - {vehicle.PlateNumber}";
+            var schedule = entity.InspectionScheduledAt?.ToString("dd/MM/yyyy HH:mm");
+
+            foreach (var m in members.Where(m => m.UserId != technicianId))
+            {
+                await _notificationService.CreateAsync(
+                    m.UserId,
+                    "Lịch kiểm tra xe",
+                    $"Xe {vehicleName}{plate} đã được đặt lịch kiểm tra vào {schedule}.",
+                    "SR_INSPECTION_SCHEDULED",
+                    entity.Id
+                );
+            }
+
             return await GetDetailAsync(id);
         }
 
@@ -146,14 +194,39 @@ namespace Service
 
             if (entity.TechnicianId != technicianId)
                 throw new UnauthorizedAccessException("Bạn không có quyền gửi báo giá cho yêu cầu này");
+            
+            if (req.EstimatedFinishAt == null)
+                throw new InvalidOperationException("Vui lòng nhập ngày dự kiến hoàn thành.");
 
+            if (req.EstimatedFinishAt <= DateTime.UtcNow)
+                throw new InvalidOperationException("Ngày dự kiến hoàn thành phải lớn hơn hiện tại.");
+            
             entity.CostEstimate = req.CostEstimate;
+            entity.CompletedAt = req.EstimatedFinishAt;
             entity.Status = "VOTING";
             entity.UpdatedAt = DateTime.UtcNow;
             entity.InspectionNotes = req.Notes;
 
             await _repo.UpdateAsync(entity);
             await _repo.SaveChangesAsync();
+
+            var members = await _groupMemberRepo.GetByGroupIdAsync(entity.GroupId);
+            var vehicle = await _vehicleRepo.GetByIdAsync(entity.VehicleId);
+
+            var vehicleName = $"{vehicle.Make} {vehicle.Model}";
+            var plate = string.IsNullOrWhiteSpace(vehicle.PlateNumber) ? "" : $" - {vehicle.PlateNumber}";
+            var cost = entity.CostEstimate?.ToString("N0");
+
+            foreach (var m in members.Where(m => m.UserId != technicianId))
+            {
+                await _notificationService.CreateAsync(
+                    m.UserId,
+                    "Báo giá dịch vụ",
+                    $"Xe {vehicleName}{plate} đã có báo giá {cost} đồng. Vui lòng xem và biểu quyết.",
+                    "SR_COST_ESTIMATE_READY",
+                    entity.Id
+                );
+            }
 
             return await GetDetailAsync(id);
         }
@@ -209,7 +282,8 @@ namespace Service
             }).ToList();
         }
 
-        public async Task<IEnumerable<ServiceRequestDto>> GetAssignedRequestsByUserAsync(Guid currentUserId)
+        public async Task<IEnumerable<ServiceRequestDetailDto>> GetAssignedRequestsByUserAsync(Guid currentUserId)
+
         {
             var account = await _accountRepo.GetByIdAsync(currentUserId)
                 ?? throw new KeyNotFoundException("Không tìm thấy người dùng.");
@@ -234,13 +308,19 @@ namespace Service
                 throw new UnauthorizedAccessException("Bạn không có quyền xem danh sách này.");
             }
 
-            return list.Select(x => new ServiceRequestDto
+            return list.Select(x => new ServiceRequestDetailDto
             {
                 Id = x.Id,
                 Title = x.Title,
                 Type = x.Type.ToString(),
                 Status = x.Status,
+                Description = x.Description,
+                VehicleName = $"{x.Vehicle.Make} {x.Vehicle.Model}",
+                PlateNumber = x.Vehicle.PlateNumber ?? string.Empty,
+                GroupName = x.Group.Name,
+                CreatedByName = x.CreatedByAccount.FullName,
                 CostEstimate = x.CostEstimate,
+                CompletedAt = x.CompletedAt,
                 TechnicianName = x.Technician?.FullName,
                 InspectionScheduledAt = x.InspectionScheduledAt,
                 CreatedAt = DateTimeHelper.ToVietnamTime(x.CreatedAt)

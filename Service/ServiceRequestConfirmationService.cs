@@ -17,18 +17,27 @@ namespace Service
         private readonly IGroupMemberRepository _groupMemberRepo;
         private readonly IGroupExpenseService _groupExpenseService;
         private readonly IGroupExpenseRepository _groupExpenseRepo;
+        private readonly INotificationService _noti;
+        private readonly IAccountRepository _accountRepo;
+        private readonly IVehicleRepository _vehicleRepo;
         public ServiceRequestConfirmationService(
             IServiceRequestConfirmationRepository confirmationRepo,
             IServiceRequestRepository requestRepo,
             IGroupMemberRepository groupMemberRepo,
             IGroupExpenseService groupExpenseService,
-            IGroupExpenseRepository groupExpenseRepo)
+            IGroupExpenseRepository groupExpenseRepo,
+            INotificationService noti,
+            IAccountRepository accountRepo,
+            IVehicleRepository vehicleRepo)
         {
             _confirmationRepo = confirmationRepo;
             _requestRepo = requestRepo;
             _groupMemberRepo = groupMemberRepo;
             _groupExpenseService = groupExpenseService;
             _groupExpenseRepo = groupExpenseRepo;
+            _noti = noti;
+            _accountRepo = accountRepo;
+            _vehicleRepo = vehicleRepo;
         }
 
         public async Task<ServiceRequestConfirmationDto> ConfirmAsync(Guid currentUserId, Guid requestId, bool confirm, string? reason)
@@ -58,32 +67,50 @@ namespace Service
             };
 
             await _confirmationRepo.AddAsync(confirmation);
-            
-
-
-            var totalMembers = await _groupMemberRepo.CountMembersAsync(request.GroupId);
-            if (totalMembers <= 0)
-                throw new InvalidOperationException("Không tìm thấy danh sách đồng sở hữu trong nhóm");
             await _confirmationRepo.SaveChangesAsync();
 
+            var voter = await _accountRepo.GetByIdAsync(currentUserId);
+            var voterName = voter?.FullName ?? "Thành viên";
+
+            var members = await _groupMemberRepo.GetByGroupIdAsync(request.GroupId);
+            var vehicle = await _vehicleRepo.GetByIdAsync(request.VehicleId);
+            var vehicleName = $"{vehicle.Make} {vehicle.Model}";
+            var plate = string.IsNullOrWhiteSpace(vehicle.PlateNumber) ? "" : $" - {vehicle.PlateNumber}";
+
+            foreach (var m in members.Where(x => x.UserId != currentUserId))
+            {
+                await _noti.CreateAsync(
+                    m.UserId,
+                    "Biểu quyết yêu cầu dịch vụ",
+                    $"{voterName} đã {(confirm ? "đồng ý" : "từ chối")} yêu cầu cho xe {vehicleName}{plate}",
+                    "SR_VOTE_UPDATE",
+                    request.Id
+                );
+            }
+
+            var totalMembers = members.Count();
             var allVotes = await _confirmationRepo.GetByRequestIdAsync(requestId);
             var confirmCount = allVotes.Count(v => v.Decision == "CONFIRM");
             var rejectCount = allVotes.Count(v => v.Decision == "REJECT");
+
             if (confirmCount == totalMembers)
             {
+                request.Status = "APPROVED";
+                request.ApprovedAt = DateTime.UtcNow;
+                await _requestRepo.UpdateAsync(request);
+                await _requestRepo.SaveChangesAsync();
 
-                var existingExpense = await _groupExpenseRepo.GetByRequestIdAsync(request.Id);
+                await _groupExpenseService.CreateFromApprovedRequestAsync(request.Id);
 
-                if (existingExpense == null)
+                foreach (var m in members)
                 {
-                    request.Status = "APPROVED";
-                    request.ApprovedAt = DateTime.UtcNow;
-
-                    await _requestRepo.UpdateAsync(request);
-                    await _requestRepo.SaveChangesAsync();
-
-
-                    await _groupExpenseService.CreateFromApprovedRequestAsync(request.Id);
+                    await _noti.CreateAsync(
+                        m.UserId,
+                        "Yêu cầu dịch vụ được phê duyệt ✅",
+                        $"Tất cả thành viên đã đồng ý yêu cầu dịch vụ cho xe {vehicleName}{plate}",
+                        "SR_REQUEST_APPROVED",
+                        request.Id
+                    );
                 }
             }
             else if (rejectCount > 0)
@@ -92,6 +119,17 @@ namespace Service
                 request.UpdatedAt = DateTime.UtcNow;
                 await _requestRepo.UpdateAsync(request);
                 await _requestRepo.SaveChangesAsync();
+
+                foreach (var m in members)
+                {
+                    await _noti.CreateAsync(
+                        m.UserId,
+                        "Yêu cầu dịch vụ bị từ chối ❌",
+                        $"{voterName} đã từ chối yêu cầu dịch vụ cho xe {vehicleName}{plate}",
+                        "SR_REQUEST_REJECTED",
+                        request.Id
+                    );
+                }
             }
 
             return new ServiceRequestConfirmationDto
@@ -104,6 +142,7 @@ namespace Service
                 DecidedAt = confirmation.DecidedAt
             };
         }
+
 
 
         public async Task<IEnumerable<ServiceRequestConfirmationDto>> GetByRequestIdAsync(Guid requestId)
@@ -135,6 +174,28 @@ namespace Service
                 DecidedAt = c.DecidedAt
             }).ToList();
         }
+        public async Task<IEnumerable<ServiceRequestVoteStatusDto>> GetVoteStatusAsync(Guid requestId)
+        {
+            var request = await _requestRepo.GetByIdAsync(requestId)
+                ?? throw new KeyNotFoundException("Không tìm thấy yêu cầu dịch vụ");
+
+            var members = await _groupMemberRepo.GetByGroupIdAsync(request.GroupId);
+            var votes = await _confirmationRepo.GetByRequestIdAsync(requestId);
+
+            var result = from m in members
+                         join v in votes on m.UserId equals v.UserId into mv
+                         from vote in mv.DefaultIfEmpty()
+                         select new ServiceRequestVoteStatusDto
+                         {
+                             UserId = m.UserId,
+                             FullName = m.UserAccount.FullName,
+                             Decision = vote?.Decision ?? "PENDING",
+                             DecidedAt = vote?.DecidedAt
+                         };
+
+            return result.ToList();
+        }
+
 
     }
 }

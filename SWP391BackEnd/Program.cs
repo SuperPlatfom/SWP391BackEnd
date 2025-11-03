@@ -96,6 +96,8 @@ builder.Services.AddScoped<IMemberInvoiceRepository, MemberInvoiceRepository>();
 builder.Services.AddScoped<IUsageQuotaRepository, UsageQuotaRepository>();
 builder.Services.AddScoped<IUsageQuotaService, UsageQuotaService>();
 builder.Services.AddScoped<QuotaResetHelper>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

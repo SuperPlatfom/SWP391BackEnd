@@ -15,4 +15,11 @@ namespace BusinessObject.DTOs.RequestModels
         public string? Reason { get; set; }
         public DateTime DecidedAt { get; set; }
     }
+    public class ServiceRequestVoteStatusDto
+    {
+        public Guid UserId { get; set; }
+        public string FullName { get; set; }
+        public string Decision { get; set; } 
+        public DateTime? DecidedAt { get; set; }
+    }
 }
