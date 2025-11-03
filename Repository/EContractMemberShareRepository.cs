@@ -34,6 +34,18 @@ namespace Repository
                 _db.EContractMemberShares.RemoveRange(old);
             }
         }
+        public async Task<EContractMemberShare?> GetActiveShareAsync(Guid groupId, Guid userId)
+        {
+            return await _db.EContractMemberShares
+                .Include(s => s.Contract)
+                .Where(s =>
+                    s.UserId == userId &&
+                    s.Contract.GroupId == groupId &&
+                    s.Contract.Status == "APPROVED"
+                )
+                .OrderByDescending(s => s.Contract.EffectiveFrom)
+                .FirstOrDefaultAsync();
+        }
 
 
     }

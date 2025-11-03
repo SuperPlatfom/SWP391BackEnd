@@ -1,51 +1,76 @@
 ﻿using BusinessObject.DTOs.ResponseModels;
 using Repository.Interfaces;
+using Service.Helpers;
 using Service.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Service
 {
     public class MemberInvoiceService : IMemberInvoiceService
     {
-        private readonly IMemberInvoiceRepository _repo;
+        private readonly IMemberInvoiceRepository _invoiceRepo;
+        private readonly IEContractMemberShareRepository _shareRepo;
 
-        public MemberInvoiceService(IMemberInvoiceRepository repo)
+        public MemberInvoiceService(
+            IMemberInvoiceRepository invoiceRepo,
+            IEContractMemberShareRepository shareRepo)
         {
-            _repo = repo;
+            _invoiceRepo = invoiceRepo;
+            _shareRepo = shareRepo;
         }
 
         public async Task<IEnumerable<MemberInvoiceDto>> GetMyInvoicesAsync(Guid currentUserId)
         {
-            var list = await _repo.GetByUserAsync(currentUserId);
-            return list.Select(i => new MemberInvoiceDto
+            var invoices = await _invoiceRepo.GetByUserAsync(currentUserId);
+
+            var result = new List<MemberInvoiceDto>();
+
+            foreach (var inv in invoices)
             {
-                Id = i.Id,
-                ExpenseId = i.ExpenseId,
-                Title = i.Title,
-                TotalAmount = i.TotalAmount,
-                AmountPaid = i.AmountPaid,
-                Status = i.Status,
-                CreatedAt = i.CreatedAt
-            }).ToList();
+                var share = await _shareRepo.GetActiveShareAsync(inv.GroupId, inv.UserId);
+                var sharePercent = share?.OwnershipRate ?? 0;
+                var shareAmount = Math.Round(inv.TotalAmount * (sharePercent / 100), 2);
+                var remaining = Math.Round(shareAmount - inv.AmountPaid, 2);
+
+                result.Add(new MemberInvoiceDto
+                {
+                    Id = inv.Id,
+                    ExpenseId = inv.ExpenseId,
+                    Title = inv.Title,
+                    TotalAmount = inv.TotalAmount,
+                    AmountPaid = inv.AmountPaid,
+                    Status = inv.Status,
+                    CreatedAt = DateTimeHelper.ToVietnamTime(inv.CreatedAt),
+                    OwnershipSharePercent = sharePercent,
+                });
+            }
+
+            return result;
         }
+
 
         public async Task<MemberInvoiceDto> GetDetailAsync(Guid invoiceId)
         {
-            var entity = await _repo.GetByIdAsync(invoiceId)
+            var inv = await _invoiceRepo.GetByIdAsync(invoiceId)
                 ?? throw new KeyNotFoundException("Không tìm thấy hóa đơn");
+
+            var share = await _shareRepo.GetActiveShareAsync(inv.GroupId, inv.UserId);
+            var sharePercent = share?.OwnershipRate ?? 0;
+            var shareAmount = Math.Round(inv.TotalAmount * (sharePercent / 100), 2);
+
             return new MemberInvoiceDto
             {
-                Id = entity.Id,
-                ExpenseId = entity.ExpenseId,
-                Title = entity.Title,
-                TotalAmount = entity.TotalAmount,
-                AmountPaid = entity.AmountPaid,
-                Status = entity.Status,
-                CreatedAt = entity.CreatedAt
+                Id = inv.Id,
+                ExpenseId = inv.ExpenseId,
+                Title = inv.Title,
+                TotalAmount = inv.TotalAmount,
+                AmountPaid = inv.AmountPaid,
+                Status = inv.Status,
+                CreatedAt = DateTimeHelper.ToVietnamTime(inv.CreatedAt),
+                OwnershipSharePercent = sharePercent,
             };
         }
     }
