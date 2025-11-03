@@ -13,12 +13,15 @@ namespace Service
         private readonly IServiceRequestRepository _requestRepo;
         private readonly IServiceJobRepository _jobRepo;
         private readonly IFirebaseStorageService _firebaseStorageService;
-
-        public ServiceJobService(IServiceRequestRepository requestRepo, IServiceJobRepository jobRepo, IFirebaseStorageService firebaseStorageService)
+        private readonly INotificationService _notificationService;
+        private readonly IGroupMemberRepository _groupMemberRepo;
+        public ServiceJobService(IServiceRequestRepository requestRepo, IServiceJobRepository jobRepo, IFirebaseStorageService firebaseStorageService, INotificationService notificationService, IGroupMemberRepository groupMemberRepo)
         {
             _requestRepo = requestRepo;
             _jobRepo = jobRepo;
             _firebaseStorageService = firebaseStorageService;
+            _notificationService = notificationService;
+            _groupMemberRepo = groupMemberRepo;
         }
 
         public async Task CreateAfterFullPaymentAsync(Guid expenseId)
@@ -52,13 +55,13 @@ namespace Service
 
             await _jobRepo.SaveChangesAsync();
         }
-        public async Task<IEnumerable<ServiceJobDto>> GetAllAsync(Guid? technicianId = null)
+        public async Task<IEnumerable<ServiceJobListDto>> GetAllAsync(Guid? technicianId = null)
         {
             var list = await _jobRepo.GetAllAsync();
             if (technicianId.HasValue)
                 list = list.Where(j => j.TechnicianId == technicianId.Value);
 
-            return list.Select(j => new ServiceJobDto
+            return list.Select(j => new ServiceJobListDto
             {
                 Id = j.Id,
                 Title = j.Request.Title,
@@ -86,6 +89,11 @@ namespace Service
                 CompletedAt = job.CompletedAt,
                 ReportUrl = job.ReportUrl,
                 Status = job.Status,
+                VehicleName = $"{job.Request.Vehicle.Make} {job.Request.Vehicle.Model}",
+                PlateNumber = job.Request.Vehicle.PlateNumber ?? "",
+                GroupName = job.Request.Group.Name,
+                RequestCreatedBy = job.Request.CreatedByAccount.FullName,
+                IssueDescription = job.Request.Description ?? "",
                 CreatedAt = job.CreatedAt
             };
         }
@@ -103,37 +111,54 @@ namespace Service
             job.Status = newStatus;
             job.UpdatedAt = DateTime.UtcNow;
 
+            var request = await _requestRepo.GetByIdAsync(job.RequestId)
+                ?? throw new KeyNotFoundException("Không tìm thấy yêu cầu dịch vụ.");
+
+            var vehicleName = $"{request.Vehicle.Make} {request.Vehicle.Model}";
+            var plate = string.IsNullOrWhiteSpace(request.Vehicle.PlateNumber) ? "" : $" - {request.Vehicle.PlateNumber}";
+            var title = request.Title;
+            var members = await _groupMemberRepo.GetByGroupIdAsync(request.GroupId);
 
             if (newStatus == "DONE")
             {
                 job.CompletedAt = DateTime.UtcNow;
+                request.Status = "COMPLETED";
+                request.CompletedAt = job.CompletedAt;
+                request.UpdatedAt = DateTime.UtcNow;
 
-
-                var request = await _requestRepo.GetByIdAsync(job.RequestId);
-                if (request != null)
+                foreach (var m in members)
                 {
-                    request.Status = "COMPLETED";
-                    request.CompletedAt = DateTime.UtcNow;
-                    request.UpdatedAt = DateTime.UtcNow;
-
-
+                    await _notificationService.CreateAsync(
+                        m.UserId,
+                        "Dịch vụ hoàn thành",
+                        $"Dịch vụ \"{title}\" cho xe {vehicleName}{plate} đã hoàn thành.",
+                        "SERVICE_JOB_DONE",
+                        request.Id
+                    );
                 }
             }
             else if (newStatus == "CANCELED")
             {
+                request.Status = "CANCELED";
+                request.UpdatedAt = DateTime.UtcNow;
 
-                var request = await _requestRepo.GetByIdAsync(job.RequestId);
-                if (request != null)
+                foreach (var m in members)
                 {
-                    request.Status = "CANCELED";
-                    request.UpdatedAt = DateTime.UtcNow;
-
+                    await _notificationService.CreateAsync(
+                        m.UserId,
+                        "Dịch vụ bị huỷ",
+                        $"Dịch vụ \"{title}\" cho xe {vehicleName}{plate} đã bị huỷ.",
+                        "SERVICE_JOB_CANCELED",
+                        request.Id
+                    );
                 }
             }
 
+            await _requestRepo.UpdateAsync(request);
             await _jobRepo.UpdateAsync(job);
             await _jobRepo.SaveChangesAsync();
         }
+
 
 
 

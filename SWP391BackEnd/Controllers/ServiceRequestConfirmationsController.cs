@@ -69,6 +69,27 @@ namespace SWP391BackEnd.Controllers
             }
         }
 
+        [HttpGet("{requestId}/status")]
+        [Authorize]
+        public async Task<IActionResult> GetVoteStatus(Guid requestId)
+        {
+            try
+            {
+                var list = await _service.GetVoteStatusAsync(requestId);
+                return CustomSuccessHandler.ResponseBuilder(HttpStatusCode.OK,
+                    "Lấy trạng thái biểu quyết thành công", list);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 400);
+            }
+        }
+
+
     }
 
 }

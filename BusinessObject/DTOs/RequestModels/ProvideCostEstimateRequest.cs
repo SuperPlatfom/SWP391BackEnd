@@ -9,6 +9,7 @@ namespace BusinessObject.DTOs.RequestModels
     public class ProvideCostEstimateRequest
     {
         public decimal CostEstimate { get; set; }
+        public DateTime? EstimatedFinishAt { get; set; }
         public string? Notes { get; set; }
     }
 }

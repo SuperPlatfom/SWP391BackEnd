@@ -73,6 +73,7 @@ namespace BusinessObject.Models
         public ICollection<MemberInvoice> MemberInvoices { get; set; } = new List<MemberInvoice>();
         public ICollection<Payment> Payments { get; set; } = new List<Payment>();
         public ICollection<ServiceRequestConfirmation> ServiceRequestConfirmations { get; set; } = new List<ServiceRequestConfirmation>();
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     }
 }

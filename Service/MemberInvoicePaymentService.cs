@@ -21,6 +21,9 @@ namespace Service
         private readonly IGroupExpenseRepository _expenseRepo;
         private readonly IServiceJobService _serviceJobService;
         private readonly PayOS _payOS;
+        private readonly INotificationService _notificationService;
+        private readonly IGroupMemberRepository _groupMemberRepo;
+        private readonly IServiceRequestRepository _requestRepo;
 
         public MemberInvoicePaymentService(
             IConfiguration config,
@@ -28,7 +31,10 @@ namespace Service
             IPayosTransactionRepository txRepo,
             IMemberInvoiceRepository invoiceRepo,
             IGroupExpenseRepository expenseRepo,
-            IServiceJobService serviceJobService)
+            IServiceJobService serviceJobService,
+            INotificationService notificationService,
+            IGroupMemberRepository groupMemberRepo,
+            IServiceRequestRepository requestRepo)
         {
             _paymentRepo = paymentRepo;
             _txRepo = txRepo;
@@ -41,6 +47,9 @@ namespace Service
             );
             _expenseRepo = expenseRepo;
             _serviceJobService = serviceJobService;
+            _notificationService = notificationService;
+            _groupMemberRepo = groupMemberRepo;
+            _requestRepo = requestRepo;
         }
 
         public async Task<CreatePaymentResult> CreatePaymentForInvoiceAsync(
@@ -110,7 +119,13 @@ namespace Service
                 payment.Status = "PAID";
                 payment.PaidAt = DateTime.UtcNow;
                 payment.UpdatedAt = DateTime.UtcNow;
-
+                await _notificationService.CreateAsync(
+                    payment.UserId,
+                    "Thanh toán thành công",
+                    "Bạn đã thanh toán hóa đơn dịch vụ thành công.",
+                    "PAYMENT_SUCCESS",
+                    payment.InvoiceId
+                    );
 
                 if (payment.InvoiceId.HasValue)
                 {
@@ -138,6 +153,29 @@ namespace Service
                                 await _expenseRepo.SaveChangesAsync();
 
                                 await _serviceJobService.CreateAfterFullPaymentAsync(expense.Id);
+
+                                var expenseFresh = await _expenseRepo.GetByIdAsync(expense.Id); // includes ServiceRequest
+                                var request = expenseFresh?.ServiceRequest;
+
+                                if (request != null)
+                                {
+                                    var members = await _groupMemberRepo.GetByGroupIdAsync(request.GroupId);
+                                    var vehicleName = $"{request.Vehicle.Make} {request.Vehicle.Model}";
+                                    var plate = string.IsNullOrWhiteSpace(request.Vehicle.PlateNumber) ? "" : $" - {request.Vehicle.PlateNumber}";
+                                    var title = request.Title;
+
+                                    foreach (var m in members)
+                                    {
+                                        await _notificationService.CreateAsync(
+                                            m.UserId,
+                                            "Tất cả thành viên đã thanh toán",
+                                            $"Tất cả thành viên đã thanh toán cho yêu cầu dịch vụ \"{title}\" của xe {vehicleName}{plate}. Dịch vụ xe đã được tạo và sẽ được tiến hành.",
+                                            "SERVICE_JOB_CREATED",
+                                            request.Id
+                                        );
+                                    }
+                                }
+
                             }
                         }
                     }

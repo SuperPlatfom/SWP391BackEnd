@@ -37,6 +37,8 @@ namespace Repository
                 .Include(s => s.Vehicle)
                 .Include(s => s.Technician)
                 .Include(s => s.Group)
+                .Include(s => s.CreatedByAccount)
+                .Include(e => e.Vehicle.Contracts)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
@@ -112,8 +114,9 @@ namespace Repository
                 .Include(x => x.ServiceCenter)
                 .Include(x => x.Vehicle)
                 .Include(x => x.Group)
+                .Include(x => x.CreatedByAccount)
                 .Where(x => x.TechnicianId == technicianId)
-                .AsNoTracking()
+                .OrderByDescending(r => r.UpdatedAt)
                 .ToListAsync();
         }
 

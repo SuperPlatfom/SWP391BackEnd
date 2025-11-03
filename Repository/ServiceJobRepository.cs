@@ -39,6 +39,11 @@ namespace Repository
         {
             return await _db.ServiceJobs
                 .Include(j => j.Request)
+                    .ThenInclude(r => r.Vehicle)
+                .Include(j => j.Request)
+                    .ThenInclude(r => r.Group)
+                .Include(j => j.Request)
+                    .ThenInclude(r => r.CreatedByAccount)
                 .Include(j => j.Technician)
                 .FirstOrDefaultAsync(j => j.Id == id);
         }

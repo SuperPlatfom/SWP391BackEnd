@@ -29,7 +29,7 @@ namespace BusinessObject.Models
         public string? FileUrl { get; set; }
 
         [Column("status")]
-        public string Status { get; set; } = "DRAFT"; // DRAFT / SIGNING / PENDING_REVIEW / APPROVED / REJECTED / ACTIVE / EXPIRED / VOID
+        public string Status { get; set; } = "DRAFT"; // DRAFT / SIGNING / PENDING_REVIEW / APPROVED / REJECTED / EXPIRED 
 
         [Column("effective_from")]
         public DateTime? EffectiveFrom { get; set; }

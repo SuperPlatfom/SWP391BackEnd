@@ -12,7 +12,6 @@ namespace BusinessObject.DTOs.RequestModels
         public Guid GroupId { get; set; }
         public Guid VehicleId { get; set; }
 
-        public DateTime EffectiveFrom { get; set; }
         public DateTime? ExpiresAt { get; set; }
         public string? Title { get; set; }
         public List<OwnershipShareInput>? OwnershipShares { get; set; }

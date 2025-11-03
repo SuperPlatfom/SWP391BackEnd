@@ -39,6 +39,7 @@ namespace DataAccessLayer.DataContext
         public DbSet<Payment> Payments { get; set; }
         public DbSet<PayOSTransaction> PayOSTransactions { get; set; }
         public DbSet<ServiceCenter> ServiceCenters { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         public DbSet<Booking> Bookings { get; set; }
 
@@ -274,6 +275,12 @@ namespace DataAccessLayer.DataContext
                 .Property(sr => sr.Type)
                 .HasConversion<string>()  
                 .HasMaxLength(50);
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany(a => a.Notifications)
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
 
         }
