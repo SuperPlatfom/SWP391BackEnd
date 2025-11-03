@@ -12,6 +12,7 @@ namespace BusinessObject.DTOs.ResponseModels
         public Guid Id { get; set; }
         public Guid ExpenseId { get; set; }
         public string Title { get; set; } = string.Empty;
+        public decimal OwnershipSharePercent { get; set; }
         public decimal TotalAmount { get; set; }
         public decimal AmountPaid { get; set; }
         public string Status { get; set; } = string.Empty;
