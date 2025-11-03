@@ -50,7 +50,7 @@ namespace BusinessObject.Models
         public CoOwnershipGroup Group { get; set; } = null!;
         public Vehicle Vehicle { get; set; } = null!;
 
-
+        public ICollection<TripEvent> TripEvents { get; set; } = new List<TripEvent>();
 
     }
 }

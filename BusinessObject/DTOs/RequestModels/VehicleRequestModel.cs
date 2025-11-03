@@ -23,7 +23,7 @@ public class VehicleRequestModel
     public string color { get; set; } = string.Empty;
 
     [JsonPropertyName("batteryCapacityKwh")]
-    [Required, Range(0.1, double.MaxValue, ErrorMessage = "Battery capacity must be positive")]
+    [Required, Range(0.1, 500, ErrorMessage = "Battery capacity must be positive")]
     public decimal batteryCapacityKwh { get; set; }
 
     [JsonPropertyName("rangeKm")]
@@ -38,10 +38,14 @@ public class VehicleRequestModel
     [Required]
     public IFormFile vehicleImage { get; set; }
 
-    [JsonPropertyName("registrationPaper")]
+    [JsonPropertyName("registrationPaperUrl")]
     [Required]
-    public IFormFile registrationPaper { get; set; }
+    public IFormFile registrationPaperUrl { get; set; }
 }
+
+
+ 
+
 
 
 

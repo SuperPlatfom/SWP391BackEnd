@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BusinessObject.DTOs;
+using BusinessObject.DTOs.RequestModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service;
 using Service.Interfaces;
@@ -45,6 +47,17 @@ namespace SWP391BackEnd.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
+        }
+
+        [HttpPost("create-damage-report/staff")]
+        [Authorize(Roles = "Staff")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateDamageReport([FromForm] TripDamageReportRequestModel request)
+        {
+            var result = await _tripEventService.ReportDamageAsync(request, User);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+            return Ok(new { message = result.Message });
         }
     }
 }

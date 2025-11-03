@@ -1,4 +1,5 @@
-﻿using BusinessObject.RequestModels;
+﻿using BusinessObject.DTOs.RequestModels;
+using BusinessObject.RequestModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service;
@@ -6,7 +7,7 @@ using Service.Interfaces;
 
 namespace SWP391BackEnd.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/vehicle-requests")]
     [ApiController]
     [ApiExplorerSettings(GroupName = "Vehicle Request Management")]
     [Authorize]
@@ -49,9 +50,10 @@ namespace SWP391BackEnd.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateRequest([FromForm]VehicleRequestModel model)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateRequest([FromForm]VehicleRequestModel request)
         {
-            var result = await _vehicleRequestService.CreateVehicleRequestAsync(model, User);
+            var result = await _vehicleRequestService.CreateVehicleRequestAsync(request, User);
             return Ok(new
             {
                 message = "Yêu cầu đăng ký xe đã được gửi, vui lòng chờ admin duyệt.",
@@ -59,14 +61,67 @@ namespace SWP391BackEnd.Controllers
             });
 
         }
-        [HttpPost("upload-test")]
-        public async Task<IActionResult> UploadTest(IFormFile file)
-        {
-            if (file == null) return BadRequest("Chưa chọn file nào.");
 
-            var url = await _firebaseStorageService.UploadFileAsync(file, "test-folder");
-            return Ok(new { FileUrl = url });
+        [HttpPost("update")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateRequest([FromForm] VehicleUpdateModel request)
+        {
+            var result = await _vehicleRequestService.UpdateVehicleRequestAsync(request, User);
+            return Ok(new
+            {
+                message = "Yêu cầu đăng ký xe đã được gửi, vui lòng chờ admin duyệt.",
+                data = result
+            });
+
         }
 
+
+        [HttpPut("approve-create/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Approve(Guid id)
+        {
+            var result = await _vehicleRequestService.ApproveRequestAsync(id, User);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+            return Ok(new { message = result.Message });
+        }
+
+        [HttpPost("approve-update/{id}")]
+        public async Task<IActionResult> ApproveUpdateRequest(Guid id)
+        {
+            try
+            {
+                var result = await _vehicleRequestService.ApproveUpdateRequestAsync(id, User);
+                if (!result.IsSuccess)
+                    return BadRequest(new { message = result.Message });
+
+                return Ok(new { message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("reject/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Reject(Guid id, string reason)
+        {
+            var result = await _vehicleRequestService.RejectRequestAsync(id, reason, User);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+            return Ok(new { message = result.Message });
+        }
+
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> DeleteVehicleRequest(Guid id)
+        {
+            var result = await _vehicleRequestService.DeleteVehicleRequestAsync(id, User);
+
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new { message = result.Message });
+        }
     }
 }

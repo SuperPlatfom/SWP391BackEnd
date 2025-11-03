@@ -29,7 +29,7 @@ namespace BusinessObject.Models
         [Column("booking_id")]
         public Guid? BookingId { get; set; }
 
-        public Booking? Booking { get; set; }
+       
 
         [Column("description")]
         public string? Description { get; set; } = string.Empty;
@@ -43,5 +43,6 @@ namespace BusinessObject.Models
         //  Navigation Properties
         public Account SignedByUser { get; set; } = null!;
         public Vehicle Vehicle { get; set; }
+        public Booking? Booking { get; set; }
     }
 }

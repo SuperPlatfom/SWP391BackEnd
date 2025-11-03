@@ -1,5 +1,6 @@
 ﻿
 
+using BusinessObject.DTOs.RequestModels;
 using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Models;
 using BusinessObject.RequestModels;
@@ -15,5 +16,11 @@ namespace Service.Interfaces
         Task<IEnumerable<VehicleRequestResponseModel>> GetMyRequestsAsync(ClaimsPrincipal user);
         Task<VehicleRequestResponseModel> GetRequestDetailAsync(Guid id);
         Task<VehicleRequest> CreateVehicleRequestAsync(VehicleRequestModel request, ClaimsPrincipal user);
+
+        Task<(bool IsSuccess, string Message)> UpdateVehicleRequestAsync( VehicleUpdateModel model, ClaimsPrincipal user);
+        Task<(bool IsSuccess, string Message)> ApproveRequestAsync(Guid requestId, ClaimsPrincipal user);
+        Task<(bool IsSuccess, string Message)> RejectRequestAsync(Guid requestId, string reason, ClaimsPrincipal user);
+        Task<(bool IsSuccess, string Message)> ApproveUpdateRequestAsync(Guid requestId, ClaimsPrincipal user);
+        Task<(bool IsSuccess, string Message)> DeleteVehicleRequestAsync(Guid requestId, ClaimsPrincipal user);
     }
 }

@@ -326,6 +326,7 @@ namespace Service
                 EventType = "CHECKIN",
                 SignedBy = Guid.Parse(userId),
                 VehicleId = booking.VehicleId,
+                BookingId = booking.Id,
                 Description = "Nhân viên thực hiện check-in cho lịch đặt này.",
                 PhotosUrl = photoUrl,
                 CreatedAt = DateTime.UtcNow
@@ -436,6 +437,7 @@ namespace Service
                 Id = Guid.NewGuid(),
                 EventType = "CHECKOUT",
                 SignedBy = Guid.Parse(userId),
+                BookingId = booking.Id,
                 VehicleId = booking.VehicleId,
                 Description = "Nhân viên thực hiện check-out cho lịch đặt này.",
                 PhotosUrl = photoUrl,
