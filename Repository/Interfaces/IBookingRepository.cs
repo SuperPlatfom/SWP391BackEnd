@@ -14,6 +14,7 @@ namespace Repository.Interfaces
         Task SaveChangesAsync();
         Task<bool> ExistsAsync(Guid id);
         Task<List<Booking>> GetBookingsByVehicleAsync(Guid vehicleId);
+        Task<List<Booking>> GetUserBookingsByVehicleAsync(Guid userId, Guid vehicleId);
         Task<IEnumerable<Booking>> GetBookingsByVehicleInGroupAsync(Guid groupId, Guid vehicleId);
     }
 }

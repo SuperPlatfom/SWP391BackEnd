@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
+using SWP391BackEnd.Helpers;
+using System.Security.Claims;
 
 namespace SWP391BackEnd.Controllers
 {
@@ -38,7 +40,7 @@ namespace SWP391BackEnd.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _bookingService.UpdateBookingAsync(request, HttpContext.User);
+            var result = await _bookingService.UpdateBookingAsync(request);
 
             if (!result.IsSuccess)
                 return BadRequest(new { message = result.Message });
@@ -58,10 +60,31 @@ namespace SWP391BackEnd.Controllers
             return Ok(new { message = result.Message });
         }
 
-        [HttpPut("check-in/{id}")]
-        public async Task<IActionResult> CheckIn(Guid id)
+        [HttpPost("check-in/staff")]
+
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CheckIn([FromForm] TripEventRequestModel checkin)
         {
-            var result = await _bookingService.CheckInAsync(id);
+            try
+            {
+                var result = await _bookingService.CheckInAsync(checkin,User);
+
+                if (!result.IsSuccess)
+                    return BadRequest(new { message = result.Message });
+
+                return Ok(new { message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                return CustomErrorHandler.SimpleError(ex.Message, 500);
+            }
+        }
+
+        [HttpPost("check-out/staff")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CheckOut([FromForm] TripEventRequestModel checkout)
+        {
+            var result = await _bookingService.CheckOutAsync(checkout, User);
 
             if (!result.IsSuccess)
                 return BadRequest(new { message = result.Message });
@@ -69,16 +92,7 @@ namespace SWP391BackEnd.Controllers
             return Ok(new { message = result.Message });
         }
 
-        [HttpPut("check-out/{id}")]
-        public async Task<IActionResult> CheckOut(Guid id)
-        {
-            var result = await _bookingService.CheckOutAsync(id);
-
-            if (!result.IsSuccess)
-                return BadRequest(new { message = result.Message });
-
-            return Ok(new { message = result.Message });
-        }
+     
 
         [HttpGet("Get-Booking-by-group-and-vehicle/{groupId}/{vehicleId}")]
         public async Task<IActionResult> GetBookingsByGroupAndVehicle(Guid groupId, Guid vehicleId)

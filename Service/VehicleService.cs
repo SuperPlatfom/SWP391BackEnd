@@ -2,6 +2,7 @@
 using BusinessObject.Models;
 using BusinessObject.RequestModels;
 using Microsoft.AspNetCore.Http;
+using Repository;
 using Repository.Interfaces;
 using Service.Interfaces;
 using System.Security.Claims;
@@ -11,13 +12,12 @@ namespace Service
     public class VehicleService : IVehicleService
     {
         private readonly IVehicleRepository _vehicleRepository;
+        private readonly IVehicleRequestRepository _vehicleRequestRepository;
     
-        public VehicleService(
-            IVehicleRepository vehicleRepository
-           )
+        public VehicleService(IVehicleRepository vehicleRepository, IVehicleRequestRepository vehicleRequestRepository)
         {
             _vehicleRepository = vehicleRepository;
-           
+            _vehicleRequestRepository = vehicleRequestRepository;
         }
 
         public async Task<IEnumerable<VehicleResponseModel>> GetAllVehiclesAsync()
@@ -63,35 +63,57 @@ namespace Service
             };
         }
 
-        public async Task<VehicleResponseModel> CreateVehicleAsync(VehicleRequestModel request, ClaimsPrincipal user)
+        public async Task<VehicleRequestResponseModel> CreateVehicleAsync(VehicleRequestModel request, ClaimsPrincipal user)
         {
             if (user == null || !user.Identity?.IsAuthenticated == true)
-                throw new UnauthorizedAccessException("Bạn cần đăng nhập để tạo vehicle.");
+                throw new UnauthorizedAccessException("Bạn cần đăng nhập để gửi yêu cầu tạo vehicle.");
 
-            // Lấy userId từ token JWT
+
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 throw new UnauthorizedAccessException("Không thể xác định người dùng từ token.");
 
-            var vehicle = new Vehicle
+            var isPlateExist = await _vehicleRepository.ExistsAsync(v => v.PlateNumber == request.plateNumber);
+            var isPendingPlate = await _vehicleRequestRepository.ExistsAsync(r => r.PlateNumber == request.plateNumber && r.Status == "PENDING");
+            if (isPlateExist || isPendingPlate)
+                throw new InvalidOperationException("Biển số này đã tồn tại hoặc đang chờ duyệt.");
+
+        
+            var vehicleRequest = new VehicleRequest
             {
                 Id = Guid.NewGuid(),
-                PlateNumber = request.PlateNumber,
-                Make = request.Make,
-                Model = request.Model,
-                ModelYear = request.ModelYear,
-                Color = request.Color,
-                BatteryCapacityKwh = request.BatteryCapacityKwh,
-                RangeKm = request.RangeKm,
-                Status = "INACTIVE", // Mặc định ACTIVE
+                Type = "CREATE",
+                PlateNumber = request.plateNumber,
+                Make = request.make,
+                Model = request.model,
+                ModelYear = request.modelYear,
+                Color = request.color,
+                BatteryCapacityKwh = request.batteryCapacityKwh,
+                RangeKm = request.rangeKm,
+                Status = "PENDING",
+                CreatedBy = Guid.Parse(userId),
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                CreatedBy = Guid.Parse(userId) // ✅ Gán người tạo
+                
             };
 
-            var created = await _vehicleRepository.AddAsync(vehicle);
-            return MapToResponseModel(created);
+            var created = await _vehicleRequestRepository.AddAsync(vehicleRequest);
+
+            return new VehicleRequestResponseModel
+            {
+                Id = created.Id,
+                Type = created.Type,
+                PlateNumber = created.PlateNumber,
+                Make = created.Make,
+                Model = created.Model,
+                ModelYear = created.ModelYear,
+                Color = created.Color,
+                BatteryCapacityKwh = created.BatteryCapacityKwh,
+                RangeKm = created.RangeKm,
+                Status = created.Status,
+                CreatedAt = created.CreatedAt
+            };
         }
+
 
         private VehicleResponseModel MapToResponseModel(Vehicle vehicle)
         {
@@ -120,12 +142,12 @@ namespace Service
     if (vehicle.CreatedBy.ToString() != userId)
         throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa vehicle này.");
 
-    vehicle.Make = request.Make;
-    vehicle.Model = request.Model;
-    vehicle.ModelYear = request.ModelYear;
-    vehicle.Color = request.Color;
-    vehicle.BatteryCapacityKwh = request.BatteryCapacityKwh;
-    vehicle.RangeKm = request.RangeKm;
+    vehicle.Make = request.make;
+    vehicle.Model = request.model;
+    vehicle.ModelYear = request.modelYear;
+    vehicle.Color = request.color;
+    vehicle.BatteryCapacityKwh = request.batteryCapacityKwh;
+    vehicle.RangeKm = request.rangeKm;
     vehicle.UpdatedAt = DateTime.UtcNow;
 
     var updated = await _vehicleRepository.UpdateAsync(vehicle);

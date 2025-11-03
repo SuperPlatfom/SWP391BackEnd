@@ -3,6 +3,7 @@ using System;
 using DataAccessLayer.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251102105208_AddVehicleRequestClass")]
+    partial class AddVehicleRequestClass
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -776,51 +779,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("member_invoice");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_read");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("message");
-
-                    b.Property<Guid?>("RefId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ref_id");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("title");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("type");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("notification");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.PayOSTransaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1199,15 +1157,9 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("signed_by");
 
-                    b.Property<Guid>("VehicleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("vehicle_id");
-
                     b.HasKey("Id");
 
                     b.HasIndex("SignedBy");
-
-                    b.HasIndex("VehicleId");
 
                     b.ToTable("trip_event");
                 });
@@ -1670,17 +1622,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.Notification", b =>
-                {
-                    b.HasOne("BusinessObject.Models.Account", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.PayOSTransaction", b =>
                 {
                     b.HasOne("BusinessObject.Models.Payment", "Payment")
@@ -1797,12 +1738,6 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BusinessObject.Models.Vehicle", null)
-                        .WithMany("TripEvents")
-                        .HasForeignKey("VehicleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("SignedByUser");
                 });
 
@@ -1885,8 +1820,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("GroupMemberships");
 
                     b.Navigation("MemberInvoices");
-
-                    b.Navigation("Notifications");
 
                     b.Navigation("OwnershipShares");
 
@@ -1983,8 +1916,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Contracts");
 
                     b.Navigation("ServiceRequests");
-
-                    b.Navigation("TripEvents");
 
                     b.Navigation("VehicleRequests");
                 });

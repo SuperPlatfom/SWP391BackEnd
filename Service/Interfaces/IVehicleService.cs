@@ -14,8 +14,7 @@ namespace Service.Interfaces
     {
         Task<IEnumerable<VehicleResponseModel>> GetAllVehiclesAsync();
         Task<VehicleResponseModel?> GetVehicleByIdAsync(Guid id);
-        Task<VehicleResponseModel> CreateVehicleAsync(VehicleRequestModel request, ClaimsPrincipal user);
-        Task<VehicleResponseModel> UpdateVehicleAsync(Guid id, VehicleRequestModel request, ClaimsPrincipal user);
+    
         Task<VehicleResponseModel> DeleteVehicleAsync(Guid id);
         Task<List<VehicleOfUserResponseModel>> GetVehiclesByCreatorAsync(ClaimsPrincipal user);
 

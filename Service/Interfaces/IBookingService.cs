@@ -2,6 +2,7 @@
 using BusinessObject.DTOs.RequestModels;
 using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Models;
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
 namespace Service.Interfaces
@@ -10,12 +11,13 @@ namespace Service.Interfaces
     {
         Task<(bool IsSuccess, string Message, BookingResponseModel? Data)> CreateBookingAsync(BookingRequestModel request, ClaimsPrincipal user);
         Task<(bool IsSuccess, string Message, BookingResponseModel? Data)>
-    UpdateBookingAsync(BookingUpdateRequestModel request, ClaimsPrincipal user);
+    UpdateBookingAsync(BookingUpdateRequestModel request);
         Task<(bool IsSuccess, string Message)> CancelBookingAsync(Guid bookingId);
-        Task<(bool IsSuccess, string Message)> CheckInAsync(Guid bookingId);
-        Task<(bool IsSuccess, string Message)> CheckOutAsync(Guid bookingId);
+        Task<(bool IsSuccess, string Message)> CheckInAsync(TripEventRequestModel tripEvent, ClaimsPrincipal user);
+        Task<(bool IsSuccess, string Message)> CheckOutAsync(TripEventRequestModel tripEvent, ClaimsPrincipal user);
         Task<(bool IsSuccess, string Message, List<BookingResponseModel>? Data)>
         GetBookingsByGroupAndVehicleAsync(Guid groupId, Guid vehicleId);
+        Task<IEnumerable<BookingResponseModel>> GetUserBookingHistoryByVehicleAsync(Guid userId, Guid vehicleId);
 
     }
 }
