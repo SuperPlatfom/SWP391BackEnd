@@ -503,7 +503,6 @@ namespace Service
             if (allSigned)
             {
                 contract.SignedAt = DateTime.UtcNow;
-                contract.EffectiveFrom = contract.SignedAt;
                 contract.Status = "PENDING_REVIEW";
                 await _contractRepo.UpdateAsync(contract);
                 foreach (var uid in members)
