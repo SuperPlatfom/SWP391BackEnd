@@ -61,7 +61,7 @@ namespace Service
             if (request.vehicleImage == null || request.registrationPaperUrl == null)
                 throw new ArgumentException("Vui lòng upload đầy đủ ảnh xe và giấy tờ xe.");
 
-            bool exists = await _vehicleRequestRepository.ExistsAsync(v => v.PlateNumber == request.plateNumber);
+            bool exists = await _vehicleRepository.ExistsAsync(v => v.PlateNumber == request.plateNumber);
             if (exists)
                 throw new InvalidOperationException("Biển số xe đã tồn tại trong hệ thống.");
 
@@ -184,6 +184,12 @@ namespace Service
             if (vehicle == null)
                 return (false, "Không tìm thấy xe cần cập nhật.");
 
+
+            bool exists = await _vehicleRepository.ExistsAsync(v => v.PlateNumber == request.PlateNumber);
+            if (exists)
+                throw new InvalidOperationException("Biển số xe đã tồn tại trong hệ thống.");
+
+
             vehicle.PlateNumber = request.PlateNumber;
             vehicle.Make = request.Make;
             vehicle.Model = request.Model;
@@ -214,6 +220,10 @@ namespace Service
 
             if (request.Status != "PENDING")
                 return (false, "Yêu cầu này đã được xử lý trước đó.");
+
+            bool exists = await _vehicleRepository.ExistsAsync(v => v.PlateNumber == request.PlateNumber);
+            if (exists)
+                throw new InvalidOperationException("Biển số xe đã tồn tại trong hệ thống.");
 
             // Tạo Vehicle mới dựa trên VehicleRequest
             var vehicle = new Vehicle

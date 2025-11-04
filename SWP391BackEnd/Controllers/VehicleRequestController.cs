@@ -107,6 +107,9 @@ namespace SWP391BackEnd.Controllers
 
         [HttpPut("reject/{id}")]
         [Authorize(Roles = "Staff,Admin")]
+
+
+
         public async Task<IActionResult> Reject(Guid id, string reason)
         {
             var result = await _vehicleRequestService.RejectRequestAsync(id, reason, User);

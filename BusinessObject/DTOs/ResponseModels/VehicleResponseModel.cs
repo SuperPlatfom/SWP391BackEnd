@@ -28,9 +28,10 @@ namespace BusinessObject.DTOs.ResponseModels
         public string? Color { get; set; }
         public string Status { get; set; } = null!;
         public decimal BatteryCapacityKwh { get; set; }
-        public string? TelematicsDeviceId { get; set; }
         public int RangeKm { get; set; }
         public bool HasGroup { get; set; }
+        public string? VehicleImageUrl { get; set; }
+        public string? RegistrationPaperUrl { get;set; }
     }
 
     public class VehicleRequestResponseModel
