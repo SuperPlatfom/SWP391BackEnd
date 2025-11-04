@@ -16,11 +16,13 @@ namespace Service
         private readonly IVehicleRequestRepository _vehicleRequestRepository;
         private readonly IVehicleRepository _vehicleRepository;
         private readonly IFirebaseStorageService _storageService;
-        public VehicleRequestService(IVehicleRequestRepository vehicleRequestRepository, IFirebaseStorageService storageService, IVehicleRepository vehicleRepository)
+        private readonly INotificationService _notificationService;
+        public VehicleRequestService(IVehicleRequestRepository vehicleRequestRepository, IFirebaseStorageService storageService, IVehicleRepository vehicleRepository, INotificationService notificationService)
         {
             _vehicleRequestRepository = vehicleRequestRepository;
             _storageService = storageService;
             _vehicleRepository = vehicleRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<VehicleRequestResponseModel>> GetAllRequestsAsync()
@@ -85,6 +87,7 @@ namespace Service
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+
 
             await _vehicleRequestRepository.AddAsync(vehicleRequest);
             return vehicleRequest;
@@ -198,7 +201,7 @@ namespace Service
             request.UpdatedAt = DateTime.UtcNow;
             await _vehicleRequestRepository.UpdateAsync(request);
 
-       
+            await _notificationService.CreateAsync(vehicle.CreatedBy, "Cập nhật thông tin thành công", "Yêu cầu cập nhật thông tin xe của bạn đã được phê duyệt", "UPDATE VEHICLE REQUEST", requestId);
 
             return (true, "Phê duyệt yêu cầu cập nhật xe thành công.");
         }
@@ -242,6 +245,8 @@ namespace Service
             request.UpdatedAt = DateTime.UtcNow;
 
             await _vehicleRequestRepository.UpdateAsync(request);
+
+            await _notificationService.CreateAsync(vehicle.CreatedBy, "đăng kí xe thành công", "Yêu cầu đăng kí xe của bạn đã được phê duyệt", "CREATE VEHICLE REQUEST", requestId);
             return (true, "Phê duyệt yêu cầu thành công.");
         }
 
@@ -259,7 +264,17 @@ namespace Service
             request.UpdatedAt = DateTime.UtcNow;
 
             await _vehicleRequestRepository.UpdateAsync(request);
-            return (true, "Đã từ chối yêu cầu đăng ký xe.");
+
+            if (request.Type == "CREATE")
+            {
+                await _notificationService.CreateAsync(request.CreatedBy, "Yêu cầu bị từ chối", "Yêu cầu cập nhật thông tin xe của bạn đã bị từ chối, vui lòng xem lý do để biết thông tin chi tiết", "CREATE REQUEST", requestId);
+                return (true, "Đã từ chối yêu cầu đăng kí xe.");
+            } else
+            {
+                await _notificationService.CreateAsync(request.CreatedBy, "Yêu cầu bị từ chối", "Yêu cầu cập nhật thông tin xe của bạn đã bị từ chối, vui lòng xem lý do để biết thông tin chi tiết", "UPDATE REQUEST", requestId);
+                return (true, "Đã từ chối yêu cầu cập nhật xe.");
+            }
+                
         }
 
         public async Task<(bool IsSuccess, string Message)> DeleteVehicleRequestAsync(Guid requestId, ClaimsPrincipal user)

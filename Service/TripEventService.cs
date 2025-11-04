@@ -2,6 +2,7 @@
 using BusinessObject.Models;
 using Google.Apis.Storage.v1;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NetTopologySuite.Triangulate.Tri;
 using Repository.Interfaces;
 using Service.Interfaces;
 using System.Security.Claims;
@@ -14,12 +15,16 @@ namespace Service
         private readonly IFirebaseStorageService _firebaseStorageService;
         private readonly IBookingRepository _bookingRepository;
         private readonly IVehicleRepository _vehicleRepository;
-        public TripEventService(ITripEventRepository tripEventRepository, IFirebaseStorageService firebaseStorageService, IVehicleRepository vehicleRepository, IBookingRepository bookingRepository)
+        private readonly IGroupMemberRepository _groupMemberRepository;
+        private readonly INotificationService _notificationService;
+        public TripEventService(ITripEventRepository tripEventRepository, IFirebaseStorageService firebaseStorageService, IVehicleRepository vehicleRepository, IBookingRepository bookingRepository, IGroupMemberRepository groupMemberRepository, INotificationService notificationService)
         {
             _tripEventRepository = tripEventRepository;
             _firebaseStorageService = firebaseStorageService;
             _vehicleRepository = vehicleRepository;
             _bookingRepository = bookingRepository;
+            _groupMemberRepository = groupMemberRepository;
+            _notificationService = notificationService;
         }
         public async Task<IEnumerable<TripEvent>> GetAllTripEvent()
         {
@@ -72,6 +77,25 @@ namespace Service
                     CreatedAt = DateTime.UtcNow
                 };
                 await _tripEventRepository.AddAsync(trip);
+                var members1 = await _groupMemberRepository.GetByGroupIdAsync((Guid)vehicle.GroupId);
+                if (members1 == null)
+                {
+                    await _notificationService.CreateAsync(
+                        vehicle.CreatedBy, 
+                        "Báo cáo hư hỏng", 
+                        $" Có báo cáo hư hỏng xe {vehicle.Model}", 
+                        "REPORT", 
+                        trip.Id);
+                }
+                foreach (var m in members1)
+                {
+                    await _notificationService.CreateAsync(
+                        m.UserId, 
+                        "Báo cáo hư hỏng", 
+                        $" Có báo cáo hư hỏng xe {vehicle.Model}", 
+                        "REPORT", 
+                        trip.Id);
+                }
                 return (true, "Báo cáo thiệt hại đã được gửi thành công.");
 
             }
@@ -88,9 +112,21 @@ namespace Service
                 CreatedAt = DateTime.UtcNow
             };
 
+            var members2 = await _groupMemberRepository.GetByGroupIdAsync(booking.GroupId);
+            foreach (var m in members2)
+            {
+                await _notificationService.CreateAsync(
+                    m.UserId,
+                    "Báo cáo hư hỏng",
+                    $" Có báo cáo hư hỏng xe {booking.Vehicle.Model}",
+                    "REPORT",
+                    tripEvent.Id);
+            }
 
             await _tripEventRepository.AddAsync(tripEvent);
             return (true, "Báo cáo thiệt hại đã được gửi thành công.");
         }
+
+        
     }
 }

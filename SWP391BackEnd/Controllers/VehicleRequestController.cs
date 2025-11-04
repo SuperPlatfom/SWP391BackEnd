@@ -33,7 +33,7 @@ namespace SWP391BackEnd.Controllers
 
         
         [HttpGet("all")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> GetAllRequests()
         {
             var requests = await _vehicleRequestService.GetAllRequestsAsync();
@@ -77,7 +77,7 @@ namespace SWP391BackEnd.Controllers
 
 
         [HttpPut("approve-create/{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> Approve(Guid id)
         {
             var result = await _vehicleRequestService.ApproveRequestAsync(id, User);
@@ -87,6 +87,7 @@ namespace SWP391BackEnd.Controllers
         }
 
         [HttpPost("approve-update/{id}")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> ApproveUpdateRequest(Guid id)
         {
             try
@@ -104,7 +105,7 @@ namespace SWP391BackEnd.Controllers
         }
 
         [HttpPut("reject/{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> Reject(Guid id, string reason)
         {
             var result = await _vehicleRequestService.RejectRequestAsync(id, reason, User);
