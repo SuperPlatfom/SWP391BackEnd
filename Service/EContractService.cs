@@ -503,7 +503,6 @@ namespace Service
             if (allSigned)
             {
                 contract.SignedAt = DateTime.UtcNow;
-                contract.EffectiveFrom = contract.SignedAt;
                 contract.Status = "PENDING_REVIEW";
                 await _contractRepo.UpdateAsync(contract);
                 foreach (var uid in members)
@@ -689,6 +688,7 @@ public async Task ReviewContractAsync(Guid contractId, Guid staffId, bool approv
         contract.ReviewedBy = staffId;
         contract.ReviewNote = note ?? string.Empty;
         contract.UpdatedAt = DateTime.UtcNow;
+        contract.EffectiveFrom = contract.ReviewedAt;
         string renderedHtml = await GetPreviewHtmlAsync(contract.Id, staffId);
         contract.Content = renderedHtml;
 
@@ -701,7 +701,7 @@ public async Task ReviewContractAsync(Guid contractId, Guid staffId, bool approv
 
                 await _noti.CreateAsync(
                     contract.CreatedBy,
-                    "Hợp đồng bị từ chối ❌",
+                    "Hợp đồng bị từ chối",
                     $"Hợp đồng sở hữu xe {vehicleName}{plate} đã bị từ chối.",
                     "ECONTRACT_REJECTED",
                     contract.Id
@@ -739,7 +739,7 @@ public async Task ReviewContractAsync(Guid contractId, Guid staffId, bool approv
         {
              await _noti.CreateAsync(
              m.UserId,
-             "Hợp đồng được phê duyệt ✅",
+             "Hợp đồng được phê duyệt",
              $"Hợp đồng sở hữu xe {vehicleName}{plate} đã được phê duyệt.",
              "ECONTRACT_APPROVED",
              contract.Id
