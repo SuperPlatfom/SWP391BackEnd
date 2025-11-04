@@ -34,7 +34,9 @@ namespace Service
                 Status = v.Status,
                 BatteryCapacityKwh = v.BatteryCapacityKwh,
                 RangeKm = v.RangeKm,
-                GroupId = v.GroupId
+                GroupId = v.GroupId,
+                VehicleImageUrl = v.VehicleImageUrl,
+                RegistrationPaperUrl = v.RegistrationPaperUrl
             });
 
             return result;
@@ -78,7 +80,9 @@ namespace Service
                 Color = vehicle.Color,
                 Status = vehicle.Status,
                 BatteryCapacityKwh = vehicle.BatteryCapacityKwh,
-                RangeKm = vehicle.RangeKm
+                RangeKm = vehicle.RangeKm,
+                VehicleImageUrl = vehicle.VehicleImageUrl,
+                RegistrationPaperUrl = vehicle.RegistrationPaperUrl,
             };
         }
 
@@ -116,6 +120,8 @@ namespace Service
                 BatteryCapacityKwh = v.BatteryCapacityKwh,
                 RangeKm = v.RangeKm,
                HasGroup = v.GroupId !=null,
+               VehicleImageUrl = v.VehicleImageUrl,
+               RegistrationPaperUrl = v.RegistrationPaperUrl,
             }).ToList();
         }
 
