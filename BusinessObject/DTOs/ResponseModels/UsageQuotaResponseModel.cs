@@ -19,5 +19,7 @@ namespace BusinessObject.DTOs.ResponseModels
         public decimal RemainingHours { get; set; }
 
         public decimal RemainingHoursNextWeek { get; set; }
+        public decimal WeeklyQuotaHours { get; set; }
+        public decimal OwnershipRate { get; set; }
     }
 }

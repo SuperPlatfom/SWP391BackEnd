@@ -105,6 +105,7 @@ namespace Service
                     Status = v.Status,
                     BatteryCapacityKwh = v.BatteryCapacityKwh,
                     RangeKm = v.RangeKm,
+                    VehicleImageUrl = v.VehicleImageUrl,
                     GroupId = v.GroupId
                 }).ToList() ?? new List<VehicleResponseModel>();
         }

@@ -52,7 +52,7 @@ namespace Service.BackgroundJobs
                
                 if (booking.Status == BookingStatus.Booked && DateTime.UtcNow >= booking.StartTime.AddMinutes(15))
                 {
-                    await bookingService.CancelBookingAsync(booking.Id);
+                    await bookingService.CancelBookingBackgroundServiceAsync(booking.Id);
                     continue;
                 }
 

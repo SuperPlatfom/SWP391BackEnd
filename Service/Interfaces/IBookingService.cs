@@ -9,10 +9,11 @@ namespace Service.Interfaces
 {
     public interface IBookingService
     {
-        Task<(bool IsSuccess, string Message, BookingResponseModel? Data)> CreateBookingAsync(BookingRequestModel request, ClaimsPrincipal user);
-        Task<(bool IsSuccess, string Message, BookingResponseModel? Data)>
+        Task<(bool IsSuccess, string Message)> CreateBookingAsync(BookingRequestModel request, ClaimsPrincipal user);
+        Task<(bool IsSuccess, string Message)>
     UpdateBookingAsync(BookingUpdateRequestModel request);
-        Task<(bool IsSuccess, string Message)> CancelBookingAsync(Guid bookingId);
+        Task<(bool IsSuccess, string Message)> CancelBookingAsync(Guid bookingId, ClaimsPrincipal user);
+        Task<(bool IsSuccess, string Message)> CancelBookingBackgroundServiceAsync(Guid bookingId);
         Task<(bool IsSuccess, string Message)> CheckInAsync(TripEventRequestModel tripEvent, ClaimsPrincipal user);
         Task<(bool IsSuccess, string Message)> CheckOutAsync(TripEventRequestModel tripEvent, ClaimsPrincipal user);
         Task<(bool IsSuccess, string Message, List<BookingResponseModel>? Data)>
