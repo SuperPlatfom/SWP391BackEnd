@@ -78,7 +78,13 @@ namespace Service
             var ensureResult = await EnsureQuotaExistsAsync(userId, groupId, vehicleId, weekStartUtc);
             if (!ensureResult.IsSuccess)
                 return (false, ensureResult.Message, null);
-
+            var result  = await _quotaRepo.GetQuotaRateAsync(userId,vehicleId);
+     
+            
+                decimal weeklyQuotaHours = result.Value.weeklyQuotaHours;
+            decimal ownershipRate = (decimal)result.Value.ownershipRate;
+            
+            
             var quota = await _quotaRepo.GetUsageQuotaAsync(userId, groupId, vehicleId, weekStartUtc);
             if (quota == null)
                 return (false, "Không thể lấy quota sau khi tạo.", null);
@@ -109,6 +115,8 @@ namespace Service
                 HoursDebt = quota.HoursDebt,
                 RemainingHours = remaining,
                 RemainingHoursNextWeek = remainingNextWeek,
+                OwnershipRate = ownershipRate,
+                WeeklyQuotaHours = weeklyQuotaHours,
             };
 
             // -------------------------

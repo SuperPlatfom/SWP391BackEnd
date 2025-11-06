@@ -31,7 +31,7 @@ namespace SWP391BackEnd.Controllers
             if (!result.IsSuccess)
                 return BadRequest(new { message = result.Message });
 
-            return Ok(new { message = result.Message, data = result.Data });
+            return Ok(new { message = result.Message});
         }
 
         [HttpPut("update")]
@@ -45,14 +45,14 @@ namespace SWP391BackEnd.Controllers
             if (!result.IsSuccess)
                 return BadRequest(new { message = result.Message });
 
-            return Ok(new { message = result.Message, data = result.Data });
+            return Ok(new { message = result.Message });
         }
 
 
         [HttpPut("cancel/{id}")]
         public async Task<IActionResult> CancelBooking(Guid id)
         {
-            var result = await _bookingService.CancelBookingAsync(id);
+            var result = await _bookingService.CancelBookingAsync(id, User);
 
             if (!result.IsSuccess)
                 return BadRequest(new { message = result.Message });
@@ -61,6 +61,7 @@ namespace SWP391BackEnd.Controllers
         }
 
         [HttpPost("check-in/staff")]
+        [Authorize (Roles ="Staff")]
 
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> CheckIn([FromForm] TripEventRequestModel checkin)
@@ -81,6 +82,7 @@ namespace SWP391BackEnd.Controllers
         }
 
         [HttpPost("check-out/staff")]
+        [Authorize (Roles ="Staff")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> CheckOut([FromForm] TripEventRequestModel checkout)
         {
