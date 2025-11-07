@@ -416,7 +416,7 @@ namespace Service
             {
                 return (false, $"Bạn chỉ có thể check-in trong vòng 15 phút trước khi lịch bắt đầu. Hiện còn {Math.Floor(minutesUntilStart)} phút nữa.");
             }
-            if (booking.StartTime.AddMinutes(15) >= nowUtc)
+            if (booking.StartTime.AddMinutes(15) >= DateTimeHelper.ToVietnamTime(nowUtc))
                 return (false, "Checkin thất bại,bạn đã trễ quá 15p, vui lòng đến sớm hơn để checkin vào lần sau");
 
             String? photoUrl = await _firebaseStorageService.UploadFileAsync(request.Photo, "trip-events");

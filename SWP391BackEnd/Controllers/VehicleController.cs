@@ -40,12 +40,12 @@ namespace SWP391BackEnd.Controllers
         [HttpDelete("delete-vehicle-by-id")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var existing = await _vehicleService.GetVehicleByIdAsync(id);
-            if (existing == null)
-                return NotFound(new { message = "Vehicle not found" });
+            var result = await _vehicleService.DeleteVehicleAsync(id);
 
-            var deleted = await _vehicleService.DeleteVehicleAsync(id);
-            return Ok(deleted);
+            if (!result.isSuccess)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new { message = result.Message });
         }
 
         [Authorize]
