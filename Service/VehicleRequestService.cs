@@ -65,7 +65,7 @@ namespace Service
             if (exists)
                 throw new InvalidOperationException("Biển số xe đã tồn tại trong hệ thống.");
 
-            bool exists2 = await _vehicleRequestRepository.ExistsAsync(v => v.PlateNumber == request.plateNumber);
+            bool exists2 = await _vehicleRequestRepository.ExistsAsync(vs => vs.PlateNumber == request.plateNumber && vs.Status == "PENDING");
             if (exists2)
                 throw new InvalidOperationException("Biển số xe này đang được duyệt.");
 
@@ -119,6 +119,12 @@ namespace Service
                 if (exists)
                     throw new InvalidOperationException("Biển số xe đã tồn tại trong hệ thống.");
             }
+
+            bool exists2 = await _vehicleRequestRepository.ExistsAsync(vs => vs.PlateNumber == model.plateNumber && vs.Status == "PENDING");
+            if (exists2)
+                throw new InvalidOperationException("Biển số xe này đang được duyệt.");
+
+
             var vehicleImageUrl = await _storageService.UploadFileAsync(model.vehicleImage, "vehicleImage");
             var registrationPaperUrl = await _storageService.UploadFileAsync(model.registrationPaperUrl, "registration");
 
