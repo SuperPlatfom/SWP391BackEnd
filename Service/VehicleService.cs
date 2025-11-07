@@ -1,6 +1,5 @@
 ﻿using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Models;
-using BusinessObject.RequestModels;
 using Repository.Interfaces;
 using Service.Interfaces;
 using System.Security.Claims;
@@ -88,14 +87,22 @@ namespace Service
 
        
 
-        public async Task<VehicleResponseModel> DeleteVehicleAsync(Guid id)
+        public async Task<(bool isSuccess, string Message)> DeleteVehicleAsync(Guid id)
         {
             var existing = await _vehicleRepository.GetByIdAsync(id);
             if (existing == null)
-                throw new KeyNotFoundException("Vehicle not found.");
+                return (false, "Ko tìm thấy xe");
+            if (existing.GroupId != null)
+            {
+               
+                return (false, "Không thể xoá xe này, xe này đã có nhóm");
 
-            var deleted = await _vehicleRepository.DeleteAsync(id);
-            return MapToResponseModel(deleted);
+            }
+            else
+            {
+                await _vehicleRepository.DeleteAsync(id);
+                return (true, "Xoá xe thành công");
+            }
         }
 
 
