@@ -110,6 +110,12 @@ namespace DataAccessLayer.DataContext
                 .HasForeignKey(v => v.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<VehicleRequest>()
+                .HasOne(vr => vr.Vehicle)
+                .WithMany(v => v.VehicleRequests)
+                .HasForeignKey(vr => vr.VehicleId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<ContractClause>()
                 .HasOne(c => c.Template)
                 .WithMany(t => t.Clauses)

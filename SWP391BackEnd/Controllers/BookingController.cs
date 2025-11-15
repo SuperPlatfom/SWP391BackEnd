@@ -40,7 +40,7 @@ namespace SWP391BackEnd.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _bookingService.UpdateBookingAsync(request);
+            var result = await _bookingService.UpdateBookingAsync(request, User);
 
             if (!result.IsSuccess)
                 return BadRequest(new { message = result.Message });

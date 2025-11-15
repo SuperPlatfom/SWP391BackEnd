@@ -11,7 +11,7 @@ namespace Service.Interfaces
     {
         Task<(bool IsSuccess, string Message)> CreateBookingAsync(BookingRequestModel request, ClaimsPrincipal user);
         Task<(bool IsSuccess, string Message)>
-    UpdateBookingAsync(BookingUpdateRequestModel request);
+    UpdateBookingAsync(BookingUpdateRequestModel request, ClaimsPrincipal user);
         Task<(bool IsSuccess, string Message)> CancelBookingAsync(Guid bookingId, ClaimsPrincipal user);
         Task<(bool IsSuccess, string Message)> CancelBookingBackgroundServiceAsync(Guid bookingId);
         Task<(bool IsSuccess, string Message)> CheckInAsync(TripEventRequestModel tripEvent, ClaimsPrincipal user);

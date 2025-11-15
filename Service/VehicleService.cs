@@ -67,24 +67,6 @@ namespace Service
        
 
 
-        private VehicleResponseModel MapToResponseModel(Vehicle vehicle)
-        {
-            return new VehicleResponseModel
-            {
-                Id = vehicle.Id,
-                PlateNumber = vehicle.PlateNumber,
-                Make = vehicle.Make,
-                Model = vehicle.Model,
-                ModelYear = vehicle.ModelYear,
-                Color = vehicle.Color,
-                Status = vehicle.Status,
-                BatteryCapacityKwh = vehicle.BatteryCapacityKwh,
-                RangeKm = vehicle.RangeKm,
-                VehicleImageUrl = vehicle.VehicleImageUrl,
-                RegistrationPaperUrl = vehicle.RegistrationPaperUrl,
-            };
-        }
-
        
 
         public async Task<(bool isSuccess, string Message)> DeleteVehicleAsync(Guid id)

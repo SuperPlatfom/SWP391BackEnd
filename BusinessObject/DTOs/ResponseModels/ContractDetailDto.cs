@@ -25,12 +25,12 @@ namespace BusinessObject.DTOs.ResponseModels
         public string GroupName { get; set; } = "";
 
         public Guid VehicleId { get; set; }
-        public string? PlateNumber { get; set; }
-        public string? VehicleName { get; set; } 
+        public string PlateNumber { get; set; }
+        public string VehicleName { get; set; } 
         public int ModelYear { get; set; }
         public string? Color { get; set; }
-        public decimal BatteryCapacityKwh { get; set; }
-        public int RangeKm { get; set; }
+        public decimal? BatteryCapacityKwh { get; set; }
+        public int? RangeKm { get; set; }
 
 
         public List<ContractSignerDto> Signers { get; set; } = new();

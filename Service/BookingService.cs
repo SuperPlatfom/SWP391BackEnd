@@ -43,6 +43,9 @@ namespace Service
             if (endUtc <= startUtc)
                 return (false, "Thời gian kết thúc phải sau thời gian bắt đầu.");
 
+            if (endUtc < startUtc.AddMinutes(30))
+                return (false, "Tổng thời gian đặt lịch ít nhất là 30 phút, vui lòng đặt lại");
+
             var existingBookings = await _bookingRepo.GetBookingsByVehicleAsync(request.VehicleId);
 
             foreach (var b in existingBookings)
@@ -438,7 +441,7 @@ namespace Service
                 SignedBy = Guid.Parse(userId),
                 VehicleId = booking.VehicleId,
                 BookingId = booking.Id,
-                Description = "Nhân viên thực hiện check-in cho lịch đặt này.",
+                Description = request.Description ,
                 PhotosUrl = photoUrl,
                 CreatedAt = DateTime.UtcNow
             };
@@ -458,6 +461,10 @@ namespace Service
 
             if (booking.Status != BookingStatus.InUse && booking.Status != BookingStatus.Overtime)
                 return (false, "Chỉ có thể check-out lịch đã check-in.");
+
+            var startTime =  booking.StartTime.AddMinutes(15);
+            if (DateTime.UtcNow < startTime)
+                return (false, "Chưa tới giờ check-out, vui lòng thử lại sau");
 
             String? photoUrl = await _firebaseStorageService.UploadFileAsync(request.Photo, "trip-events");
             if (request.Photo == null)
@@ -550,7 +557,7 @@ namespace Service
                 SignedBy = Guid.Parse(userId),
                 BookingId = booking.Id,
                 VehicleId = booking.VehicleId,
-                Description = "Nhân viên thực hiện check-out cho lịch đặt này.",
+                Description = request.Description,
                 PhotosUrl = photoUrl,
                 CreatedAt = DateTime.UtcNow
             };
@@ -598,14 +605,15 @@ namespace Service
             return Guid.Parse(userIdClaim);
         }
 
-        public async Task<(bool IsSuccess, string Message)>
-    UpdateBookingAsync(BookingUpdateRequestModel request)
+        public async Task<(bool IsSuccess, string Message)> UpdateBookingAsync(BookingUpdateRequestModel request, ClaimsPrincipal user)
         {
+            var userId = GetUserId(user);
             var booking = await _bookingRepo.GetByIdAsync(request.Id);
             if (booking == null)
                 return (false, "Không tìm thấy lịch đặt.");
-
-            // Chỉ cho phép update khi status là BOOKED hoặc INUSE
+            if (booking.UserId != userId)
+                return (false, "bạn không có quyền chỉnh sửa lịch đặt này");
+          
             if (booking.Status != BookingStatus.Booked && booking.Status != BookingStatus.InUse)
                 return (false, "Chỉ có thể cập nhật lịch ở trạng thái BOOKED hoặc INUSE.");
 
@@ -614,14 +622,16 @@ namespace Service
             if (request.EndTime <= request.StartTime)
                 return (false, "Thời gian kết thúc phải sau thời gian bắt đầu.");
 
-            // Chuyển về UTC để lưu DB
+            var requestEndTime = request.EndTime.AddMinutes(30);
+            if (request.StartTime < requestEndTime)
+                return (false, "Tổng thời gian đặt lịch tối thiểu là 30 phút, vui lòng cập nhật lại");
+
             var newStartUtc = DateTimeHelper.ToUtcFromVietnamTime(request.StartTime);
             var newEndUtc = DateTimeHelper.ToUtcFromVietnamTime(request.EndTime);
 
-            // Lấy danh sách booking khác của cùng xe để kiểm tra overlap
             var existingBookings = await _bookingRepo.GetBookingsByVehicleAsync(booking.VehicleId);
 
-            // Lọc bỏ chính booking đang update
+           
             existingBookings = existingBookings
                 .Where(b => b.Id != booking.Id &&
                             b.Status != BookingStatus.Cancelled &&
@@ -660,7 +670,7 @@ namespace Service
                     }
                 }
 
-                var userId = booking.UserId;
+            
                 var groupId = booking.GroupId;
                 var vehicleId = booking.VehicleId;
 
@@ -723,7 +733,7 @@ namespace Service
                     }
                 }
 
-                var userId = booking.UserId;
+               
                 var groupId = booking.GroupId;
                 var vehicleId = booking.VehicleId;
 
