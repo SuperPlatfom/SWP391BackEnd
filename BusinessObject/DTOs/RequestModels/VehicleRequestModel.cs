@@ -19,16 +19,16 @@ public class VehicleRequestModel
     public int modelYear { get; set; }
 
     [JsonPropertyName("color")]
-    [Required]
-    public string color { get; set; } = string.Empty;
+ 
+    public string? color { get; set; } = string.Empty;
 
     [JsonPropertyName("batteryCapacityKwh")]
-    [Required, Range(0.1, 500, ErrorMessage = "Battery capacity must be positive")]
-    public decimal batteryCapacityKwh { get; set; }
+    [ Range(0, 500, ErrorMessage = "Battery capacity must be positive")]
+    public decimal? batteryCapacityKwh { get; set; }
 
     [JsonPropertyName("rangeKm")]
-    [Required, Range(1, int.MaxValue, ErrorMessage = "Range must be positive")]
-    public int rangeKm { get; set; }
+    [ Range(0, int.MaxValue, ErrorMessage = "Range must be positive")]
+    public int? rangeKm { get; set; }
 
     [JsonPropertyName("plateNumber")]
     [Required]

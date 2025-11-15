@@ -31,13 +31,13 @@ namespace BusinessObject.Models
         public int ModelYear { get; set; } 
 
         [Column("color")]
-        public string Color { get; set; } = null!;
+        public string? Color { get; set; } = null!;
 
         [Column("battery_capacity_kwh")]
-        public decimal BatteryCapacityKwh { get; set; } 
+        public decimal? BatteryCapacityKwh { get; set; } 
 
         [Column("range_km")]
-        public int RangeKm { get; set; }
+        public int? RangeKm { get; set; }
 
         [Column("vehicle_image_url")]
         public string VehicleImageUrl { get; set; } = null!;

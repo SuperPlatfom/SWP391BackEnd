@@ -25,16 +25,16 @@ namespace BusinessObject.DTOs.RequestModels
         public int modelYear { get; set; }
 
    
-        [Required]
-        public string color { get; set; } = string.Empty;
+        
+        public string? color { get; set; } = string.Empty;
 
   
-        [Required, Range(0.1, 500, ErrorMessage = "Battery capacity must be positive")]
-        public decimal batteryCapacityKwh { get; set; }
+      
+        public decimal? batteryCapacityKwh { get; set; }
 
     
-        [Required, Range(1, int.MaxValue, ErrorMessage = "Range must be positive")]
-        public int rangeKm { get; set; }
+     
+        public int? rangeKm { get; set; }
 
         [Required]
         public string plateNumber { get; set; }
