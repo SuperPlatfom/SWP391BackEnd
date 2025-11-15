@@ -1,8 +1,6 @@
 ﻿using BusinessObject.DTOs.RequestModels;
 using BusinessObject.Models;
-using Google.Apis.Storage.v1;
 using Microsoft.AspNetCore.Mvc.Filters;
-using NetTopologySuite.Triangulate.Tri;
 using Repository.Interfaces;
 using Service.Interfaces;
 using System.Security.Claims;

@@ -13,6 +13,8 @@ namespace BusinessObject.DTOs.RequestModels
         [JsonPropertyName("BookingId")]
         public Guid BookingId { get; set; }
 
+        public string? Description { get; set; }
+
         [JsonPropertyName("Photo")]
         public IFormFile? Photo { get; set; } 
     }
