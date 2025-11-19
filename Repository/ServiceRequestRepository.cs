@@ -39,6 +39,7 @@ namespace Repository
                 .Include(s => s.Group)
                 .Include(s => s.CreatedByAccount)
                 .Include(e => e.Vehicle.Contracts)
+                .Include(x => x.Job)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 

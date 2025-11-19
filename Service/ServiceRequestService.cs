@@ -87,6 +87,7 @@ namespace Service
                 ServiceCenterName = entity.ServiceCenter?.Name,
                 ServiceCenterAddress = entity.ServiceCenter?.Address,
                 TechnicianName = entity.Technician?.FullName,
+                ReportUrl = entity.Job?.ReportUrl,
                 VehicleContractStatus = latestApprovedContract?.Status,
                 ContractEffectiveFrom = latestApprovedContract?.EffectiveFrom,
                 ContractExpiresAt = latestApprovedContract?.ExpiresAt,
