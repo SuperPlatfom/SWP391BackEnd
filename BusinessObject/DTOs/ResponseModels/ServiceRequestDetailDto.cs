@@ -26,6 +26,7 @@ namespace BusinessObject.DTOs.ResponseModels
         public string? ServiceCenterName { get; set; }
         public string? ServiceCenterAddress { get; set; }
         public string? TechnicianName { get; set; }
+        public string? ReportUrl { get; set; }
         public string? VehicleContractStatus { get; set; }
         public DateTime? ContractEffectiveFrom { get; set; }
         public DateTime? ContractExpiresAt { get; set; }
