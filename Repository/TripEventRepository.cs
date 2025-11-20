@@ -35,7 +35,10 @@ namespace Repository
 
      public async   Task<IEnumerable<TripEvent>> GetAllAsync()
         {
-            return await _context.TripEvents.ToListAsync();
+            return await _context.TripEvents
+                .Include(x => x.Vehicle)
+                .Include(x => x.SignedByUser)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<TripEvent>> GetDamageReportsByVehicleIdAsync(Guid vehicleId)
@@ -51,6 +54,8 @@ namespace Repository
         {
             return await _context.TripEvents
                 .Where(t => t.SignedBy == userId)
+                .Include(t => t.Vehicle)
+                .Include(t => t.SignedByUser)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
         }

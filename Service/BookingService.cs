@@ -14,25 +14,30 @@ namespace Service
 {
     public class BookingService : IBookingService
     {
+        private readonly IVehicleRepository _vehicleRepository;
         private readonly IBookingRepository _bookingRepo;
         private readonly IUsageQuotaService _usageQuotaService;
         private readonly IUsageQuotaRepository _usageQuotaRepository;
         private readonly IFirebaseStorageService _firebaseStorageService;
         private readonly ITripEventRepository _tripEventRepository;
 
-        public BookingService(IBookingRepository bookingRepo, IUsageQuotaService usageQuotaService, IUsageQuotaRepository usageQuotaRepository, IFirebaseStorageService firebaseStorageService, ITripEventRepository tripEventRepository)
+        public BookingService(IBookingRepository bookingRepo, IUsageQuotaService usageQuotaService, IUsageQuotaRepository usageQuotaRepository, IFirebaseStorageService firebaseStorageService, ITripEventRepository tripEventRepository, IVehicleRepository vehicleRepository)
         {
             _bookingRepo = bookingRepo;
             _usageQuotaService = usageQuotaService;
             _usageQuotaRepository = usageQuotaRepository;
             _firebaseStorageService = firebaseStorageService;
             _tripEventRepository = tripEventRepository;
+            _vehicleRepository = vehicleRepository;
 
         }
 
         public async Task<(bool IsSuccess, string Message)> CreateBookingAsync(BookingRequestModel request, ClaimsPrincipal user)
         {
-        
+            var vehicle =  _vehicleRepository.GetByIdAsync(request.VehicleId);
+            if (!vehicle.Status.Equals(VehicleStatus.Active))
+                return (false, "Xe hiện không khả dụng để đặt lịch.");
+
             var userId = GetUserId(user);
 
             var startUtc = DateTimeHelper.ToUtcFromVietnamTime(request.StartTime);
