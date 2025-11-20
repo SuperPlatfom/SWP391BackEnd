@@ -398,7 +398,9 @@ namespace Service
             return (true, message);
         }
 
-        public async Task<(bool IsSuccess, string Message)> CheckInAsync(TripEventRequestModel request, ClaimsPrincipal user)
+        public async Task<(bool IsSuccess, string Message)> CheckInAsync(TripEventRequestModel
+            
+            request, ClaimsPrincipal user)
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))

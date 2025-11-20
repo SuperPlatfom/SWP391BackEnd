@@ -49,25 +49,25 @@ namespace Service
             return MapToResponseModel(request);
         }
 
-        public async Task<VehicleRequest> CreateVehicleRequestAsync(VehicleRequestModel request, ClaimsPrincipal user)
+        public async Task<(bool IsSuccess, string Message)> CreateVehicleRequestAsync(VehicleRequestModel request, ClaimsPrincipal user)
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("Không thể xác định người dùng.");
+                return (false, "Không thể xác định người dùng.");
 
             if (!Guid.TryParse(userId, out var creatorId))
-                throw new UnauthorizedAccessException("Token không hợp lệ.");
+               return (false, "Token không hợp lệ.");
 
             if (request.vehicleImage == null || request.registrationPaperUrl == null)
-                throw new ArgumentException("Vui lòng upload đầy đủ ảnh xe và giấy tờ xe.");
+              return (false, "Vui lòng upload đầy đủ ảnh xe và giấy tờ xe.");
 
             bool exists = await _vehicleRepository.ExistsAsync(v => v.PlateNumber == request.plateNumber);
             if (exists)
-                throw new InvalidOperationException("Biển số xe đã tồn tại trong hệ thống.");
+                return (false, "Biển số xe đã tồn tại trong hệ thống.");
 
             bool exists2 = await _vehicleRequestRepository.ExistsAsync(vs => vs.PlateNumber == request.plateNumber && vs.Status == "PENDING");
             if (exists2)
-                throw new InvalidOperationException("Biển số xe này đang được duyệt.");
+                return (false, "Biển số xe này đang được duyệt.");
 
             var vehicleImageUrl = await _storageService.UploadFileAsync(request.vehicleImage, "vehicleImage");
             var registrationPaperUrl = await _storageService.UploadFileAsync(request.registrationPaperUrl, "registration");
@@ -94,7 +94,7 @@ namespace Service
 
 
             await _vehicleRequestRepository.AddAsync(vehicleRequest);
-            return vehicleRequest;
+           return (true, "Đã gửi yêu cầu đăng kí xe, chờ duyệt.");
         }
         public async Task<(bool IsSuccess, string Message)> UpdateVehicleRequestAsync(VehicleUpdateModel model, ClaimsPrincipal user)
         {
@@ -105,24 +105,24 @@ namespace Service
             }
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("Không thể xác định người dùng.");
+                return (false, "Không thể xác định người dùng.");
 
             if (!Guid.TryParse(userId, out var creatorId))
-                throw new UnauthorizedAccessException("Token không hợp lệ.");
+                return (false, "Token không hợp lệ.");
 
             if (model.vehicleImage == null || model.registrationPaperUrl == null)
-                throw new ArgumentException("Vui lòng upload đầy đủ ảnh xe và giấy tờ xe.");
+                return (false, "Vui lòng upload đầy đủ ảnh xe và giấy tờ xe.");
 
             if (model.plateNumber != vehicle.PlateNumber)
             {
                 bool exists = await _vehicleRepository.ExistsAsync(v => v.PlateNumber == model.plateNumber && v.Id != vehicle.Id);
                 if (exists)
-                    throw new InvalidOperationException("Biển số xe đã tồn tại trong hệ thống.");
+                    return (false, "Biển số xe đã tồn tại trong hệ thống.");
             }
 
             bool exists2 = await _vehicleRequestRepository.ExistsAsync(vs => vs.PlateNumber == model.plateNumber && vs.Status == "PENDING");
             if (exists2)
-                throw new InvalidOperationException("Biển số xe này đang được duyệt.");
+                return (false, "Biển số xe này đang được duyệt.");
 
 
             var vehicleImageUrl = await _storageService.UploadFileAsync(model.vehicleImage, "vehicleImage");
