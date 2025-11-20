@@ -34,8 +34,8 @@ namespace Service
 
         public async Task<(bool IsSuccess, string Message)> CreateBookingAsync(BookingRequestModel request, ClaimsPrincipal user)
         {
-            var vehicle =  _vehicleRepository.GetByIdAsync(request.VehicleId);
-            if (!vehicle.Status.Equals(VehicleStatus.Active))
+            var vehicle =  await _vehicleRepository.GetByIdAsync(request.VehicleId);
+            if (vehicle.Status != VehicleStatus.Active)
                 return (false, "Xe hiện không khả dụng để đặt lịch.");
 
             var userId = GetUserId(user);
