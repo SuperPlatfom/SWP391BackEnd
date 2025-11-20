@@ -18,9 +18,9 @@ namespace SWP391BackEnd.Controllers
         {
             _serviceRequestService = serviceRequestService;
         }
-        [HttpPost("Revenue-statistic/admin")]
+        [HttpGet("Revenue-statistic/admin")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetRevenueStatistic([FromBody] StatisticRequest s) 
+        public async Task<IActionResult> GetRevenueStatistic([FromQuery] StatisticRequest s) 
         {
             try
             {
