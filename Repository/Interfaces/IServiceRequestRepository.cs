@@ -10,6 +10,7 @@ namespace Repository.Interfaces
     public interface IServiceRequestRepository
     {
         Task<IEnumerable<ServiceRequest>> GetAllAsync();
+        Task<List<ServiceRequest>> GetCompletedOrdersInRangeAsync(DateTime start, DateTime end);
         Task<ServiceRequest?> GetByIdAsync(Guid id);
         Task AddAsync(ServiceRequest entity);
         Task UpdateAsync(ServiceRequest entity);

@@ -352,6 +352,32 @@ namespace Service
         }
 
 
+        public async Task<(bool IsSuccess, string message ,RevenueStatisticResponse)> GetRevenueStatisticAsync(DateTime startDate, DateTime endDate)
+        {
+          var  startUtc = DateTimeHelper.ToUtcFromVietnamTime(startDate);
+         var   endUtc = DateTimeHelper.ToUtcFromVietnamTime(endDate);
+            if (startDate >= endDate)
+                return (false, "Ngày bắt đầu phải trước ngày kết thúc", null);
+            var orders = await _repo.GetCompletedOrdersInRangeAsync(startUtc, endUtc);
+
+            var response = new RevenueStatisticResponse
+            {
+                TotalRevenue = orders.Sum(x => x.CostEstimate),
+                CompletedOrders = orders.Count,
+                VehiclesServiced = orders.Select(x => x.VehicleId).Distinct().Count(),
+                TechnicianRevenue = orders
+                    .GroupBy(x => new { x.TechnicianId, x.Technician.FullName })
+                    .Select(g => new TechnicianRevenueModel
+                    {
+                        TechnicianName = g.Key.FullName,
+                        Revenue = g.Sum(o => o.CostEstimate)
+                    })
+                    .OrderByDescending(x => x.Revenue)
+                    .ToList()
+            };
+
+            return (true, "Thống kê doanh thu thành công", response);
+        }
 
     }
 }

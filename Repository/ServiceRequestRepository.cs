@@ -30,6 +30,21 @@ namespace Repository
                 .ToListAsync();
         }
 
+
+        public async Task<List<ServiceRequest>> GetCompletedOrdersInRangeAsync(DateTime start, DateTime end)
+        {
+            return await _db.ServiceRequests
+                .Include(s => s.Group)
+                .Include(s => s.ServiceCenter)
+                .Include(x => x.Vehicle)
+                .Include(x => x.Technician)
+                .Where(x => x.Status == "COMPLETED"
+                         && x.CompletedAt >= start
+                         && x.CompletedAt <= end)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         public async Task<ServiceRequest?> GetByIdAsync(Guid id)
         {
             return await _db.ServiceRequests
