@@ -33,7 +33,7 @@ namespace Service
                 Id = group.Id,
                 Name = group.Name,
                 CreatedByName = group.CreatedByAccount?.FullName ?? "",
-                IsActive = group.IsActive,
+                
 
                 Members = group.Members?.Select(m => new GroupMemberResponseModel
                 {                             
@@ -84,7 +84,7 @@ namespace Service
             {
                 Id = group.Id,
                 Name = group.Name,
-                IsActive = group.IsActive
+              
             };
         }
         public async Task<List<VehicleResponseModel>> GetVehiclesByGroupIdAsync(Guid groupId)
@@ -123,7 +123,7 @@ namespace Service
                 Id = Guid.NewGuid(),
                 Name = request.Name,
                 CreatedBy = userId,
-                IsActive = true,
+            
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -158,7 +158,7 @@ namespace Service
                 {
                     Id = group.Id,
                     Name = group.Name,
-                    IsActive = group.IsActive,
+                  
                     Members = new List<GroupMemberResponseModel>
             {
                 new GroupMemberResponseModel
@@ -281,7 +281,7 @@ namespace Service
             Name = g.Name,
            
             CreatedByName = owner?.FullName ?? "Unknown",
-            IsActive = g.IsActive
+          
         });
     }
 
@@ -299,7 +299,7 @@ namespace Service
                 Id = g.Id,
                 Name = g.Name,
                 CreatedByName = g.CreatedByAccount?.FullName ?? "",
-                IsActive = g.IsActive,
+               
                 Members = g.Members.Select(m => new GroupMemberResponseModel
                 {
                     UserId = m.UserId,

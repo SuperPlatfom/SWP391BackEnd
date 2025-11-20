@@ -24,8 +24,6 @@ namespace BusinessObject.Models
         public Account CreatedByAccount { get; set; } = null!;
 
 
-        [Column("is_active")]
-        public bool IsActive { get; set; } = true;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

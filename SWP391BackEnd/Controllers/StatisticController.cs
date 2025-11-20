@@ -13,10 +13,12 @@ namespace SWP391BackEnd.Controllers
     public class StatisticController : Controller
     {
        private readonly IServiceRequestService _serviceRequestService;
+        private readonly IStatisticService _statisticService;
 
-        public StatisticController(IServiceRequestService serviceRequestService)
+        public StatisticController(IServiceRequestService serviceRequestService, IStatisticService statisticService)
         {
             _serviceRequestService = serviceRequestService;
+            _statisticService = statisticService;
         }
         [HttpGet("Revenue-statistic/admin")]
         [Authorize(Roles = "Admin")]
@@ -40,6 +42,19 @@ namespace SWP391BackEnd.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-        
+
+        [HttpGet("user-statistics")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetUserStatistics()
+        {
+            var data = await _statisticService.GetUserStatisticsAsync();
+            return Ok(new
+            {
+                isSuccess = true,
+                message = "Thống kê user thành công",
+                data = data
+            });
+        }
+
     }
 }
