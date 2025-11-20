@@ -99,6 +99,7 @@ builder.Services.AddHostedService<QuotaCarryOverBackgroundService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
+builder.Services.AddScoped<IStatisticService, StatisticService>();
 
 builder.Services.AddScoped<IVehicleRequestRepository, VehicleRequestRepository>();
 builder.Services.AddScoped<IVehicleRequestService, VehicleRequestService>();
