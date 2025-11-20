@@ -21,7 +21,7 @@ namespace Service.Interfaces
         Task<IEnumerable<ServiceRequestDto>> GetMyRequestsAsync(Guid currentUserId);
         Task<IEnumerable<ServiceRequestDetailDto>> GetAssignedRequestsByUserAsync(Guid currentUserId);
 
-
+        Task<(bool IsSuccess, string message, RevenueStatisticResponse)> GetRevenueStatisticAsync(DateTime startDate, DateTime endDate);
 
     }
 }

@@ -1,15 +1,13 @@
 ﻿using BusinessObject.DTOs.RequestModels;
-using Microsoft.AspNetCore.Http;
+
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
-using Microsoft.AspNetCore.OData.Routing.Controllers;
+
 using Service.Interfaces;
-using Swashbuckle.AspNetCore.Annotations;
+
 using System.Net;
-using BusinessObject.Models;
+
 using Microsoft.AspNetCore.Authorization;
-using Repository.HandleException;
-using System.ComponentModel.DataAnnotations;
+
 using SWP391BackEnd.Helpers;
 using Service;
 
