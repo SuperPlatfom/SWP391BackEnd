@@ -422,12 +422,26 @@ namespace Service
                 return (false, $"Bạn chỉ có thể check-in trong vòng 15 phút trước khi lịch bắt đầu. Hiện còn {Math.Floor(minutesUntilStart)} phút nữa.");
             }
             if (booking.StartTime.AddMinutes(15) >= DateTimeHelper.ToVietnamTime(nowUtc))
-                return (false, "Checkin thất bại,bạn đã trễ quá 15p, vui lòng đến sớm hơn để checkin vào lần sau");
+                return (false, "Checkin thất bại, bạn đã trễ quá 15p, vui lòng đến sớm hơn để checkin vào lần sau");
 
-            String? photoUrl = await _firebaseStorageService.UploadFileAsync(request.Photo, "trip-events");
+           
             if (request.Photo == null)
                 return (false, "Checkin thất bại, vui lòng chụp ảnh và thử lại");
-          
+            if (request.Photo.Count > 4)
+                return (false, "Chỉ được tải lên tối đa 4 hình ảnh.");
+
+            if (request.Photo == null)
+                return (false, "Vui lòng tải lên hình ảnh khi check-out.");
+            if (request.Photo.Count > 4)
+                return (false, "Chỉ được tải lên tối đa 4 hình ảnh.");
+
+            List<string> imgUrls = new();
+            foreach (var image in request.Photo)
+            {
+                var url = await _firebaseStorageService.UploadFileAsync(image, "check-in-images");
+                imgUrls.Add(url);
+            }
+
             booking.Status = BookingStatus.InUse;
             booking.UpdatedAt = DateTime.UtcNow;
 
@@ -444,7 +458,7 @@ namespace Service
                 VehicleId = booking.VehicleId,
                 BookingId = booking.Id,
                 Description = request.Description ,
-                PhotosUrl = photoUrl,
+                PhotosUrl = imgUrls.Any() ? System.Text.Json.JsonSerializer.Serialize(imgUrls) : null,
                 CreatedAt = DateTime.UtcNow
             };
             await _tripEventRepository.AddAsync(tripEvent);
@@ -468,11 +482,17 @@ namespace Service
             if (DateTime.UtcNow < startTime)
                 return (false, "Chưa tới giờ check-out, vui lòng thử lại sau");
 
-            String? photoUrl = await _firebaseStorageService.UploadFileAsync(request.Photo, "trip-events");
             if (request.Photo == null)
-                return (false, "Checkin thất bại, vui lòng chụp ảnh và thử lại");
+                return (false, "Vui lòng tải lên hình ảnh khi check-out.");
+            if (request.Photo.Count > 4)
+                return (false, "Chỉ được tải lên tối đa 4 hình ảnh.");
 
-
+            List<string> imgUrls = new();
+            foreach (var image in request.Photo)
+            {
+                var url = await _firebaseStorageService.UploadFileAsync(image, "check-out-image");
+                imgUrls.Add(url);
+            }
 
             var vietnamNow = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
             var weekStartVN = DateTimeHelper.GetWeekStartDate(vietnamNow);
@@ -560,7 +580,7 @@ namespace Service
                 BookingId = booking.Id,
                 VehicleId = booking.VehicleId,
                 Description = request.Description,
-                PhotosUrl = photoUrl,
+                PhotosUrl = imgUrls.Any() ? System.Text.Json.JsonSerializer.Serialize(imgUrls) : null,
                 CreatedAt = DateTime.UtcNow
             };
             await _tripEventRepository.AddAsync(tripEvent);
@@ -619,13 +639,13 @@ namespace Service
             if (booking.Status != BookingStatus.Booked && booking.Status != BookingStatus.InUse)
                 return (false, "Chỉ có thể cập nhật lịch ở trạng thái BOOKED hoặc INUSE.");
 
-            var nowVN = DateTimeHelper.NowVietnamTime();
+         
 
             if (request.EndTime <= request.StartTime)
                 return (false, "Thời gian kết thúc phải sau thời gian bắt đầu.");
 
-            var requestEndTime = request.EndTime.AddMinutes(30);
-            if (request.StartTime < requestEndTime)
+            var requestEndTime = request.StartTime.AddMinutes(30);
+            if (request.EndTime < requestEndTime)
                 return (false, "Tổng thời gian đặt lịch tối thiểu là 30 phút, vui lòng cập nhật lại");
 
             var newStartUtc = DateTimeHelper.ToUtcFromVietnamTime(request.StartTime);
@@ -712,8 +732,8 @@ namespace Service
             // ----------------------------
             if (booking.Status == BookingStatus.Booked)
             {
-                if (request.StartTime < nowVN.AddMinutes(30))
-                    return (false, "Thời gian bắt đầu phải cách hiện tại ít nhất 30 phút.");
+                if (newStartUtc < DateTime.UtcNow.AddMinutes(15))
+                    return (false, "Thời gian bắt đầu phải cách hiện tại ít nhất 15 phút.");
 
                 foreach (var b in existingBookings)
                 {

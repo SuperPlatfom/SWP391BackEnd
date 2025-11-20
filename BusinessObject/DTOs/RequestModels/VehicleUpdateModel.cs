@@ -41,7 +41,7 @@ namespace BusinessObject.DTOs.RequestModels
 
       
         [Required]
-        public IFormFile? vehicleImage { get; set; }
+        public List <IFormFile?> vehicleImage { get; set; }
 
      
         [Required]

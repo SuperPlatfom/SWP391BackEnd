@@ -16,6 +16,8 @@ namespace Repository.Interfaces
         Task DeleteAsync(TripEvent tripEvent);
         Task<IEnumerable<TripEvent>> GetAllAsync();
         Task<IEnumerable<TripEvent>> GetByUserIdAsync(Guid userId);
-      
+        Task<IEnumerable<TripEvent>> GetDamageReportsByVehicleIdAsync(Guid vehicleId);
+
+
     }
 }

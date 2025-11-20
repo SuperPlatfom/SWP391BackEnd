@@ -69,8 +69,16 @@ namespace Service
             if (exists2)
                 return (false, "Biển số xe này đang được duyệt.");
 
-            var vehicleImageUrl = await _storageService.UploadFileAsync(request.vehicleImage, "vehicleImage");
-            var registrationPaperUrl = await _storageService.UploadFileAsync(request.registrationPaperUrl, "registration");
+
+            List<string> vehicleImageUrls = new();
+            if (request.vehicleImage.Count > 4)
+                return (false, "Chỉ được tải lên tối đa 4 hình ảnh xe.");
+            foreach (var image in request.vehicleImage)
+            {
+                var url = await _storageService.UploadFileAsync(image, "vehicle");
+                vehicleImageUrls.Add(url);
+            }
+                var registrationPaperUrl = await _storageService.UploadFileAsync(request.registrationPaperUrl, "registration");
 
 
             var vehicleRequest = new VehicleRequest
@@ -83,7 +91,9 @@ namespace Service
                 Color = request.color,
                 BatteryCapacityKwh = request.batteryCapacityKwh,
                 RangeKm = request.rangeKm,
-                VehicleImageUrl = vehicleImageUrl,
+                VehicleImageUrl = vehicleImageUrls.Any()
+                                     ? System.Text.Json.JsonSerializer.Serialize(vehicleImageUrls)
+    : null,
                 RegistrationPaperUrl = registrationPaperUrl,
                 Type = "CREATE",
                 Status = "PENDING",
@@ -125,7 +135,14 @@ namespace Service
                 return (false, "Biển số xe này đang được duyệt.");
 
 
-            var vehicleImageUrl = await _storageService.UploadFileAsync(model.vehicleImage, "vehicleImage");
+            List<string> vehicleImageUrls = new();
+            if (model.vehicleImage.Count > 4)
+                return (false, "Chỉ được tải lên tối đa 4 hình ảnh xe.");
+            foreach (var image in model.vehicleImage)
+            {
+                var url = await _storageService.UploadFileAsync(image, "vehicle");
+                vehicleImageUrls.Add(url);
+            }
             var registrationPaperUrl = await _storageService.UploadFileAsync(model.registrationPaperUrl, "registration");
 
            
@@ -140,7 +157,9 @@ namespace Service
                 Color = model.color,
                 BatteryCapacityKwh = model.batteryCapacityKwh,
                 RangeKm = model.rangeKm,
-                VehicleImageUrl = vehicleImageUrl,
+                VehicleImageUrl = vehicleImageUrls.Any()
+                                     ? System.Text.Json.JsonSerializer.Serialize(vehicleImageUrls)
+    : null,
                 RegistrationPaperUrl = registrationPaperUrl,
                 Type = "UPDATE",
                 Status = "PENDING",

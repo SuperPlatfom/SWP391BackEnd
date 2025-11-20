@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Repository.Interfaces;
 using Service.Helpers;
@@ -8,13 +9,11 @@ namespace Service.BackgroundJobs
 {
     public class QuotaCarryOverBackgroundService : BackgroundService
     {
-        private readonly IUsageQuotaRepository _usageQuotaRepository;
-        private readonly IUsageQuotaService _usageQuotaService;
+        private readonly IServiceProvider _serviceProvider;
 
-        public QuotaCarryOverBackgroundService(IUsageQuotaRepository usageQuotaRepository, IUsageQuotaService usageQuotaService)
+        public QuotaCarryOverBackgroundService(IServiceProvider serviceProvider)
         {
-            _usageQuotaRepository = usageQuotaRepository;
-            _usageQuotaService = usageQuotaService;
+             _serviceProvider = serviceProvider;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -44,7 +43,10 @@ namespace Service.BackgroundJobs
         }
 private async Task CarryOverQuotaAsync()
     {
-           
+            using var scope = _serviceProvider.CreateScope();
+            var usageQuotaService = _serviceProvider.GetRequiredService<IUsageQuotaService>;
+            var usageQuotaRepository = _serviceProvider.GetRequiredService<IUsageQuotaRepository>;
+
             var vietnamNow = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
 
             var previousWeekStartVN = DateTimeHelper.GetWeekStartDate(vietnamNow).AddDays(-7);
@@ -53,15 +55,15 @@ private async Task CarryOverQuotaAsync()
         var previousWeekStartUtc = DateTimeHelper.ToUtcFromVietnamTime(previousWeekStartVN);
         var currentWeekStartUtc = DateTimeHelper.ToUtcFromVietnamTime(currentWeekStartVN);
 
-        var oldQuotas = await _usageQuotaRepository.GetAllAsync(q => q.WeekStartDate == previousWeekStartUtc);
+        var oldQuotas = await usageQuotaRepository().GetAllAsync(q => q.WeekStartDate == previousWeekStartUtc);
         if (oldQuotas == null || !oldQuotas.Any())
             return;
 
         foreach (var oldQuota in oldQuotas)
         {
                
-            await _usageQuotaService.EnsureQuotaExistsAsync(oldQuota.AccountId, oldQuota.GroupId, oldQuota.VehicleId, currentWeekStartUtc);
-                var newQuota = await _usageQuotaRepository.GetUsageQuotaAsync(oldQuota.AccountId, oldQuota.GroupId, oldQuota.VehicleId, currentWeekStartUtc);
+            await usageQuotaService().EnsureQuotaExistsAsync(oldQuota.AccountId, oldQuota.GroupId, oldQuota.VehicleId, currentWeekStartUtc);
+                var newQuota = await usageQuotaRepository().GetUsageQuotaAsync(oldQuota.AccountId, oldQuota.GroupId, oldQuota.VehicleId, currentWeekStartUtc);
 
             if (newQuota != null)
             {
@@ -80,13 +82,13 @@ private async Task CarryOverQuotaAsync()
                 oldQuota.HoursAdvance = 0;
                 oldQuota.LastUpdated = DateTime.UtcNow;
 
-                await _usageQuotaRepository.UpdateAsync(newQuota);
-                await _usageQuotaRepository.UpdateAsync(oldQuota);
+                await usageQuotaRepository().UpdateAsync(newQuota);
+                await usageQuotaRepository().UpdateAsync(oldQuota);
                
                 }
         }
 
-        await _usageQuotaRepository.SaveChangesAsync();
+        await usageQuotaRepository().SaveChangesAsync();
     }
     }
 }

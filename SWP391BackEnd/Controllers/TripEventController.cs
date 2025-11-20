@@ -35,6 +35,21 @@ namespace SWP391BackEnd.Controllers
             }
         }
 
+        [HttpGet("Get-damage-report-by-vehicleId")]
+
+        public async Task<IActionResult> GetDamageReportsByVehicleId([FromQuery] Guid vehicleId)
+        {
+            try
+            {
+                var reports = await _tripEventService.GetDamageReportsByVehicleId(vehicleId);
+                return Ok(reports);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
         [HttpGet("History")]
         public async Task<IActionResult> GetMyTripEvent()
         {

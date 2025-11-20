@@ -71,6 +71,7 @@ namespace Service.BackgroundJobs
 
             foreach (var overtime in overtimeBookings)
             {
+                overtime.EndTime = DateTime.UtcNow;
                 var overlappingBookings = allBookings.Where(b =>
                     b.VehicleId == overtime.VehicleId &&
                     b.Id != overtime.Id &&

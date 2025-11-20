@@ -14,6 +14,6 @@ namespace BusinessObject.DTOs.RequestModels
         public string? Description { get; set; }
 
         [JsonPropertyName("photo")]
-        public IFormFile? Photo { get; set; }
+        public List <IFormFile?> Photo { get; set; }
     }
 }
