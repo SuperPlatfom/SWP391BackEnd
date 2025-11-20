@@ -9,8 +9,8 @@ namespace Service.Interfaces
 {
     public interface ITripEventService
     {
-        Task<IEnumerable<TripEvent>> GetAllTripEvent();
-        Task<IEnumerable<TripEvent>> GetMyTripEvent(ClaimsPrincipal user);
+        Task<IEnumerable<TripDamageReportResponse>> GetAllTripEvent();
+        Task<IEnumerable<TripDamageReportResponse>> GetMyTripEvent(ClaimsPrincipal user);
         Task<(bool IsSuccess, string Message)> ReportDamageAsync(TripDamageReportRequestModel request, ClaimsPrincipal user);
         Task<IEnumerable<TripDamageReportResponse>> GetDamageReportsByVehicleId(Guid vehicleId);
     }

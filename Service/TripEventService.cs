@@ -27,19 +27,42 @@ namespace Service
             _groupMemberRepository = groupMemberRepository;
             _notificationService = notificationService;
         }
-        public async Task<IEnumerable<TripEvent>> GetAllTripEvent()
+        public async Task<IEnumerable<TripDamageReportResponse>> GetAllTripEvent()
         {
-            return await _tripEventRepository.GetAllAsync();
+           var events = await _tripEventRepository.GetAllAsync();
+            return events.Select(e => new TripDamageReportResponse
+            {
+
+                VehicleName = e.Vehicle.Model,
+                VehiclePlate = e.Vehicle.PlateNumber,
+                EventType = e.EventType,
+                Description = e.Description,
+                PhotosUrl = e.PhotosUrl,
+                StaffName = e.SignedByUser.FullName,
+                CreatedAt = DateTimeHelper.ToVietnamTime(e.CreatedAt),
+            });
         }
 
-        public async Task<IEnumerable<TripEvent>> GetMyTripEvent(ClaimsPrincipal user)
+        public async Task<IEnumerable<TripDamageReportResponse>> GetMyTripEvent(ClaimsPrincipal user)
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
                 throw new UnauthorizedAccessException("Không thể xác định người dùng.");
             }
-            return await _tripEventRepository.GetByUserIdAsync(Guid.Parse(userId));
+            var events = await _tripEventRepository.GetByUserIdAsync(Guid.Parse(userId));
+
+            return events.Select(e => new TripDamageReportResponse
+            {
+
+                VehicleName = e.Vehicle.Model,
+                VehiclePlate = e.Vehicle.PlateNumber,
+                EventType = e.EventType,
+                Description = e.Description,
+                PhotosUrl = e.PhotosUrl,
+                StaffName = e.SignedByUser.FullName,
+                CreatedAt = DateTimeHelper.ToVietnamTime(e.CreatedAt),
+            });
         }
 
        public async Task<IEnumerable<TripDamageReportResponse>> GetDamageReportsByVehicleId(Guid vehicleId)

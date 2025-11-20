@@ -21,7 +21,8 @@ namespace SWP391BackEnd.Controllers
             _tripEventService = tripEventService;
         }
 
-        [HttpGet("All-trip-events/staff")]
+        [HttpGet("All-trip-events/admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllTripEvent()
         {
             try
@@ -50,7 +51,8 @@ namespace SWP391BackEnd.Controllers
             }
         }
 
-        [HttpGet("History")]
+        [Authorize(Roles = "Staff")]
+        [HttpGet("History/staff")]
         public async Task<IActionResult> GetMyTripEvent()
         {
             try
