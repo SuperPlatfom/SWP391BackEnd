@@ -1,7 +1,10 @@
 ﻿using BusinessObject.DTOs.RequestModels;
+using BusinessObject.DTOs.ResponseModels;
 using BusinessObject.Models;
+using Google.Apis.Storage.v1;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Repository.Interfaces;
+using Service.Helpers;
 using Service.Interfaces;
 using System.Security.Claims;
 
@@ -39,19 +42,38 @@ namespace Service
             return await _tripEventRepository.GetByUserIdAsync(Guid.Parse(userId));
         }
 
+       public async Task<IEnumerable<TripDamageReportResponse>> GetDamageReportsByVehicleId(Guid vehicleId)
+        {
+            var events = await _tripEventRepository.GetDamageReportsByVehicleIdAsync(vehicleId);
+            return events.Select(e => new TripDamageReportResponse
+            {
+
+                VehicleName = e.Vehicle.Model,
+                VehiclePlate = e.Vehicle.PlateNumber,
+                Description = e.Description,
+                PhotosUrl = e.PhotosUrl,
+                StaffName = e.SignedByUser.FullName,
+                CreatedAt = DateTimeHelper.ToVietnamTime(e.CreatedAt),
+            });
+        }
+
         public async Task<(bool IsSuccess, string Message)> ReportDamageAsync(TripDamageReportRequestModel request, ClaimsPrincipal user)
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return (false, "Không thể xác định người dùng.");
 
-            string? photoUrl = null;
-            if (request.Photo != null)
+           if (request.Photo == null)
+                return (false, "Vui lòng tải lên hình ảnh bộ phận hư hỏng của xe.");
+
+            List<string> imgUrls = new();
+            if (request.Photo.Count > 4)
+                return (false, "Chỉ được tải lên tối đa 4 hình ảnh.");
+            foreach (var image in request.Photo)
             {
-                photoUrl = await _firebaseStorageService.UploadFileAsync(request.Photo, "trip-damage");
+                var url = await _firebaseStorageService.UploadFileAsync(image, "Damage-report");
+                imgUrls.Add(url);
             }
-            else
-                return (false, "vui lòng chụp ảnh bộ phận bị hư hỏng");
 
             if (request.Id == null)
                 return (false, "Vui lòng nhập vào Id");
@@ -59,42 +81,7 @@ namespace Service
             var booking = await _bookingRepository.GetByIdAsync(request.Id);
             if (booking == null)
             {
-                var vehicle = await _vehicleRepository.GetByIdAsync(request.Id);
-                if (vehicle == null)
-                    return (false, "Ko tìm thấy vehicleId hay bookingId truyền vào");
-
-                var trip = new TripEvent
-                {
-                    Id = Guid.NewGuid(),
-                    EventType = "DAMAGE",
-                    SignedBy = Guid.Parse(userId),
-                    VehicleId = vehicle.Id,
-                    BookingId = null,
-                    Description = request.Description ?? string.Empty,
-                    PhotosUrl = photoUrl,
-                    CreatedAt = DateTime.UtcNow
-                };
-                await _tripEventRepository.AddAsync(trip);
-                var members1 = await _groupMemberRepository.GetByGroupIdAsync((Guid)vehicle.GroupId);
-                if (members1 == null)
-                {
-                    await _notificationService.CreateAsync(
-                        vehicle.CreatedBy, 
-                        "Báo cáo hư hỏng", 
-                        $" Có báo cáo hư hỏng xe {vehicle.Model}", 
-                        "REPORT", 
-                        trip.Id);
-                }
-                foreach (var m in members1)
-                {
-                    await _notificationService.CreateAsync(
-                        m.UserId, 
-                        "Báo cáo hư hỏng", 
-                        $" Có báo cáo hư hỏng xe {vehicle.Model}", 
-                        "REPORT", 
-                        trip.Id);
-                }
-                return (true, "Báo cáo thiệt hại đã được gửi thành công.");
+                return (false, "Ko tìm thấy lịch xe");
 
             }
 
@@ -106,7 +93,7 @@ namespace Service
                 VehicleId = booking.VehicleId,
                 BookingId = booking.Id,
                 Description = request.Description ?? string.Empty,
-                PhotosUrl = photoUrl,
+                PhotosUrl = imgUrls.Any() ? System.Text.Json.JsonSerializer.Serialize(imgUrls) : null,
                 CreatedAt = DateTime.UtcNow
             };
 

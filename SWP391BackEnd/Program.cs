@@ -95,7 +95,7 @@ builder.Services.AddScoped<IPayosTransactionRepository, PayosTransactionReposito
 builder.Services.AddScoped<IMemberInvoiceRepository, MemberInvoiceRepository>();
 builder.Services.AddScoped<IUsageQuotaRepository, UsageQuotaRepository>();
 builder.Services.AddScoped<IUsageQuotaService, UsageQuotaService>();
-builder.Services.AddScoped<QuotaResetHelper>();
+builder.Services.AddHostedService<QuotaCarryOverBackgroundService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 

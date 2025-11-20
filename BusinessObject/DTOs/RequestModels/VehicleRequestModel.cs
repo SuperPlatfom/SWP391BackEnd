@@ -36,7 +36,7 @@ public class VehicleRequestModel
 
     [JsonPropertyName("vehicleImage")]
     [Required]
-    public IFormFile vehicleImage { get; set; }
+    public List<IFormFile>  vehicleImage { get; set; }
 
     [JsonPropertyName("registrationPaperUrl")]
     [Required]

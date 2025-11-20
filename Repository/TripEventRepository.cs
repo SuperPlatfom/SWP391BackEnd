@@ -38,6 +38,15 @@ namespace Repository
             return await _context.TripEvents.ToListAsync();
         }
 
+        public async Task<IEnumerable<TripEvent>> GetDamageReportsByVehicleIdAsync(Guid vehicleId)
+        {
+            return await _context.TripEvents
+                .Where(x => x.VehicleId == vehicleId && x.EventType == "DAMAGE")
+                .Include(x => x.Vehicle)
+                .Include(x => x.SignedByUser)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+        }
         public async Task<IEnumerable<TripEvent>> GetByUserIdAsync(Guid userId)
         {
             return await _context.TripEvents
