@@ -470,6 +470,16 @@ namespace Service
             return (true, "Check-in thành công.");
         }
 
+        string FormatMinutesToHourMinute(double totalMinutes)
+        {
+            int hours = (int)(totalMinutes / 60);
+            int minutes = (int)(Math.Abs(totalMinutes) % 60);
+            if (hours > 0)
+                return $"{hours} giờ {minutes} phút";
+            else
+                return $"{minutes} phút";
+        }
+
         public async Task<(bool IsSuccess, string Message)> CheckOutAsync(TripEventRequestModel request, ClaimsPrincipal user)
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -589,7 +599,7 @@ namespace Service
                 };
                 await _tripEventRepository.AddAsync(tripEvent3);
 
-                return (true, $"Check-out trễ {overtimeMinutes:F0} phút, vui lòng checkout sớm hơn vào lần sau.");
+                return (true, $"Check-out trễ {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}.");
             }
             else if (overtimeMinutes >= 15 && overtimeMinutes <= 30)
             {
@@ -630,7 +640,7 @@ namespace Service
             await _tripEventRepository.AddAsync(tripEvent);
      
 
-            return (true, $"Check-out trễ {overtimeMinutes:F0} phút. Giờ phạt đã được cập nhật.");
+            return (true, $"Check-out trễ {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}. Giờ phạt đã được áp dụng.");
 
         }
 
