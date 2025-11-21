@@ -17,22 +17,22 @@ namespace Service.BackgroundJobs
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // Chạy vòng lặp vô hạn, dừng khi token bị hủy (ứng dụng tắt)
+           
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
                     var nowVN = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
 
-                    // Nếu là thứ Hai (start of week) và giờ là 00:00 ± 10 phút
+                  
                     if (nowVN.DayOfWeek == DayOfWeek.Monday &&
-                        nowVN.Hour == 0 && nowVN.Minute <= 10)
+                        nowVN.Hour == 0 && nowVN.Minute <= 20)
                     {
                         await CarryOverQuotaAsync();
                     }
 
-                    // Kiểm tra lại mỗi 10 phút
-                    await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);
+                  
+                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                 }
                 catch (Exception)
                 {

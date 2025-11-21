@@ -599,7 +599,7 @@ namespace Service
                 };
                 await _tripEventRepository.AddAsync(tripEvent3);
 
-                return (true, $"Check-out trễ {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}, vui lòng checkout sớm hơn vào lần sau.");
+                return (true, $"Check-out trễ {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}.");
             }
             else if (overtimeMinutes >= 15 && overtimeMinutes <= 30)
             {
@@ -640,7 +640,7 @@ namespace Service
             await _tripEventRepository.AddAsync(tripEvent);
      
 
-            return (true, $"Check-out trễ {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}. Giờ phạt đã được cập nhật.");
+            return (true, $"Check-out trễ {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}. Giờ phạt đã được áp dụng.");
 
         }
 
