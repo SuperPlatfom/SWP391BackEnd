@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Enums;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Repository.Interfaces;
@@ -32,7 +33,7 @@ namespace Service.BackgroundJobs
                 }
 
           
-                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
             }
         }
 
@@ -82,7 +83,7 @@ namespace Service.BackgroundJobs
 
                 foreach (var nextBooking in overlappingBookings)
                 {
-                    Console.WriteLine($"[BookingMonitor] Booking {nextBooking.Id} bị hủy do trùng với booking overtime {overtime.Id}.");
+                    ChangeTrackerDebugStringOptions b
 
                  
                     var weekStartUtc = DateTimeHelper.GetWeekStartDate(nextBooking.StartTime);
