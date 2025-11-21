@@ -163,7 +163,7 @@ namespace Service
             var vehicles = await _vehicleRepo.GetAllAsync();
 
             var totalGroups = groups.Count;
-            var groupsWithContract = groups.Count(g => g.Contracts != null && g.Contracts.Any());
+            var groupsWithContract = groups.Count(g => g.Contracts.Any());
             var groupsWithoutContract = totalGroups - groupsWithContract;
 
             var totalVehicles = vehicles.Count();

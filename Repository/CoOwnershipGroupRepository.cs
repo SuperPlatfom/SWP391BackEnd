@@ -51,10 +51,11 @@ namespace Repository
         public async Task<List<CoOwnershipGroup>> GetAllGroupsAsync()
         {
             return await _context.CoOwnershipGroups
-    .Include(g => g.Vehicles)
-    .Include(g => g.Members)
-        .ThenInclude(m => m.UserAccount)
-    .ToListAsync();
+                .Include(g => g.Contracts)
+                .Include(g => g.Vehicles)
+                .Include(g => g.Members)
+                .ThenInclude(m => m.UserAccount)
+                .ToListAsync();
         }
 
         public async Task UpdateGroupAsync(CoOwnershipGroup group)

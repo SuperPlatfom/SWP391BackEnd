@@ -71,7 +71,7 @@ namespace SWP391BackEnd.Controllers
         }
 
 
-        [HttpGet("group-and-statistics")]
+        [HttpGet("group-and-vehicle-statistics")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetGroupAndVehicleStatistics()
         {
