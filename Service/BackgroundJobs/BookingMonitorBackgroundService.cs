@@ -1,5 +1,4 @@
 ﻿using BusinessObject.Enums;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Repository.Interfaces;
@@ -83,7 +82,7 @@ namespace Service.BackgroundJobs
 
                 foreach (var nextBooking in overlappingBookings)
                 {
-                    ChangeTrackerDebugStringOptions b
+                    
 
                  
                     var weekStartUtc = DateTimeHelper.GetWeekStartDate(nextBooking.StartTime);
