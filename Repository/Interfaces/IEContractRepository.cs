@@ -1,6 +1,7 @@
 ﻿using BusinessObject.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,5 +16,6 @@ namespace Repository.Interfaces
         Task<IQueryable<EContract>> QueryAsync(); 
         Task SaveChangesAsync();
         Task<EContract?> GetLatestApprovedByGroupAndVehicleAsync(Guid groupId, Guid vehicleId);
+        Task<IEnumerable<EContract>> GetAllAsync();
     }
 }
