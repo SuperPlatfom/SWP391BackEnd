@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Repository.Interfaces;
 using Service.Helpers;
 using Service.Interfaces;
+using System.Net.WebSockets;
 
 
 namespace Service.BackgroundJobs
@@ -31,7 +32,7 @@ namespace Service.BackgroundJobs
                 }
 
           
-                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
             }
         }
 
@@ -42,25 +43,25 @@ namespace Service.BackgroundJobs
             var usageQuotaRepo = scope.ServiceProvider.GetRequiredService<IUsageQuotaRepository>();
             var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
 
-            var now = DateTimeHelper.NowVietnamTime();
+           
             var allBookings = await bookingRepo.GetAllAsync();
 
-        
+            var now = DateTime.UtcNow;
 
             foreach (var booking in allBookings)
             {
                
-                if (booking.Status == BookingStatus.Booked && DateTime.UtcNow >= booking.StartTime.AddMinutes(15))
+                if (booking.Status == BookingStatus.Booked && now >= booking.StartTime.AddMinutes(15))
                 {
                     await bookingService.CancelBookingBackgroundServiceAsync(booking.Id);
                     continue;
                 }
 
                
-                if (booking.Status == BookingStatus.InUse && DateTime.UtcNow > booking.EndTime)
+                if (booking.Status == BookingStatus.InUse && now > booking.EndTime)
                 {
                     booking.Status = BookingStatus.Overtime;
-                    booking.UpdatedAt = DateTime.UtcNow;
+                    booking.UpdatedAt = now;
                     await bookingRepo.UpdateAsync(booking);
                     await bookingRepo.SaveChangesAsync();
                 
@@ -71,7 +72,7 @@ namespace Service.BackgroundJobs
 
             foreach (var overtime in overtimeBookings)
             {
-                overtime.EndTime = DateTime.UtcNow;
+                overtime.EndTime = now;
                 var overlappingBookings = allBookings.Where(b =>
                     b.VehicleId == overtime.VehicleId &&
                     b.Id != overtime.Id &&
@@ -93,13 +94,13 @@ namespace Service.BackgroundJobs
                         quota.HoursUsed -= durationHours;
                         if (quota.HoursUsed < 0) quota.HoursUsed = 0;
 
-                        quota.LastUpdated = DateTime.UtcNow;
+                        quota.LastUpdated = now;
                         await usageQuotaRepo.UpdateAsync(quota);
                     }
 
                
                     nextBooking.Status = BookingStatus.Cancelled;
-                    nextBooking.UpdatedAt = DateTime.UtcNow;
+                    nextBooking.UpdatedAt = now;
                     await bookingRepo.UpdateAsync(nextBooking);
                 }
 
