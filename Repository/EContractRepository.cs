@@ -39,6 +39,15 @@ namespace Repository
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
+        public async Task<IEnumerable<EContract>> GetAllAsync()
+        {
+            return await _db.EContracts
+                .Include(c => c.Template)
+                .Include(c => c.Group)
+                .Include(c => c.Vehicle)
+                .ToListAsync();
+        }
+
         public Task<IQueryable<EContract>> QueryAsync()
         {
             var q = _db.EContracts

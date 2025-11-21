@@ -12,21 +12,35 @@ namespace SWP391BackEnd.Controllers
     [ApiExplorerSettings(GroupName = "Statistic")]
     public class StatisticController : Controller
     {
-       private readonly IServiceRequestService _serviceRequestService;
+    
         private readonly IStatisticService _statisticService;
 
-        public StatisticController(IServiceRequestService serviceRequestService, IStatisticService statisticService)
+        public StatisticController( IStatisticService statisticService)
         {
-            _serviceRequestService = serviceRequestService;
+        
             _statisticService = statisticService;
         }
-        [HttpGet("Revenue-statistic/admin")]
+
+
+        [HttpGet("revenue")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetRevenueStatistic([FromQuery] StatisticRequest s) 
+        public async Task<IActionResult> GetRevenueStatistics()
+        {
+            var result = await _statisticService.GetRevenueStatisticsAsync();
+            return Ok(new
+            {
+                isSuccess = true,
+                message = "Thống kê doanh thu thành công",
+                data = result
+            });
+        }
+        [HttpGet("Revenue-statistic-range/admin")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetRevenueStatistic([FromQuery] StatisticRequest s)
         {
             try
             {
-                var result = await _serviceRequestService.GetRevenueStatisticAsync(s.Start,s.End);
+                var result = await _statisticService.GetRevenueStatisticAsync(s.Start, s.End);
                 var (isSuccess, message, data) = result;
 
                 return Ok(new
@@ -35,7 +49,7 @@ namespace SWP391BackEnd.Controllers
                     message,
                     data
                 });
-            
+
             }
             catch (Exception ex)
             {
@@ -56,5 +70,32 @@ namespace SWP391BackEnd.Controllers
             });
         }
 
+
+        [HttpGet("group-and-statistics")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetGroupAndVehicleStatistics()
+        {
+            var data = await _statisticService.GetGroupVehicleStatisticsAsync();
+            return Ok(new
+            {
+                isSuccess = true,
+                message = "Thống kê group và vehicle thành công",
+                data = data
+            });
+        }
+
+        [HttpGet("contract-statistics")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetContractStatistics()
+        {
+            var data = await _statisticService.GetContractStatisticsAsync();
+            return Ok(new
+            {
+                isSuccess = true,
+                message = "Thống kê contract thành công",
+                data = data
+            });
+        }
     }
 }
+
