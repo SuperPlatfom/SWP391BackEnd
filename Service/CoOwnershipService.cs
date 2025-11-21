@@ -182,30 +182,31 @@ namespace Service
         }
 
 
-        public async Task AttachVehicleToGroupAsync(Guid userId, Guid groupId, Guid vehicleId)
+        public async Task <(bool IsSuccess, string message)> AttachVehicleToGroupAsync(Guid userId, Guid groupId, Guid vehicleId)
         {
             // 🔹 Kiểm tra group có tồn tại
             var group = await _repository.GetGroupByIdAsync(groupId);
             if (group == null)
-                throw new KeyNotFoundException("Nhóm không tồn tại.");
+              return (false, "Nhóm không tồn tại.");
 
             // 🔹 Kiểm tra user có phải OWNER trong group không
             var member = await _memberRepository.GetGroupMemberAsync(groupId, userId);
             if (member == null || member.RoleInGroup != "OWNER")
-                throw new UnauthorizedAccessException("Chỉ chủ nhóm (OWNER) mới được phép gắn xe vào nhóm.");
+               return (false, "Chỉ chủ nhóm (OWNER) mới được phép thêm xe vào nhóm.");
 
             // 🔹 Kiểm tra vehicle tồn tại
             var vehicle = await _repository.GetVehicleByIdAsync(vehicleId);
             if (vehicle == null)
-                throw new KeyNotFoundException("Xe không tồn tại.");
+              return (false, "Xe không tồn tại.");
 
-            // 🔹 Kiểm tra xe đã thuộc nhóm khác chưa
+
             if (vehicle.GroupId != null && vehicle.GroupId != groupId)
-                throw new InvalidOperationException("Xe này đã thuộc một nhóm khác.");
+               return (false, "Xe này đã thuộc nhóm khác.");
 
-            // 🔹 Gán xe vào nhóm
+
             vehicle.GroupId = groupId;
             await _repository.UpdateVehicleAsync(vehicle);
+            return (true, "Thêm xe vào nhóm thành công.");
         }
 
         public async Task DetachVehicleFromGroupAsync(Guid userId, Guid groupId, Guid vehicleId)

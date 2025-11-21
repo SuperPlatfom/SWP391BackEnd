@@ -19,7 +19,7 @@ namespace Service.Interfaces
         Task<GroupResponseModel> GetGroupByIdAsync(Guid groupId);
         Task<GroupResponseModel> UpdateGroupAsync(Guid groupId, string newName);
         Task<List<GroupResponseModel>> GetAllGroupsAsync();
-        Task AttachVehicleToGroupAsync(Guid userId, Guid groupId, Guid vehicleId);
+        Task <(bool IsSuccess, string message)> AttachVehicleToGroupAsync(Guid userId, Guid groupId, Guid vehicleId);
         Task DetachVehicleFromGroupAsync(Guid userId, Guid groupId, Guid vehicleId);
         Task<List<VehicleResponseModel>> GetVehiclesByGroupIdAsync(Guid groupId);
         Task<bool> DeactivateVehicleAsync(Guid vehicleId, Guid userId);

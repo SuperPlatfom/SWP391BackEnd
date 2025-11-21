@@ -66,8 +66,11 @@ namespace SWP391BackEnd.Controllers
 
             var userId = Guid.Parse(userIdClaim);
 
-            await _service.AttachVehicleToGroupAsync(userId, request.GroupId, request.VehicleId);
-            return Ok(new { message = "Đã gán xe vào nhóm thành công." });
+           var result =  await _service.AttachVehicleToGroupAsync(userId, request.GroupId, request.VehicleId);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.message });
+            else 
+                return Ok( new { message = "Đã thêm xe vào nhóm thành công." });
         }
 
         [HttpPost("detach-vehicle")]
