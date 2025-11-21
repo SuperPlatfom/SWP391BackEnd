@@ -32,7 +32,7 @@ namespace Service.BackgroundJobs
                 }
 
           
-                await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
             }
         }
 
@@ -72,7 +72,7 @@ namespace Service.BackgroundJobs
 
             foreach (var overtime in overtimeBookings)
             {
-                overtime.EndTime = now;
+                
                 var overlappingBookings = allBookings.Where(b =>
                     b.VehicleId == overtime.VehicleId &&
                     b.Id != overtime.Id &&

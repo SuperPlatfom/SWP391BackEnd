@@ -508,12 +508,13 @@ namespace Service
                 var url = await _firebaseStorageService.UploadFileAsync(image, "check-out-image");
                 imgUrls.Add(url);
             }
-
-            var vietnamNow = DateTimeHelper.ToVietnamTime(DateTime.UtcNow);
+            
+            var nowUtc = DateTime.UtcNow;
+            var vietnamNow = DateTimeHelper.ToVietnamTime(nowUtc);
             var weekStartVN = DateTimeHelper.GetWeekStartDate(vietnamNow);
             var weekStartUtc = DateTime.SpecifyKind(DateTimeHelper.ToUtcFromVietnamTime(weekStartVN), DateTimeKind.Utc);
-            var expectedEndVN = DateTimeHelper.ToVietnamTime(booking.EndTime);
-            var overtimeMinutes = (vietnamNow - expectedEndVN).TotalMinutes;
+           
+            var overtimeMinutes = (nowUtc - booking.EndTime).TotalMinutes;
             var quota = await _usageQuotaRepository.GetUsageQuotaAsync(
                 booking.UserId, booking.GroupId, booking.VehicleId, weekStartUtc);
 
@@ -556,7 +557,7 @@ namespace Service
                 return (true, $"Check-out sớm {Math.Abs(overtimeMinutes):F0} phút. Giờ sử dụng được điều chỉnh lại.");
             }
 
-            else if (overtimeMinutes <= 5 && overtimeMinutes >= -5)
+            else if (overtimeMinutes <= 5)
             {
                 booking.Status = BookingStatus.Completed;
                 booking.UpdatedAt = DateTime.UtcNow;
