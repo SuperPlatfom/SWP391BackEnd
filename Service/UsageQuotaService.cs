@@ -20,14 +20,14 @@ namespace Service
 
         public async Task<(bool IsSuccess, string Message)> EnsureQuotaExistsAsync(Guid userId, Guid groupId, Guid vehicleId, DateTime weekStartUtc)
         {
-            // 🧩 Kiểm tra quota đã tồn tại chưa
+          
             var existingQuota = await _quotaRepo.GetUsageQuotaAsync(userId, groupId, vehicleId, weekStartUtc);
             if (existingQuota != null)
             {
                 return (true, "Quota đã tồn tại, không cần tạo lại.");
             }
 
-            // 🧩 Lấy thông tin rate
+          
             var rateInfo = await _quotaRepo.GetQuotaRateAsync(userId, vehicleId);
             if (rateInfo == null)
             {
@@ -37,7 +37,7 @@ namespace Service
             var (weeklyQuotaHours, ownershipRate) = rateInfo.Value;
             var safeOwnershipRate = ownershipRate ?? 0m;
 
-            // 🧩 Tính quota giờ
+          
             var hoursLimit = weeklyQuotaHours * safeOwnershipRate / 100m;
 
             var quota = new UsageQuota
