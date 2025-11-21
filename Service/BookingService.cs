@@ -530,6 +530,19 @@ namespace Service
                 await _bookingRepo.UpdateAsync(booking);
                 await _bookingRepo.SaveChangesAsync();
 
+                var tripEvent1 = new TripEvent
+                {
+                    Id = Guid.NewGuid(),
+                    EventType = "CHECKOUT",
+                    SignedBy = Guid.Parse(userId),
+                    BookingId = booking.Id,
+                    VehicleId = booking.VehicleId,
+                    Description = request.Description,
+                    PhotosUrl = imgUrls.Any() ? System.Text.Json.JsonSerializer.Serialize(imgUrls) : null,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _tripEventRepository.AddAsync(tripEvent1);
+
                 return (true, $"Check-out sớm {Math.Abs(overtimeMinutes):F0} phút. Giờ sử dụng được điều chỉnh lại.");
             }
 
@@ -540,6 +553,19 @@ namespace Service
 
                 await _bookingRepo.UpdateAsync(booking);
                 await _bookingRepo.SaveChangesAsync();
+
+                var tripEvent2 = new TripEvent
+                {
+                    Id = Guid.NewGuid(),
+                    EventType = "CHECKOUT",
+                    SignedBy = Guid.Parse(userId),
+                    BookingId = booking.Id,
+                    VehicleId = booking.VehicleId,
+                    Description = request.Description,
+                    PhotosUrl = imgUrls.Any() ? System.Text.Json.JsonSerializer.Serialize(imgUrls) : null,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _tripEventRepository.AddAsync(tripEvent2);
                 return (true, "Check-out thành công.");
             }
             else if (overtimeMinutes > 5 && overtimeMinutes < 15)
@@ -549,6 +575,19 @@ namespace Service
 
                 await _bookingRepo.UpdateAsync(booking);
                 await _bookingRepo.SaveChangesAsync();
+
+                var tripEvent3 = new TripEvent
+                {
+                    Id = Guid.NewGuid(),
+                    EventType = "CHECKOUT",
+                    SignedBy = Guid.Parse(userId),
+                    BookingId = booking.Id,
+                    VehicleId = booking.VehicleId,
+                    Description = request.Description,
+                    PhotosUrl = imgUrls.Any() ? System.Text.Json.JsonSerializer.Serialize(imgUrls) : null,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _tripEventRepository.AddAsync(tripEvent3);
 
                 return (true, $"Check-out trễ {overtimeMinutes:F0} phút, vui lòng checkout sớm hơn vào lần sau.");
             }
@@ -589,6 +628,7 @@ namespace Service
                 CreatedAt = DateTime.UtcNow
             };
             await _tripEventRepository.AddAsync(tripEvent);
+     
 
             return (true, $"Check-out trễ {overtimeMinutes:F0} phút. Giờ phạt đã được cập nhật.");
 
