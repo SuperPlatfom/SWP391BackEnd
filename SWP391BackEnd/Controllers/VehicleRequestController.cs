@@ -55,10 +55,11 @@ namespace SWP391BackEnd.Controllers
         public async Task<IActionResult> CreateRequest([FromForm]VehicleRequestModel request)
         {
             var result = await _vehicleRequestService.CreateVehicleRequestAsync(request, User);
+          if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
             return Ok(new
             {
-                message = "Yêu cầu đăng ký xe đã được gửi, vui lòng chờ admin duyệt.",
-                data = result
+                message = result.Message,
             });
 
         }
@@ -68,10 +69,11 @@ namespace SWP391BackEnd.Controllers
         public async Task<IActionResult> UpdateRequest([FromForm] VehicleUpdateModel request)
         {
             var result = await _vehicleRequestService.UpdateVehicleRequestAsync(request, User);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
             return Ok(new
             {
-                message = "Yêu cầu đăng ký xe đã được gửi, vui lòng chờ admin duyệt.",
-                data = result
+                message = result.Message,
             });
 
         }
