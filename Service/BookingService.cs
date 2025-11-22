@@ -20,8 +20,9 @@ namespace Service
         private readonly IUsageQuotaRepository _usageQuotaRepository;
         private readonly IFirebaseStorageService _firebaseStorageService;
         private readonly ITripEventRepository _tripEventRepository;
+        private readonly INotificationService _notificationService;
 
-        public BookingService(IBookingRepository bookingRepo, IUsageQuotaService usageQuotaService, IUsageQuotaRepository usageQuotaRepository, IFirebaseStorageService firebaseStorageService, ITripEventRepository tripEventRepository, IVehicleRepository vehicleRepository)
+        public BookingService(IBookingRepository bookingRepo, IUsageQuotaService usageQuotaService, IUsageQuotaRepository usageQuotaRepository, IFirebaseStorageService firebaseStorageService, ITripEventRepository tripEventRepository, IVehicleRepository vehicleRepository, INotificationService notificationService)
         {
             _bookingRepo = bookingRepo;
             _usageQuotaService = usageQuotaService;
@@ -29,6 +30,7 @@ namespace Service
             _firebaseStorageService = firebaseStorageService;
             _tripEventRepository = tripEventRepository;
             _vehicleRepository = vehicleRepository;
+            _notificationService = notificationService;
 
         }
 
@@ -554,7 +556,15 @@ namespace Service
                 };
                 await _tripEventRepository.AddAsync(tripEvent1);
 
-                return (true, $"Check-out sớm {Math.Abs(overtimeMinutes):F0} phút. Giờ sử dụng được điều chỉnh lại.");
+                _notificationService.CreateAsync(
+                    booking.UserId,
+                    "Check-out sớm",
+                    $"Bạn đã check-out sớm {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}. Giờ sử dụng của bạn đã được điều chỉnh lại.",
+                    "BOOKING",
+                    booking.Id
+                );
+
+                return (true, $"Check-out sớm {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}. Giờ sử dụng được điều chỉnh lại.");
             }
 
             else if (overtimeMinutes <= 5)
@@ -600,6 +610,14 @@ namespace Service
                 };
                 await _tripEventRepository.AddAsync(tripEvent3);
 
+                _notificationService.CreateAsync(
+                    booking.UserId,
+                    "Check-out trễ",
+                    $"Bạn đã check-out trễ {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}.",
+                    "BOOKING",
+                    booking.Id
+                );
+
                 return (true, $"Check-out trễ {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}.");
             }
             else if (overtimeMinutes >= 15 && overtimeMinutes <= 30)
@@ -640,6 +658,13 @@ namespace Service
             };
             await _tripEventRepository.AddAsync(tripEvent);
      
+            _notificationService.CreateAsync(
+                booking.UserId,
+                "Check-out trễ",
+                $"Bạn đã check-out trễ {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}. Giờ phạt đã được áp dụng.",
+                "BOOKING",
+                booking.Id
+            );
 
             return (true, $"Check-out trễ {FormatMinutesToHourMinute(Math.Abs(overtimeMinutes))}. Giờ phạt đã được áp dụng.");
 
