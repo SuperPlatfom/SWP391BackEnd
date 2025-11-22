@@ -32,7 +32,7 @@ namespace Service.BackgroundJobs
                 }
 
           
-                await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
         }
 
