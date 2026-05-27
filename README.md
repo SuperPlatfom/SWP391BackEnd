@@ -24,25 +24,6 @@ Mô hình phân lớp theo solution:
 - `BusinessObject`: Entities + DTOs.
 
 ## 3) Cấu trúc thư mục
-├── SWP391BackEnd.sln
-├── SWP391BackEnd/
-│   ├── Program.cs
-│   ├── Controllers/
-│   ├── Helpers/
-│   ├── EmailTemplates/
-│   └── Properties/
-├── BusinessObject/
-│   ├── Models/
-│   └── DTOs/
-├── Service/
-│   ├── Interfaces/
-│   ├── BackgroundJobs/
-│   └── Helpers/
-├── Repository/
-│   ├── Interfaces/
-│   └── Repositories/
-├── DataAccessLayer/
-│   ├── DataContext/
-│   └── Migrations/
-└── Dockerfile
+<img width="213" height="529" alt="image" src="https://github.com/user-attachments/assets/7be484a9-5f9e-495c-a9d3-fb91d14dabe5" />
+
 ## 4) Database diagram: https://dbdiagram.io/d/68d00712960f6d821a16e926
