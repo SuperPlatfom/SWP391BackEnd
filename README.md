@@ -1,21 +1,22 @@
 # SWP391BackEnd - EV Cost Sharing Platform (Backend)
 
-Backend API cho nền tảng **chia sẻ chi phí xe điện** (co-ownership / nhóm sử dụng chung xe), xây dựng bằng **ASP.NET Core Web API + Entity Framework Core + PostgreSQL**.
+Backend API for an Electric Vehicle Cost Sharing Platform (EV co-ownership / shared vehicle usage), built with **ASP.NET Core Web API + Entity Framework Core + PostgreSQL**.
 
-## 1) Mục tiêu dự án
+## 1) Project Objective
 
-Hệ thống hỗ trợ:
-- Quản lý tài khoản, phân quyền, xác thực JWT.
-- Quản lý nhóm đồng sở hữu xe điện.
-- Hợp đồng điện tử và quy trình ký hợp đồng.
-- Quản lý yêu cầu dịch vụ, job kỹ thuật, chi phí nhóm.
-- Phân bổ hóa đơn thành viên, thanh toán và giao dịch.
-- Theo dõi quota sử dụng và sự kiện chuyến đi.
-- Thông báo trong hệ thống.
+The system supports:
 
-## 2) Kiến trúc tổng quan
+- User account management, role-based authorization, and JWT authentication.
+- Management of EV co-ownership groups.
+- Electronic contracts and contract signing workflows.
+- Service request management, technical job tracking, and group expense management.
+- Member bill allocation, payment processing, and transaction management.
+- Usage quota tracking and trip event monitoring.
+- In-app notification system.
 
-Mô hình phân lớp theo solution:
+## 2) System Architecture
+
+The solution follows a layered architecture:
 
 - `SWP391BackEnd`: API layer (controllers, Program startup, Swagger, middleware).
 - `Service`: Business logic layer (use-cases, validation, orchestration).
@@ -23,7 +24,7 @@ Mô hình phân lớp theo solution:
 - `DataAccessLayer`: `AppDbContext`, migrations, cấu hình EF Core.
 - `BusinessObject`: Entities + DTOs.
 
-## 3) Cấu trúc thư mục
+## 3) Project Structure
 <img width="213" height="529" alt="image" src="https://github.com/user-attachments/assets/7be484a9-5f9e-495c-a9d3-fb91d14dabe5" />
 
 ## 4) Database diagram: https://dbdiagram.io/d/68d00712960f6d821a16e926
